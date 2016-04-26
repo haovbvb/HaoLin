@@ -1,0 +1,17 @@
+//
+//  MDLLijiqiangdan.h
+//  HaoLin
+//
+//  Created by apple on 14-8-25.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+
+@interface MDLLijiqiangdan : NSObject
+
+@property (nonatomic, copy) NSNumber *LJmobile;          //mobile电话号
+@property (nonatomic, copy) NSString *LJTALK_ID;         //talk_id 商户推给客户的文本信息
+@property (nonatomic, copy) NSMutableArray *LJgoods_info;//goods_info 配送的商品信息2维数组
+
+@end

@@ -1,0 +1,24 @@
+//
+//  MDLXuanzeViewController.h
+//  HaoLin
+//
+//  Created by apple on 14-9-3.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface MDLXuanzeViewController : UIViewController<UITableViewDataSource,UITableViewDelegate,UISearchBarDelegate,UISearchDisplayDelegate>
+
+
+@property (weak, nonatomic) IBOutlet UIButton *backitm;
+                                                                    //返回
+@property (weak, nonatomic) IBOutlet UIButton *completebutton;      //完成button
+@property (weak, nonatomic) IBOutlet UIButton *quanbubutton;
+@property (weak, nonatomic) IBOutlet UIButton *findbutton;          //查找
+@property (weak, nonatomic) IBOutlet UISearchBar *searchbar;
+@property (weak, nonatomic) IBOutlet UITableView *mytableview;
+@property (weak, nonatomic) IBOutlet UIView *leixingview;
+@property (weak, nonatomic) IBOutlet UITableView *leixingtableview;
+
+@end

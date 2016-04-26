@@ -1,0 +1,95 @@
+
+//
+//  MDLSingleView.m
+//  HAOLINAPP
+//
+//  Created by apple on 14-8-9.
+//  Copyright (c) 2014年 com.haolinshidai. All rights reserved.
+//  商家 - 抢单页面
+
+#import "MDLSingleView.h"
+
+
+@implementation MDLSingleView
+
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+            }
+    return self;
+}
+
+-(void)awakeFromNib
+{
+    
+//    self.navbar.hidden=NO;
+    self.backgroundColor=BGColor;
+    //布置视图
+    [self showview];
+    //让键盘出现时的通知
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardWillShow)
+                                                 name:@"Notification"
+                                               object:nil];
+    //键盘消失时的通知
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(stopinputnotification)
+                                                 name:@"EndinputNotification"
+                                               object:nil];
+    
+}
+
+- (IBAction)fanhuiback:(id)sender {
+   // 返回到抢单界面的通知 MDLHomView 可见通知
+//    [[NSNotificationCenter defaultCenter]postNotificationName:@"pophomview" object:nil];
+    }
+
+-(void)keyboardWillShow
+{
+    [UIView beginAnimations:nil context:nil];
+    [UIView setAnimationDuration:0.25];
+    [UIView setAnimationDelegate:self];
+    [UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
+    CGRect frames = self.frame;
+    frames.origin.y = -60;
+    self.frame = frames;
+    [UIView commitAnimations];
+}
+
+-(void)stopinputnotification
+{
+    [UIView beginAnimations:nil context:nil];
+    [UIView setAnimationDuration:0.25];
+    [UIView setAnimationDelegate:self];
+    [UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
+    CGRect frames = self.frame;
+    frames.origin.y = 65;
+    self.frame = frames;
+    [UIView commitAnimations];
+
+}
+
+//初始化界面
+-(void)showview
+
+{
+    MDQiangdanView *Qdview =[[[NSBundle mainBundle]loadNibNamed:@"MDQiangdanView" owner:self options:nil]lastObject];
+    Qdview.frame=CGRectMake(0,self.navbar.frame.size.height, KDeviceWidth,285);
+    [self addSubview:Qdview];
+    
+        
+    //抢单列表
+    MDLInformationView * informationview=[[MDLInformationView alloc]init];
+    
+    if (DEVICE_IS_IPHONE5) {
+        informationview.frame=CGRectMake(0,20+Qdview.frame.size.height+self.navbar.frame.size.height, 320, KDeviceHeight+100);
+    }else{
+        informationview.frame=CGRectMake(0,20+Qdview.frame.size.height+self.navbar.frame.size.height, 320, KDeviceHeight);
+    }
+    
+    informationview.backgroundColor=[UIColor redColor];
+    [self addSubview:informationview];
+}
+
+@end

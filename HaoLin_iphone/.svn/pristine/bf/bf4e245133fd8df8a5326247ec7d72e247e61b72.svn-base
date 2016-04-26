@@ -1,0 +1,70 @@
+//
+//  JZDPartyTableViewCell.m
+//  HaoLin
+//
+//  Created by 姜泽东 on 14-8-11.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "JZDPartyTableViewCell.h"
+
+@implementation JZDPartyTableViewCell
+@synthesize item=_item;
+
+-(void)dealloc
+{
+    _item=nil;
+}
+- (void)awakeFromNib
+{
+    // Initialization code
+    _locationUser.delegate=self;
+    _locationUser.buttonImageRect=CGRectMake(10, 12, 10, 10);
+    _locationUser.buttonTitleRect=CGRectMake(25, 5, 100, 25);
+}
+
+-(JZDItem *)item
+{
+    return _item;
+}
+
+-(void)clear
+{
+    _headImageView.image=nil;
+    _nickName.text=@"";
+    [_locationUser setTitle:@"" forState:UIControlStateNormal];
+    _timeForNow.text=@"";
+    _location.text=@"";
+    _details.text=@"";
+    _numPeople.text=@"";
+    _doSomeThing.text=@"";
+}
+
+-(void)setItem:(JZDItem *)item
+{
+    if (_item!=item) {
+        _item=item;
+    }
+    _boyOrGirl=item.boyOrGirl;
+    if ([_boyOrGirl isEqualToString:@"1"]) {
+        _userSex.image=[UIImage imageNamed:@"JZD_male.png"];
+    }else{
+        _userSex.image=[UIImage imageNamed:@"JZD_female.png"];
+    }
+    _headImageView.image=[UIImage circleImageWithName:_item.headImage borderWidth:0.1 borderColor:nil];
+    _nickName.text=_item.nickName;
+    [_locationUser setTitle:[NSString stringWithFormat:@"%.0fkm",item.disTance/1000] forState:UIControlStateNormal];
+    _timeForNow.text=_item.timeForStart;
+    _location.text=_item.location;
+    _details.text=_item.partyDescribe;
+    _numPeople.text=_item.numberOfPeople;
+    _doSomeThing.text=_item.doSomeThing;
+}
+
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated
+{
+    [super setSelected:selected animated:animated];
+    // Configure the view for the selected state
+}
+
+@end

@@ -1,0 +1,195 @@
+//
+//  MDQiangdanView.m
+//  HAOLINAPP
+//
+//  Created by apple on 14-8-13.
+//  Copyright (c) 2014年 com.haolinshidai. All rights reserved.
+//
+
+#import "MDQiangdanView.h"
+
+
+@interface MDQiangdanView ()
+
+{
+    int talktype;
+    MDLNetworkservice  *service;
+    ZYPObjectManger    *zypobjectmanger;
+    MDLQiangdanliebiao *liebiao;
+    MDLbasicdataobj    *basicdataobj;
+    NSMutableArray     *submitarry;
+    JZDPushSingl       *s;
+    
+}
+//@property (nonatomic ,retain)MDLXZoneView *xuanzeview;
+@end
+
+
+@implementation MDQiangdanView
+
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        
+    }
+    return self;
+}
+
+-(void)awakeFromNib
+{
+    
+    s=[JZDPushSingl sharedInstance];
+    
+    self.quxiaobtn.titleLabel.textColor    =MDLBGColor;
+    self.JixuQiangdanButton.backgroundColor=MDLBGColor;
+    UIImage *image =[UIImage imageNamed:@"MDLmap1@2x"];
+    [self.MapButton setBackgroundImage:image forState:UIControlStateNormal];
+    
+    _quxiaobtn .layer.borderWidth = 1;
+    [_quxiaobtn.layer setMasksToBounds:YES];
+    [_quxiaobtn.layer setCornerRadius:5.0];
+    _quxiaobtn .layer.borderColor = MDLBGColor.CGColor;
+    //请求单例
+    service        =[MDLNetworkservice shareservice];
+    //获取登陆数据单例
+    zypobjectmanger=[ZYPObjectManger shareInstance];
+    //公共数据单例
+    basicdataobj   =[MDLbasicdataobj sharebasicdataobj];
+//    self.SRTextField.delegate=self;
+    
+//    [[NSNotificationCenter defaultCenter]  addObserver:self
+//                                              selector:@selector (mytest:)
+//                                                  name:@"LBviewtext"
+//                                                object:nil];
+
+    
+//    MDLXZoneView *xzoneview=[[[NSBundle mainBundle]loadNibNamed:@"MDLXZoneView" owner:self options:nil]lastObject];
+//    xzoneview.delegate=self;
+
+    submitarry =[[NSMutableArray alloc] initWithCapacity:0];
+
+//    liebiao=[[MDLQiangdanliebiao alloc]init];
+
+//    self.SRTextField.delegate=self;
+//    self.SRTextField.placeholder=@"输入商品名称";
+//    self.SRTextField.clearButtonMode=YES;
+//    self.timerLable.       text=@"30s";
+//    self.SRTextField.adjustsFontSizeToFitWidth=YES;
+//    self.SRTextField.minimumFontSize = 20;
+    
+    
+    
+//    NSString *s =self.SRTextField.text;
+//    UIFont *font = [UIFont fontWithName:@"Arial" size:12];
+//    CGSize size = CGSizeMake(320,2000);
+//    CGSize textfieldsize = [s sizeWithFont:font constrainedToSize:size lineBreakMode:UILineBreakModeWordWrap];
+//   self.SRTextField.frame = CGRectMake(0.0, 0.0, textfieldsize.width, textfieldsize.height );
+    
+    
+//    self.AddressLable.   text=@"";
+//    self.NeirongLable.   text=@"";
+//    self.QiangdanZTLable.text=@"";
+//    self.DistributionMoneyLable.text=@"";
+    
+}
+/*
+- (void) mytest:(NSNotification*) notification
+{
+    id obj = [notification object];//获取到传递的对象
+    NSLog(@"*********%@",obj);
+    NSMutableArray *textarry=[notification object];
+    NSMutableArray *dataarry=[[NSMutableArray alloc]init];
+    float sum=0.0;
+    for (int i = 0; i <textarry.count ; i ++) {
+        MDLgoodsdata *goods = [textarry objectAtIndex:i];
+        NSDictionary *dic =[NSDictionary dictionaryWithObjectsAndKeys:goods.goodsid,@"goods_id",goods.goodsprice,@"goods_price",goods.goodsnum,@"goods_num", nil];
+        float  A =[goods.goodsprice floatValue];
+        float  B =[goods.goodsnum floatValue];
+        float  C = A*B;
+        sum+=C;
+        [dataarry addObject:dic];
+        NSLog(@"选定后要提交的数据%@",dataarry);
+//        NSArray *array = [NSArray arrayWithObjects:goods.goodsprice,goods.goodsid,goods.goodsnum, nil];
+//        [submitarry addObject:arry];
+    }
+    self.TotalPicLable.text=[NSString stringWithFormat:@"%.2f元",sum];
+    [submitarry addObject:dataarry];
+    NSLog(@"要提交的数据%@",submitarry);
+}
+*/
+
+//协议
+//-(void)contenttext:(NSMutableArray *)ary{
+
+//    NSMutableArray *arry =[[NSMutableArray alloc]init];
+//    [arry addObjectsFromArray:ary];
+//}
+
+/*
+//立即抢单按钮
+- (IBAction)LijiQiangDan:(id)sender {
+    
+    if ([submitarry count]>0) {
+//        NSString *Talkid =[NSString stringWithFormat:@"%@",nil];
+//
+//        NSDictionary *dic= @{@"talk_id": Talkid,@"goods_info":submitarry};
+//        [[NSNotificationCenter defaultCenter]postNotificationName:NotificationOfSendToBusiness object:dic];
+        NSLog(@"抢单提交");
+    }else{
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"您还没有选择商品，无法提交！" message:nil delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+        [alert show];
+        
+//        UIAlertView *alert=[[UIAlertView alloc]initWithTitle:@"提示" message:@"请您选择物品" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:@"取消", nil];
+//        [alert setAlertViewStyle:UIAlertViewStyleSecureTextInput];
+//        [alert show];
+
+    }
+    
+ 
+ 
+    NSString * XZUSERID1 =zypobjectmanger.loginInObject.user_id;
+    NSString * XZTOKENID1=zypobjectmanger.loginInObject.tokenid;
+    NSString * XZTALKID  =nil;
+    
+    NSString *URL=[NSString stringWithFormat:kgrabtoUrl,XZUSERID1,XZTOKENID1,XZTALKID,submitarry];
+    ZYPNetWorkGetSourceManger *zypnet=[[ZYPNetWorkGetSourceManger alloc]init];
+    [zypnet connectWithUrlStr:URL completion:^(id respondObject) {
+        NSLog(@"%@",respondObject);
+    }];
+ 
+
+//    [service ConnectSubmit:XZUSERID1 tokenid:XZTOKENID1 talkid:XZTALKID goodsinfo:submitarry withJSON:^(id responseObject) {
+//        NSMutableDictionary *dic =responseObject;
+//        NSLog(@"%@",responseObject);
+//        NSLog(@"222222%@",[dic objectForKey:@"message"]);
+//    }
+//  ];
+}
+*/
+
+//选择物品VC
+- (IBAction)PUSH:(id)sender {
+    
+    [[NSNotificationCenter defaultCenter]postNotificationName:@"pushSZVC" object:nil];
+}
+
+//PUSH地图界面
+- (IBAction)Mappush:(id)sender {
+    
+//    if (self.delegate && [self.delegate respondsToSelector:@selector(pushimap:)]) {
+//        [self.delegate pushimap:self];
+//    }
+    [[NSNotificationCenter defaultCenter]postNotificationName:@"pushMapVC" object:nil];
+}
+
+/*
+// Only override drawRect: if you perform custom drawing.
+// An empty implementation adversely affects performance during animation.
+- (void)drawRect:(CGRect)rect
+{
+    // Drawing code
+}
+*/
+
+@end

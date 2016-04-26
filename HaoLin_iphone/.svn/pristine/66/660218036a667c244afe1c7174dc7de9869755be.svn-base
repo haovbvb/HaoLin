@@ -1,0 +1,29 @@
+//
+//  JZDDecTableViewCell.m
+//  HaoLin
+//
+//  Created by Zidon on 14-9-9.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "JZDDecTableViewCell.h"
+
+@implementation JZDDecTableViewCell
+@synthesize item=_item;
+- (void)awakeFromNib
+{
+    // Initialization code
+}
+
+-(JZDItem *)item
+{
+    return _item;
+}
+
+-(void)setItem:(JZDItem *)item
+{
+    _item=item;
+    _describeLable.text=item.describeString;
+}
+
+@end

@@ -1,0 +1,193 @@
+//
+//  MDLdetailsTableviewcell.m
+//  HLAPP
+//
+//  Created by apple on 14-8-6.
+//  Copyright (c) 2014年 com.haolinshidai. All rights reserved.
+//   实物 全部订单cell的 自定义
+
+
+#define  DISTANCE  10
+#define  FROMX     120
+
+#import "MDLdetailsTableviewcell.h"
+
+
+@implementation MDLdetailsTableviewcell
+
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
+{
+    self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
+    if (self) {
+        [self buju];
+        
+    }
+    return self;
+}
+
+-(void)buju
+{
+    self.typeimgae = [[UIImageView alloc] initWithFrame:CGRectMake(10, 10, 30, 25)];
+    _typeimgae.backgroundColor=[UIColor blueColor];
+    [self.contentView addSubview:_typeimgae];
+    
+    
+    self.typeLabel = [[UILabel alloc] initWithFrame:CGRectMake(50, 10, 30, 25)];
+    _typeLabel.backgroundColor=[UIColor blackColor];
+    _typeLabel.text=@"类型";
+    [_typeLabel setFont:[UIFont systemFontOfSize:12]];
+    [self.contentView addSubview:_typeLabel];
+    
+    self.timerLabel = [[UILabel alloc] initWithFrame:CGRectMake(160, 10, 150, 25)];
+    _timerLabel.backgroundColor=[UIColor orangeColor];
+    _timerLabel.text=@"下单时间:23-32-43";
+    [_timerLabel setFont:[UIFont systemFontOfSize:12]];
+    [self.contentView addSubview:_timerLabel];
+    
+    self.numberLable = [[UILabel alloc] initWithFrame:CGRectMake(150, self.timerLabel.frame.origin.y+self.timerLabel.frame.size.height+DISTANCE, 60, 25)];
+    _numberLable.backgroundColor=[UIColor orangeColor];
+    _numberLable.text=@"数量：23";
+    [_numberLable setFont:[UIFont systemFontOfSize:12]];
+    [self.contentView addSubview:_numberLable];
+
+    
+    self.nameLabel = [[UILabel alloc] initWithFrame:CGRectMake(10, self.timerLabel.frame.origin.y+self.timerLabel.frame.size.height+DISTANCE, FROMX, 25)];
+    _nameLabel.backgroundColor=[UIColor orangeColor];
+    _nameLabel.text=@"商品名称";
+    [_nameLabel setFont:[UIFont systemFontOfSize:12]];
+    [self.contentView addSubview:_nameLabel];
+    
+    self.onenameLabel = [[UILabel alloc] initWithFrame:CGRectMake(10, self.nameLabel.frame.origin.y+self.nameLabel.frame.size.height+DISTANCE, FROMX, 25)];
+    _onenameLabel.backgroundColor=[UIColor orangeColor];
+    _onenameLabel.text=@"商品名称1";
+    [_onenameLabel setFont:[UIFont systemFontOfSize:12]];
+    [self.contentView addSubview:_onenameLabel];
+
+    self.twonameLabel = [[UILabel alloc] initWithFrame:CGRectMake(10, self.onenameLabel.frame.origin.y+self.onenameLabel.frame.size.height+DISTANCE, FROMX, 25)];
+    _twonameLabel.backgroundColor=[UIColor orangeColor];
+    _twonameLabel.text=@"商品名称2";
+    [_twonameLabel setFont:[UIFont systemFontOfSize:12]];
+    [self.contentView addSubview:_twonameLabel];
+    
+    self.ThreenameLabel = [[UILabel alloc] initWithFrame:CGRectMake(10, self.twonameLabel.frame.origin.y+self.twonameLabel.frame.size.height+DISTANCE, FROMX, 25)];
+    _ThreenameLabel.backgroundColor=[UIColor orangeColor];
+    _ThreenameLabel.text=@"商品名称3";
+    [_ThreenameLabel setFont:[UIFont systemFontOfSize:12]];
+    [self.contentView addSubview:_ThreenameLabel];
+
+    self.fournameLabel = [[UILabel alloc] initWithFrame:CGRectMake(10, self.ThreenameLabel.frame.origin.y+self.ThreenameLabel.frame.size.height+DISTANCE, FROMX, 25)];
+    _fournameLabel.backgroundColor=[UIColor orangeColor];
+    _fournameLabel.text=@"商品名称4";
+    [_fournameLabel setFont:[UIFont systemFontOfSize:12]];
+    [self.contentView addSubview:_fournameLabel];
+
+    self.Label = [[UILabel alloc] initWithFrame:CGRectMake(10, self.nameLabel.frame.origin.y+self.nameLabel.frame.size.height+DISTANCE, 60, 25)];
+    [_Label setFont:[UIFont systemFontOfSize:12]];
+    _Label.text=@"配送费";
+    _Label.backgroundColor=[UIColor orangeColor];
+    [self.contentView addSubview:_Label];
+    
+    self.priceLabel = [[UILabel alloc] initWithFrame:CGRectMake(260, self.timerLabel.frame.origin.y+self.timerLabel.frame.size.height+DISTANCE, 80, 25)];
+    [_priceLabel setFont:[UIFont systemFontOfSize:12]];
+    _priceLabel.text=@"价格:34";
+    _priceLabel.backgroundColor=[UIColor orangeColor];
+    [self.contentView addSubview:_priceLabel];
+    
+    self.PSpriceLabel = [[UILabel alloc] initWithFrame:CGRectMake(280, self.nameLabel.frame.origin.y+self.nameLabel.frame.size.height+DISTANCE, 80, 25)];
+    [_PSpriceLabel setFont:[UIFont systemFontOfSize:12]];
+    _PSpriceLabel.text=@"1";
+    _PSpriceLabel.backgroundColor=[UIColor orangeColor];
+    [self.contentView addSubview:_PSpriceLabel];
+    
+    self.onepriceLabel = [[UILabel alloc] initWithFrame:CGRectMake(280, self.nameLabel.frame.origin.y+self.nameLabel.frame.size.height+DISTANCE, 80, 25)];
+    [_onepriceLabel setFont:[UIFont systemFontOfSize:12]];
+    _onepriceLabel.text=@"2";
+    _onepriceLabel.backgroundColor=[UIColor orangeColor];
+    [self.contentView addSubview:_onepriceLabel];
+
+    self.twopriceLabel = [[UILabel alloc] initWithFrame:CGRectMake(280, self.onepriceLabel.frame.origin.y+self.onepriceLabel.frame.size.height+DISTANCE, 80, 25)];
+    [_twopriceLabel setFont:[UIFont systemFontOfSize:12]];
+    _twopriceLabel.text=@"3";
+    _twopriceLabel.backgroundColor=[UIColor orangeColor];
+    [self.contentView addSubview:_twopriceLabel];
+
+    self.ThreepriceLabel = [[UILabel alloc] initWithFrame:CGRectMake(280, self.twopriceLabel.frame.origin.y+self.twopriceLabel.frame.size.height+DISTANCE, 80, 25)];
+    [_ThreepriceLabel setFont:[UIFont systemFontOfSize:12]];
+    _ThreepriceLabel.text=@"4";
+    _ThreepriceLabel.backgroundColor=[UIColor orangeColor];
+    [self.contentView addSubview:_ThreepriceLabel];
+
+    self.fourpriceLabel = [[UILabel alloc] initWithFrame:CGRectMake(280, self.ThreepriceLabel.frame.origin.y+self.ThreepriceLabel.frame.size.height+DISTANCE, 80, 25)];
+    [_fourpriceLabel setFont:[UIFont systemFontOfSize:12]];
+    _fourpriceLabel.text=@"5";
+    _fourpriceLabel.backgroundColor=[UIColor orangeColor];
+    [self.contentView addSubview:_fourpriceLabel];
+
+    
+    self.totalLabel = [[UILabel alloc] initWithFrame:CGRectMake(230, self.PSpriceLabel.frame.origin.y+self.PSpriceLabel.frame.size.height+DISTANCE, 100, 25)];
+    [_totalLabel setFont:[UIFont systemFontOfSize:12]];
+    _totalLabel.text=@"总计";
+    _totalLabel.backgroundColor=[UIColor orangeColor];
+    [self.contentView addSubview:_totalLabel];
+
+    self.stateLable = [[UILabel alloc] initWithFrame:CGRectMake(10,self.totalLabel.frame.origin.y+self.totalLabel.frame.size.height+DISTANCE , 150, 25)];
+    [_stateLable setFont:[UIFont systemFontOfSize:12]];
+    _stateLable.text=@"订单状态";
+    _stateLable.backgroundColor=[UIColor orangeColor];
+    [self.contentView addSubview:_stateLable];
+
+    
+    self.stateimage = [[UIImageView alloc] initWithFrame:CGRectMake(230, self.totalLabel.frame.origin.y+self.totalLabel.frame.size.height+DISTANCE,80 , 40)];
+    _stateimage.backgroundColor=[UIColor blueColor];
+    [self.contentView addSubview:_stateimage];
+    
+//    self.xcontentButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 320, 260)];
+//    self.xcontentButton.backgroundColor = [UIColor clearColor];
+//    [self addSubview:self.xcontentButton];
+
+}
+
+
+//- (void)showCell
+//{
+//    for (UIView *v in self.contentView.subviews) {
+//        [v removeFromSuperview];
+//    }
+//    
+//    for (int i = 0; i< self.DataList.count; i++) {
+//        NSMutableDictionary *dic = [self.DataList objectAtIndex:i];
+//        
+//        NSString * style = [dic objectForKey:@"style"];
+//        int num = [style intValue];
+//        switch (num) {
+//            case 0:
+//            {
+//                NSString *str = [dic objectForKey:@"1"];
+//                NSString *str1 = [dic objectForKey:@"2"];
+//                if (str && ![str isEqualToString:@""]) {
+//                    UILabel *lable = [[UILabel alloc] init];
+//                    [self addSubview:lable];
+//                }
+//                
+//                break;
+//            }
+//            default:
+//                break;
+//        }
+//    }
+//
+//}
+
+- (void)awakeFromNib
+{
+    // Initialization code
+}
+
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated
+{
+    [super setSelected:selected animated:animated];
+
+    // Configure the view for the selected state
+}
+
+@end

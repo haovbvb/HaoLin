@@ -1,0 +1,73 @@
+//
+//  ZYPBUEvaluteVC.m
+//  HaoLin
+//
+//  Created by mac on 14-9-11.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "ZYPBUEvaluteVC.h"
+
+@interface ZYPBUEvaluteVC ()
+
+@end
+
+@implementation ZYPBUEvaluteVC
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+    }
+    return self;
+}
+- (IBAction)back:(id)sender
+{
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    if (IS_IPHONE_5) {
+        self.view.frame = CGRectMake(0, 0, 320, 568);
+    }else
+    {
+        self.view.frame = CGRectMake(0, 0, 320, 480);
+    }
+    self.tableView.hidden = YES;
+    self.titleLabel.backgroundColor = ZYPBGColor;
+
+    // Do any additional setup after loading the view from its nib.
+}
+- (void)getSource
+{
+    
+}
+#pragma mark - 代理方法
+-(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+{
+    return 1;
+}
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return 0;
+}
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    static NSString *indentifier = @"indentifier";
+    ZYPHomeTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:indentifier];
+    if (cell == nil) {
+        cell = [[[NSBundle mainBundle] loadNibNamed:@"ZYPHomeTableViewCell" owner:self options:nil] lastObject];
+    }
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    return cell;
+}
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+@end

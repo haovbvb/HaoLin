@@ -1,0 +1,23 @@
+//
+//  HSPForgetPasswordController.h
+//  HaoLin
+//
+//  Created by PING on 14-9-3.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface HSPForgetPasswordController : UIViewController
+@property (weak, nonatomic) IBOutlet UITextField *nickName;
+@property (weak, nonatomic) IBOutlet UITextField *phone;
+@property (weak, nonatomic) IBOutlet UITextField *phoneCode;
+@property (weak, nonatomic) IBOutlet UITextField *password;
+@property (weak, nonatomic) IBOutlet UITextField *passwordAgain;
+
+- (IBAction)changePasswordBtnClick:(UIButton *)sender;
+
+@property (weak, nonatomic) IBOutlet UIButton *phoneCodeBtn;
+@property (weak, nonatomic) IBOutlet UIButton *submitBtn;
+
+@end

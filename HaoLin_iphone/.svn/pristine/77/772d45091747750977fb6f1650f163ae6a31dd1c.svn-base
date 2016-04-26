@@ -1,0 +1,15 @@
+//
+//  ZYPBUDetalVC.h
+//  HaoLin
+//
+//  Created by mac on 14-9-11.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@class ZYPBusinessObject;
+@interface ZYPBUDetalVC : UIViewController<UITableViewDelegate,UITableViewDataSource>
+@property (weak, nonatomic) IBOutlet UITableView *tableView;
+@property (nonatomic, strong)ZYPBusinessObject *object;
+@end

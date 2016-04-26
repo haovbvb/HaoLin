@@ -1,0 +1,18 @@
+//
+//  JZD_MDLItem.m
+//  HaoLin
+//
+//  Created by Zidon on 14-9-17.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "JZD_MDLItem.h"
+
+@implementation JZD_MDLItem
+
+-(void)setValue:(id)value forUndefinedKey:(NSString *)key
+{
+    
+}
+
+@end

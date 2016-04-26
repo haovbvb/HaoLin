@@ -1,0 +1,250 @@
+//
+//  ZYOHomeViewController.m
+//  HaoLin
+//
+//  Created by mac on 14-8-22.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "ZYOHomeViewController.h"
+
+@interface ZYOHomeViewController ()
+{
+    ZYPHomeBottomView *bottomView;
+    UIView *view;
+    ZYPLoginView *loginView1;
+}
+@property (nonatomic, strong)NSMutableArray *allArray;
+@end
+
+@implementation ZYOHomeViewController
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+    }
+    return self;
+}
+//  返回商家主界面
+- (IBAction)back:(id)sender
+{
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    //  屏幕大小适配
+    if (IS_IPHONE_5) {
+        self.view.frame = CGRectMake(0, 0, 320, 568);
+    }else
+    {
+        self.view.frame = CGRectMake(0, 0, 320, 480);
+    }
+    self.navigationController.navigationBar.hidden = YES;
+    self.tableView.showsVerticalScrollIndicator = NO;
+   //  获取数据源
+    [self source];
+}
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    if ([ZYPObjectManger shareInstance].state == 0 )
+    {
+        self.loginBtn.hidden = YES;
+        self.label.hidden = YES;
+        self.lineLabel.hidden = YES;
+        self.imageView.hidden = YES;
+        [view removeFromSuperview];
+        [self creatBottomView];
+        [self creatLoginView];
+    }else if([ZYPObjectManger shareInstance].state == 1)
+    {
+        self.loginBtn.hidden = NO;
+        self.label.hidden = NO;
+        self.lineLabel.hidden = NO;
+        self.imageView.hidden = NO;
+        [loginView1 removeFromSuperview];
+        [self shefView];
+    }
+}
+//  创建LoginView
+- (void)creatLoginView
+{
+   loginView1 = [[[NSBundle mainBundle] loadNibNamed:@"ZYPLoginView" owner:self options:nil] lastObject];
+    loginView1.frame = CGRectMake(0, 64, 320, 110);
+    loginView1.backImageView.image = [UIImage imageNamed:@"dog.png"];
+    loginView1.headerImageView.image = [UIImage imageNamed:@"dog.png"];
+    loginView1.nameLabel.text = [ZYPObjectManger shareInstance].loginInObject.nickname;
+    [self.view addSubview:loginView1];
+    
+}
+//  创建bottomView
+- (void)creatBottomView
+{
+    bottomView = [[[NSBundle mainBundle] loadNibNamed:@"ZYPHomeBottomView" owner:self options:nil] lastObject];
+    bottomView.homeView = self;
+    self.tableView.tableFooterView =  bottomView;
+}
+//  未登录时的遮罩View
+- (void)shefView
+{
+    view = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 400)];
+    view.backgroundColor = [UIColor whiteColor];
+    view.alpha = 0.4;
+    [self.tableView addSubview:view];
+}
+//  数据源
+- (void)source
+{
+//    NSArray *array1 = [NSArray arrayWithObjects:@"  完善商户资料", nil];
+    NSArray *array2 = [NSArray arrayWithObjects:@"  商户详情", nil];
+    NSArray *array3 = [NSArray arrayWithObjects:@"  我的货架",@"  我的余额",@"  销售订单", nil];
+    NSArray *array4 = [NSArray arrayWithObjects:@"  系统消息", nil];
+    self.allArray = [NSMutableArray arrayWithObjects:array2,array3,array4, nil];
+ 
+}
+//  跳入登陆界面
+- (IBAction)loginIn:(id)sender
+{
+    ZYPLoginViewController *loginVC = [[ZYPLoginViewController alloc] initWithNibName:@"ZYPLoginViewController" bundle:nil];
+    UINavigationController *na = [[UINavigationController alloc] initWithRootViewController:loginVC];
+    [self presentViewController:na animated:YES completion:nil];
+}
+//  退出登录
+- (void)logoutInfo
+{
+    self.loginBtn.hidden = NO;
+    self.label.hidden = NO;
+    self.lineLabel.hidden = NO;
+    self.imageView.hidden = NO;
+    [loginView1 removeFromSuperview];
+    [bottomView removeFromSuperview];
+    [self shefView];
+    [self logout];
+}
+//  退出登陆方法
+- (void)logout
+{
+    ZYPObjectManger *object = [ZYPObjectManger shareInstance];
+    ZYPNetWorkGetSourceManger *manger = [[ZYPNetWorkGetSourceManger alloc] init];
+    NSString *urlString = [NSString stringWithFormat:@"%@user_id=%@&tokenid=%@",cancelLoginUrl,object.loginInObject.user_id,object.loginInObject.tokenid];
+    [manger connectWithUrlStr:urlString completion:^(id respondObject) {
+        if ([respondObject isKindOfClass:[NSDictionary class]]) {
+            NSDictionary *dic = respondObject;
+            if ([[dic objectForKey:@"code"] isEqualToString:@"0"])
+            {
+                [ZYPObjectManger shareInstance].state = 1;
+                [self alertWithMessage:[dic objectForKey:@"message"]];
+            }
+        }
+    }];
+    
+}
+//  自定义alert
+- (void)alertWithMessage:(NSString *)mesage
+{
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:mesage message:nil delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+    [alert show];
+}
+#pragma mark - 代理方法
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return [[self.allArray objectAtIndex:section] count];
+}
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    static NSString *indentifier = @"indentifier";
+    ZYPHomeTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:indentifier];
+    if (cell == nil) {
+        cell = [[[NSBundle mainBundle] loadNibNamed:@"ZYPHomeTableViewCell" owner:self options:nil] lastObject];
+    }
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    cell.nameLabel.text = [[self.allArray objectAtIndex:indexPath.section] objectAtIndex:indexPath.row];
+    return cell;
+}
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
+{
+    if (section== 0) {
+        return 1;
+    }
+    return 2;
+}
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+{
+    return self.allArray.count;
+}
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return 60.0;
+}
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    if ([[ZYPObjectManger shareInstance].loginInObject.status isEqualToString:@"0"] )
+    {
+        NSInteger sectionIndex = indexPath.section;
+        NSInteger rowIndex = indexPath.row;
+//        if (sectionIndex == 0)
+//        {
+//            NSLog(@"0区0行");
+//            ZYPCompleteinfoVC *completionVC = [[ZYPCompleteinfoVC alloc] initWithNibName:@"ZYPCompleteinfoVC" bundle:nil];
+//            [self.navigationController pushViewController:completionVC animated:YES];
+//        }
+       if (sectionIndex == 0)
+        {
+            NSLog(@"0区0行");
+//            ZYPBusinessDetailVC *detailVc = [[ZYPBusinessDetailVC alloc] initWithNibName:@"ZYPBusinessDetailVC" bundle:nil];
+//            [self.navigationController pushViewController:detailVc animated:YES];
+            ZYPDetailBusinVC *detailVC = [[ZYPDetailBusinVC alloc] initWithNibName:@"ZYPDetailBusinVC" bundle:nil];
+            [self.navigationController pushViewController:detailVC animated:YES];
+        }else if (sectionIndex == 1)
+        {
+            switch (rowIndex) {
+                case 0:
+                {
+                    NSLog(@"1区0行");
+                    ZYPGoodsSheftViewController *goodsSheftVC = [[ZYPGoodsSheftViewController alloc] initWithNibName:@"ZYPGoodsSheftViewController" bundle:nil];
+                    [self.navigationController pushViewController:goodsSheftVC animated:YES];
+                }
+                    break;
+                case 1:
+                {
+                    NSLog(@"1区1行");
+                    ZYPMyRemainVC *remainVC = [[ZYPMyRemainVC alloc] initWithNibName:@"ZYPMyRemainVC" bundle:nil];
+                    [self.navigationController pushViewController:remainVC animated:YES];
+                }
+                    break;
+                case 2:
+                {
+                    NSLog(@"1区2行");
+                    ZYPObjectManger *manger = [ZYPObjectManger shareInstance];
+                    if ([manger.loginInObject.user_mark intValue] == 1) {
+                        ZYPBusinrssOrderViewController *order = [[ZYPBusinrssOrderViewController alloc] initWithNibName:@"ZYPBusinrssOrderViewController" bundle:nil];
+                        [self.navigationController pushViewController:order animated:YES];
+                    }else if ([manger.loginInObject.user_mark intValue] == 0)
+                    {
+                        ZYPServerViewController *serveVC = [[ZYPServerViewController alloc] initWithNibName:@"ZYPServerViewController" bundle:nil];
+                        [self.navigationController pushViewController:serveVC animated:YES];
+                    }
+                }
+                    break;
+                default:
+                    break;
+            }
+        }else if (sectionIndex == 2)
+        {
+            NSLog(@"3区0行");
+            ZYPInformationViewCC *informationvc = [[ZYPInformationViewCC alloc] initWithNibName:@"ZYPInformationViewCC" bundle:nil];
+            [self.navigationController pushViewController:informationvc animated:YES];
+        }
+    }
+   }
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+@end

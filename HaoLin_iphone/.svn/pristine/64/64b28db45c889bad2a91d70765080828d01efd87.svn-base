@@ -1,0 +1,383 @@
+//
+//  MQLHanDanWaitingView.m
+//  HaoLin
+//
+//  Created by MQL on 14-9-3.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "MQLHanDanWaitingView.h"
+
+@interface MQLHanDanWaitingView ()<UIAlertViewDelegate, MQLTimerViewInHanDanWaitingViewDelegate,
+                                    MQLHanDanNoResponseView1Delegate, MQLHanDanNoResponseView2Delegate>
+
+@property (nonatomic, weak) IBOutlet UIButton *backBtn;
+@property (nonatomic, weak) IBOutlet UILabel *handanTitleLab;
+
+@property (nonatomic, weak) IBOutlet UIScrollView *contentScrollView;
+@property (nonatomic, weak) IBOutlet UIView *waitingTimerContainerView;
+@property (nonatomic, weak) IBOutlet UIView *adContainerView;
+
+@property (nonatomic, strong) MQLHanDanNoResponseView1 *hanDanNoResponseView1;
+@property (nonatomic, strong) MQLHanDanNoResponseView1 *hanDanNoResponseView2;
+
+@property (nonatomic) int waitingOverCount;     //等待无响应的次数
+
+
+-(IBAction)backBtnClicked:(id)sender;
+
+/**
+ *  自定义初始化
+ */
+-(void)customInitialization;
+
+/**
+ *  添加TimerViewInHanDanWaitingView
+ */
+-(void)addTimerViewInHanDanWaitingView;
+
+/**
+ *  添加广告
+ */
+-(void)addAdInHanDanWaitingView;
+
+/**
+ * 添加HanDanNoResponseView1
+ */
+-(void)addHanDanNoResponseView1;
+
+/**
+ * 添加HanDanNoResponseView2
+ */
+-(void)addHanDanNoResponseView2;
+
+
+/**
+ *  显示提示
+ *
+ *  @param title
+ *  @param msg
+ *  @param tag
+ */
+-(void)showAlertViewWithTitle:(NSString*)title msg:(NSString*)msg tag:(int)tag;
+
+/**
+ *  注册通知
+ NotificationOfPersonalHanDanRequestOver
+ */
+-(void)registerNotifications;
+
+
+@end
+
+@implementation MQLHanDanWaitingView
+
+-(void)dealloc
+{
+    [[NSNotificationCenter defaultCenter]removeObserver:self];
+}
+
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        // Initialization code
+    }
+    return self;
+}
+
+-(void)awakeFromNib
+{
+    //自定义初始化
+    [self customInitialization];
+    
+}
+
+-(void)setOwnerViewController:(UIViewController *)ownerViewController
+{
+    _ownerViewController = ownerViewController;
+    
+}
+
+-(void)setSelectedHanDankind:(NSDictionary *)selectedHanDankind
+{
+    _selectedHanDankind = selectedHanDankind;
+    
+    NSString *kindTitle = [selectedHanDankind objectForKey:@"kindTitle"];
+    self.handanTitleLab.text = [NSString stringWithFormat:@"%@喊单", kindTitle];
+}
+
+-(void)setDataOfHanDanOver:(NSDictionary *)dataOfHanDanOver
+{
+    _dataOfHanDanOver = dataOfHanDanOver;
+    
+    //添加TimerViewInHanDanWaitingView
+    [self addTimerViewInHanDanWaitingView];
+    
+    //添加广告
+    [self addAdInHanDanWaitingView];
+    
+}
+
+-(void)setPersonalHanDanDataManage:(MQLPersonalHanDanDataManage *)personalHanDanDataManage
+{
+    _personalHanDanDataManage = personalHanDanDataManage;
+    
+}
+
+#pragma mark -- MQLHanDanWaitingView函数扩展
+
+-(IBAction)backBtnClicked:(id)sender
+{
+    if (self.waitingTimerContainerView.subviews.count) {
+        
+        [self showAlertViewWithTitle:@"提示" msg:@"是否放弃此次喊单?点击取消，继续等待；点击确定重新喊单。" tag:100];
+    }else if (self.hanDanNoResponseView1){
+        
+        [self.ownerViewController.navigationController popViewControllerAnimated:YES];
+    }else if (self.hanDanNoResponseView2){
+        
+        [self.ownerViewController.navigationController popViewControllerAnimated:YES];
+    }
+    
+
+}
+
+/**
+ *  自定义初始化
+ */
+-(void)customInitialization
+{
+    self.contentScrollView.contentSize = CGSizeMake(320, 504);
+    
+    //注册通知
+    [self registerNotifications];
+
+}
+
+/**
+ *  添加TimerViewInHanDanWaitingView
+ */
+-(void)addTimerViewInHanDanWaitingView
+{
+    MQLTimerViewInHanDanWaitingView *timerViewInHanDanWaitingView = [[[NSBundle mainBundle]loadNibNamed:@"MQLTimerViewInHanDanWaitingView" owner:nil options:nil]lastObject];
+    
+    timerViewInHanDanWaitingView.delegate  = self;
+    timerViewInHanDanWaitingView.merchant_num = [[self.dataOfHanDanOver objectForKey:@"merchant_num"]intValue];
+    timerViewInHanDanWaitingView.frame = self.waitingTimerContainerView.bounds;
+    [self.waitingTimerContainerView addSubview:timerViewInHanDanWaitingView];
+}
+
+/**
+ *  添加广告
+ */
+-(void)addAdInHanDanWaitingView
+{
+    NSMutableArray *viewsArray = [NSMutableArray array];
+    
+    for (int i = 0; i < 3; ++i) {
+        
+        UIImageView *imageView = [[UIImageView alloc]initWithFrame:self.adContainerView.bounds];
+        imageView.image = [UIImage imageNamed:[NSString stringWithFormat:@"MQLADPlaceholderPic%d", i+1]];
+        [viewsArray addObject:imageView];
+    }
+    
+    CycleADScrollView *adView = [[CycleADScrollView alloc] initWithFrame:self.adContainerView.bounds animationDuration:2];
+    
+    adView.fetchContentViewAtIndex = ^UIView *(NSInteger pageIndex){
+        return viewsArray[pageIndex];
+    };
+    adView.totalPagesCount = ^NSInteger(void){
+        return [viewsArray count];
+    };
+    adView.TapActionBlock = ^(NSInteger pageIndex){
+        NSLog(@"点击了第%d个",pageIndex);
+    };
+    [self.adContainerView addSubview:adView];
+    
+
+}
+
+/**
+ * 添加HanDanNoResponseView1
+ */
+-(void)addHanDanNoResponseView1
+{
+    self.hanDanNoResponseView1 = [[[NSBundle mainBundle]loadNibNamed:@"MQLHanDanNoResponseView1" owner:nil options:nil]lastObject];
+    self.hanDanNoResponseView1.delegate = self;
+    [self.contentScrollView addSubview:self.hanDanNoResponseView1];
+}
+
+/**
+ * 添加HanDanNoResponseView2
+ */
+-(void)addHanDanNoResponseView2
+{
+    self.hanDanNoResponseView2 = [[[NSBundle mainBundle]loadNibNamed:@"MQLHanDanNoResponseView2" owner:nil options:nil]lastObject];
+    self.hanDanNoResponseView2.delegate = self;
+    [self.contentScrollView addSubview:self.hanDanNoResponseView2];
+}
+
+/**
+ *  显示提示
+ *
+ *  @param title
+ *  @param msg
+ *  @param tag
+ */
+-(void)showAlertViewWithTitle:(NSString*)title msg:(NSString*)msg tag:(int)tag
+{
+    UIAlertView *alert = [[UIAlertView alloc]initWithTitle:title message:msg delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
+    alert.tag = tag;
+    [alert show];
+}
+
+#pragma mark -- UIAlertViewDelegate
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if (alertView.tag == 100) {
+        
+        if (buttonIndex == 1) {
+            
+            [self.ownerViewController.navigationController popToRootViewControllerAnimated:YES];
+        }
+    }
+}
+
+/**
+ *  注册通知
+ NotificationOfPersonalHanDanRequestOver
+ */
+-(void)registerNotifications
+{
+    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+    [center addObserver:self selector:@selector(onReceiveNotificationOfPersonalHanDanRequestOver:) name:NotificationOfPersonalHanDanRequestOver object:nil];
+    
+}
+
+-(void)onReceiveNotificationOfPersonalHanDanRequestOver:(NSNotification*)notification
+{
+    NSLog(@"%@", notification.userInfo);
+    ViewKind viewkind = [[notification.userInfo objectForKey:@"viewkind"]intValue];
+    if (viewkind == ViewKind_View1 || viewkind == ViewKind_View2) {
+        
+        [MBProgressHUD hideHUDForView:self.contentScrollView animated:YES];
+        
+        int code = [[[notification.userInfo objectForKey:@"userInfo"] objectForKey:@"code"]intValue];
+        if (code == 0) {
+            
+            int merchant_num = [[[[notification.userInfo objectForKey:@"userInfo"] objectForKey:@"data"]objectForKey:@"merchant_num"]intValue];
+            if (merchant_num > 0) {
+                
+                if (viewkind == ViewKind_View1) {
+                    
+                    //先删除hanDanNoResponseView1
+                    [self.hanDanNoResponseView1 removeFromSuperview];
+                    self.hanDanNoResponseView1 = nil;
+                    
+                    
+                }else if (viewkind == ViewKind_View2){
+                    
+                     //先删除hanDanNoResponseView2
+                     [self.hanDanNoResponseView2 removeFromSuperview];
+                     self.hanDanNoResponseView2 = nil;
+                    
+                }
+                
+                //添加TimerViewInHanDanWaitingView
+                [self addTimerViewInHanDanWaitingView];
+                
+                //添加广告
+                [self addAdInHanDanWaitingView];
+
+                
+                
+            }else{
+                
+                NSString *msg = @"对不起，没有找到符合您需要的商家。";
+                [self showAlertViewWithTitle:@"提示" msg:msg tag:-1];
+            }
+            
+            
+            
+        }else{
+            
+            //提示error
+            NSString *msg = [[notification.userInfo objectForKey:@"userInfo"] objectForKey:@"message"];
+            [self showAlertViewWithTitle:@"提示" msg:msg tag:-1];
+        }
+
+    }
+    
+}
+
+
+#pragma mark -- MQLTimerViewInHanDanWaitingViewDelegate
+/**
+ *  等待结束
+ */
+-(void)waitingOver
+{
+    NSLog(@"等待结束");
+    //先删除waitingTimerContainerView和adContainerView的子视图
+    NSArray *subviews = self.waitingTimerContainerView.subviews;
+    [subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
+    subviews = self.adContainerView.subviews;
+    [subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
+    
+    self.waitingOverCount++;
+    if (self.waitingOverCount < 3) {
+        
+        //显示MQLHanDanNoResponseView1
+        [self addHanDanNoResponseView1];
+        
+    }else{
+        
+        //显示MQLHanDanNoResponseView2
+        [self addHanDanNoResponseView2];
+    }
+    
+}
+
+#pragma mark -- MQLHanDanNoResponseView1Delegate
+-(void)sendHanDanAgainInHanDanNoResponseView1
+{
+    //发送个人喊单请求
+    ZYPObjectManger *manager = [ZYPObjectManger shareInstance];
+    MQLHttpRequestManage *httpRequestManage = [MQLHttpRequestManage instance];
+    [httpRequestManage sendPersonalHanDanRequest:manager personalHanDanDataManage:self.personalHanDanDataManage selectedHanDankind:self.selectedHanDankind inWhichView:ViewKind_View1];
+    
+    [MBProgressHUD showHUDAddedTo:self.contentScrollView animated:YES];
+    
+}
+
+-(void)hanDanAgainInHanDanNoResponseView1
+{
+    [self.ownerViewController.navigationController popToRootViewControllerAnimated:YES];
+}
+
+#pragma mark -- MQLHanDanNoResponseView2Delegate
+
+-(void)contactBusinessInHanDanNoResponseView2
+{
+
+}
+
+-(void)sendHanDanAgainInHanDanNoResponseView2
+{
+    //发送个人喊单请求
+    ZYPObjectManger *manager = [ZYPObjectManger shareInstance];
+    MQLHttpRequestManage *httpRequestManage = [MQLHttpRequestManage instance];
+    [httpRequestManage sendPersonalHanDanRequest:manager personalHanDanDataManage:self.personalHanDanDataManage selectedHanDankind:self.selectedHanDankind inWhichView:ViewKind_View2];
+    
+    [MBProgressHUD showHUDAddedTo:self.contentScrollView animated:YES];
+    
+}
+
+-(void)hanDanAgainInHanDanNoResponseView2
+{
+    [self.ownerViewController.navigationController popToRootViewControllerAnimated:YES];
+}
+
+
+@end

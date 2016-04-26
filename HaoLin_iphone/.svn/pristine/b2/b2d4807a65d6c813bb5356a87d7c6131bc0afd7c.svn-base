@@ -1,0 +1,23 @@
+//
+//  ZYPOrderTableViewCell.m
+//  Business
+//
+//  Created by mac on 14-8-21.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "ZYPOrderTableViewCell.h"
+@implementation ZYPOrderTableViewCell
+
+- (void)awakeFromNib
+{
+    
+}
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated
+{
+    [super setSelected:selected animated:animated];
+    self.selectionStyle = UITableViewCellSelectionStyleNone;
+    // Configure the view for the selected state
+}
+
+@end

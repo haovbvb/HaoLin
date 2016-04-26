@@ -1,0 +1,36 @@
+//
+//  MDLWupinView.h
+//  HaoLin
+//
+//  Created by apple on 14-8-21.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@protocol poprootzhubiewDelegate <NSObject>
+
+-(void)poprootzhu;
+
+@end
+
+@interface MDLWupinView : UIView<UITableViewDataSource,UITableViewDelegate>
+{
+    BOOL NICK;
+    int number;
+
+}
+@property (weak, nonatomic) IBOutlet UIButton *lestitm;            //返回按钮
+@property (weak, nonatomic) IBOutlet UIButton *rightbtn;           //右边按钮
+
+@property (nonatomic ,retain) UITableView *XZtableView;
+@property (nonatomic ,retain) UILabel     *qbLable;
+@property (nonatomic ,retain) UIImageView *iamgeView;
+@property (nonatomic ,retain) id<poprootzhubiewDelegate>delegate;
+
+@property (nonatomic ,retain)UIViewController* MDLWuPinViewController;
+
+@property (nonatomic ,retain) MDLWuPinTableViewCell *wupincell;
+
+@end
+

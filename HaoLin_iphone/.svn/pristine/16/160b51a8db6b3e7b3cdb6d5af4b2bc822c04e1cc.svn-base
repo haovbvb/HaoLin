@@ -1,0 +1,321 @@
+//
+//  ZYPBUDetalVC.m
+//  HaoLin
+//
+//  Created by mac on 14-9-11.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "ZYPBUDetalVC.h"
+
+@interface ZYPBUDetalVC ()<UIScrollViewDelegate>
+@property (nonatomic, strong)NSMutableArray *sourceArray;
+@property (nonatomic, strong)ZYPBusinessDetailObject *businedetailObject;
+@end
+
+@implementation ZYPBUDetalVC
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+    }
+    return self;
+}
+- (IBAction)back:(id)sender
+{
+    [self.navigationController popViewControllerAnimated:YES];
+}
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    self.sourceArray = [[NSMutableArray alloc] initWithCapacity:0];
+    // Do any additional setup after loading the view from its nib.
+    [self getSource];
+}
+- (void)getSource
+{
+    //  显示加载状态
+    [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+    ZYPObjectManger *obj = [ZYPObjectManger shareInstance];
+    __weak ZYPBUDetalVC *businessVC = self;
+    NSString *urlString = [NSString stringWithFormat:@"%@merchant_id=%@&tokenid=%@",businessDetailUrl,self.object.merchant_id,obj.loginInObject.tokenid];
+    ZYPNetWorkGetSourceManger *manger = [[ZYPNetWorkGetSourceManger alloc] init];
+    [manger connectWithUrlString:urlString completion:^(id responedObject) {
+        if ([responedObject isKindOfClass:[NSDictionary class]]) {
+            NSDictionary *dic = responedObject;
+            if ([[dic objectForKey:@"code"] isEqualToString:@"0"])
+            {
+                NSDictionary *detailDic = [dic objectForKey:@"data"];
+                self.businedetailObject = [[ZYPBusinessDetailObject alloc] initBusinessDetailObjectWithDic:detailDic];
+                self.sourceArray = [detailDic objectForKey:@"photo"];
+                //  隐藏加载状态
+                [MBProgressHUD hideAllHUDsForView:self.view animated:YES];
+                [businessVC.tableView reloadData];
+        }else
+            {
+                //  隐藏加载状态
+                [MBProgressHUD hideAllHUDsForView:self.view animated:YES];
+               // 弹出对话框
+                [businessVC alertWithMessage:@"请求出错,请重新请求"];
+            }
+        }
+
+    }];
+}
+//  自定义alert
+- (void)alertWithMessage:(NSString *)mesage
+{
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:mesage message:nil delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+    [alert show];
+}
+
+#pragma mark - 代理方法
+-(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+{
+    return 6;
+}
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return 1;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    
+    if (indexPath.section == 0 || indexPath.section == 3 || indexPath.section == 4)
+    {
+        static NSString *indentifier = @"indentifier";
+        ZYPLastCell *cell = [tableView dequeueReusableCellWithIdentifier:indentifier];
+        if (cell == nil)
+        {
+            cell = [[[NSBundle mainBundle] loadNibNamed:@"ZYPLastCell" owner:self options:nil] lastObject];
+        }
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        cell.lineLabel.backgroundColor = [UIColor clearColor];
+        cell.backgroundColor = [UIColor whiteColor];
+        [cell.palyBtn removeFromSuperview];
+        if (indexPath.section == 0)
+        {
+            //  商户介绍，暂无用产品介绍代替*******************
+            cell.stateLabel.text = @"商家介绍";
+            [self addOnView:cell.contentView textMessage:self.businedetailObject.product_desc noInforText:@"暂无介绍"];
+        }else if (indexPath.section == 3)
+        {
+                //  产品介绍
+            cell.stateLabel.text = @"产品介绍";
+            [self addOnView:cell.contentView textMessage:self.businedetailObject.product_desc noInforText:@"暂无介绍"];
+        }else if (indexPath.section == 4)
+        {
+                    //  产品介绍
+            cell.stateLabel.text = @"活动介绍";
+            [self addOnView:cell.contentView textMessage:self.businedetailObject.activ_desc noInforText:@"暂无介绍"];
+        }
+        
+        return cell;
+    }else if(indexPath.section == 1 ||indexPath.section == 2 || indexPath.section == 5)
+    {
+        static NSString *indentifiew = @"used";
+        ZYPBUPlainCell *plainCell = [tableView dequeueReusableCellWithIdentifier:indentifiew];
+        if (plainCell == nil)
+    {
+            plainCell = [[[NSBundle  mainBundle] loadNibNamed:@"ZYPBUPlainCell" owner:self options:nil] lastObject];
+    }
+        plainCell.backgroundColor = [UIColor whiteColor];
+        plainCell.selectionStyle = UITableViewCellSelectionStyleNone;
+        plainCell.someLanel.textColor = [UIColor lightGrayColor];
+        if (indexPath.section == 1)
+    {
+            plainCell.someLanel.text = @"商户地址:";
+            plainCell.rightLabel.textAlignment = NSTextAlignmentLeft;
+            plainCell.rightLabel.text = self.businedetailObject.shop_address;
+            
+    }else if (indexPath.section == 2)
+    {
+            plainCell.someLanel.text = @"电话呼叫";
+            plainCell.rightLabel.textAlignment = NSTextAlignmentRight;
+            plainCell.rightLabel.text = self.businedetailObject.mobile;
+            plainCell.rightImageView.image = [UIImage imageNamed:@"left.png"];
+    }else if (indexPath.section == 5)
+    {
+            plainCell.someLanel.text = @"评论总数";
+            plainCell.rightLabel.textAlignment = NSTextAlignmentRight;
+            plainCell.rightLabel.text = @"1024条";
+            plainCell.rightImageView.image = [UIImage imageNamed:@"left.png"];
+    }
+        
+    return plainCell;
+    }
+    return nil;
+}
+//  介绍方法
+- (void)addOnView:(UIView *)view textMessage:(NSString *)message noInforText:(NSString *)notext
+{
+    UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(20, 40, 280, 40)];
+    if ([self.businedetailObject.product_desc length] > 0)
+    {
+        CGFloat height = [self heightOfLabelFromString:message];
+        label = [[UILabel alloc] initWithFrame:CGRectMake(20, 40, 280, height)];
+        label.textColor = [UIColor lightGrayColor];
+        label.numberOfLines = 0;
+        label.lineBreakMode=NSLineBreakByCharWrapping;
+        label.text = message;
+        [view addSubview:label];
+    }else if([self.businedetailObject.product_desc length] == 0)
+    {
+        label.textColor = [UIColor lightGrayColor];
+        label.text = notext;
+        [view addSubview:label];
+    }
+}
+//  返回cell高度
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    if (indexPath.section == 0) {
+        //  商户介绍，等待待数据******************************
+        if ([self.businedetailObject.product_desc length] > 0) {
+            CGFloat height = [self heightOfLabelFromString:self.businedetailObject.product_desc];
+            NSLog(@"shop %f",height);
+            return 40 + height +10;
+        }else if([self.businedetailObject.product_desc length] == 0)
+        {
+            return 40 + 40;
+        }
+        
+    }else if (indexPath.section == 1 || indexPath.section == 2 || indexPath.section == 5)
+    {
+        return 44;
+    }else if(indexPath.section == 3)
+    {
+        if ([self.businedetailObject.product_desc length] > 0) {
+            CGFloat height = [self heightOfLabelFromString:self.businedetailObject.product_desc];
+            NSLog(@"product %f",height);
+
+            return 40 + height + 10;
+        }else if([self.businedetailObject.product_desc length] == 0)
+        {
+            return 40 + 40;
+        }
+       
+    }else if(indexPath.section == 4)
+    {
+        if ([self.businedetailObject.activ_desc length] > 0) {
+            CGFloat height = [self heightOfLabelFromString:self.businedetailObject.activ_desc];
+            NSLog(@"active %f",height);
+
+            return 40 + height + 10;
+        }else if([self.businedetailObject.activ_desc length] == 0)
+        {
+            return 40 + 40;
+        }
+    }
+    return 0;
+}
+//  label自适应高度
+- (CGFloat)heightOfLabelFromString:(NSString *)text
+{
+    NSDictionary *attribute = [NSDictionary dictionaryWithObjectsAndKeys:[UIFont systemFontOfSize:12],NSFontAttributeName, nil];
+    CGSize size1 = [text boundingRectWithSize:CGSizeMake(280, 0) options: NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading | NSStringDrawingTruncatesLastVisibleLine attributes:attribute context:nil].size;
+    return size1.height;
+}
+//  点击cell事件
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    if (indexPath.section == 2)
+    {
+        //  打电话
+        //  判断设备是iphone还是ipad iphone能打电话，ipad不能
+        if ([[UIDevice currentDevice] userInterfaceIdiom] ==  UIUserInterfaceIdiomPhone)
+        {
+            
+        }else if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad)
+        {
+            [self alertWithMessage:@"此设备暂不支持打电话"];
+        }
+        
+    }else if (indexPath.section == 5)
+    {
+        //  进入评价界面
+        ZYPBUEvaluteVC *evaluteVC = [[ZYPBUEvaluteVC alloc] initWithNibName:@"ZYPBUEvaluteVC" bundle:nil];
+        [self.navigationController pushViewController:evaluteVC animated:YES];
+    }
+}
+- (void)callPhone:(NSString *)phone
+{
+    NSMutableString *str = [[NSMutableString alloc] initWithFormat:@"tel:%@",phone];
+    UIWebView *webView = [[UIWebView alloc] init];
+    [webView loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:str]]];
+    [self.view addSubview:webView];
+}
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
+{
+    if (section==0) {
+        NSInteger count = self.sourceArray.count;
+        //  创建返回视图
+        UIView *customView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 210)];
+        customView.backgroundColor = [UIColor whiteColor];
+        UIScrollView *scroll = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, 320, 140)];
+        scroll.contentSize = CGSizeMake(320*count, 140);
+        scroll.delegate = self;
+        [customView addSubview:scroll];
+        //  创建pageControl
+        UIPageControl *pageControl = [[UIPageControl alloc] initWithFrame:CGRectMake(240, 120, 80, 20)];
+        pageControl.numberOfPages = count;
+        [customView addSubview:pageControl];
+        //  加载商家店铺视图
+        for (int i = 0; i < count; i ++) {
+            UIImageView *imageview = [[UIImageView alloc] initWithFrame:CGRectMake(320*i, 0, 320, 140)];
+            //  afnetorking 请求图片
+            [imageview setImageWithURL:[NSURL URLWithString:self.businedetailObject.trade_img] placeholderImage:[UIImage imageNamed:@"ZYPshop_default_avatar.png"]];
+            [customView addSubview:imageview];
+        }
+        
+        //  创建商店名称label
+        UILabel *nalabel = [[UILabel alloc] initWithFrame:CGRectMake(20, 145, 180, 20)];
+        nalabel.text = self.businedetailObject.merchant_name;
+        nalabel.textColor = [UIColor grayColor];
+        [customView addSubview:nalabel];
+        //  地图imageView
+        UIImageView *imageView = [[UIImageView alloc] initWithFrame:CGRectMake(260, 155, 15, 15)];
+        imageView.image = [UIImage imageNamed:@"ZYPDian@2x.png"];
+        [customView addSubview:imageView];
+        // 距离label.这里用到上一级商户的距离object*********
+        UILabel *distanceLabel = [[UILabel alloc] initWithFrame:CGRectMake(275, 155, 40, 20)];
+        distanceLabel.text = self.object.distance;
+        //  创建评分label
+        UILabel *scoreLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, 175, 60, 20)];
+        scoreLabel.text = @"评分:";
+        [customView addSubview:scoreLabel];
+        //  评分label
+        UILabel *scoreLabel1 = [[UILabel alloc] initWithFrame:CGRectMake(80, 170, 50, 30)];
+        scoreLabel1.textColor = [UIColor orangeColor];
+        scoreLabel1.text = self.businedetailObject.score;
+        [customView addSubview:scoreLabel1];
+        UILabel *scoreLabel2 = [[UILabel alloc] initWithFrame:CGRectMake(0, 200, 320, 10)];
+        scoreLabel2.backgroundColor = [UIColor lightGrayColor];
+        [customView addSubview:scoreLabel2];
+        return customView;
+    }
+    return nil;
+}
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
+{
+    if (section == 0) {
+        return 210.0;
+    }
+    return 1;
+}
+#pragma mark -scrollView代理方法
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView
+{
+    
+}
+
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+@end

@@ -1,0 +1,262 @@
+//
+//  HSPOrderWaitingReceiveController.m
+//  HaoLin
+//
+//  Created by PING on 14-9-11.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "HSPOrderWaitingReceiveController.h"
+
+@interface HSPOrderWaitingReceiveController ()
+
+@property (nonatomic, strong) UIView *contentView;
+@property (nonatomic, strong) HSPHttpRequest *request;
+@property (nonatomic, strong) NSMutableArray *goodsM;
+@property (nonatomic, strong) HSPOrder *order;
+
+
+
+@end
+
+@implementation HSPOrderWaitingReceiveController
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+//        self.view.backgroundColor = HSPBgColor;
+        
+    }
+    return self;
+}
+
+- (void)viewWillAppear:(BOOL)animated
+{
+    YYLog(@"btn==%d",_orderId);
+    [self sendRequest];
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    self.title = @"订单详情";
+//    [self.navigationController.navigationBar setTitleTextAttributes:[NSDictionary dictionaryWithObjectsAndKeys:HSPFontColor, NSForegroundColorAttributeName, nil]];
+    self.view.backgroundColor = HSPBgColor;
+    _navBgView.backgroundColor = HSPBarBgColor;
+}
+
+- (IBAction)backBtnClick:(UIButton *)sender
+{
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+- (void)backRootController
+{
+    [self.navigationController popToRootViewControllerAnimated:YES];
+}
+
+- (void)sendRequest
+{
+    HSPAccount *account = [HSPAccountTool account];
+    YYLog(@"+++%@",[NSString stringWithFormat:orderDetailUrl,account.user_id,account.userTokenid,_orderId])
+    [self.request connectionRequestUrl:[NSString stringWithFormat:orderDetailUrl,account.user_id,account.userTokenid,_orderId] withJSON:^(id responeJson) {
+//        YYLog(@"==%@",responeJson);
+        if ([[responeJson objectForKey:@"code"] isEqualToString:@"0"]) {
+            HSPOrder *order = [[HSPOrder alloc] init];
+            order = [HSPOrder objectWithKeyValues:[responeJson objectForKey:@"data"]];
+            
+            order.goodsM = [NSMutableArray array];
+            for (NSDictionary *dic in [[responeJson objectForKey:@"data"] objectForKey:@"goodsinfo"]) {
+                HSPGoods *goods = [[HSPGoods alloc] init];
+                goods = [HSPGoods objectWithKeyValues:dic];
+                [order.goodsM addObject:goods];
+            }
+            
+            self.order = order;
+            
+            [self UIConfig];
+        }else{
+            JZDCustomAlertView *alertView = [[JZDCustomAlertView alloc] init];
+            [alertView popAlert:[responeJson objectForKey:@"message"]];
+            return;
+        }
+        
+    }];
+    
+    
+}
+
+- (void)UIConfig
+{
+    // 收货地址
+    HSPAddressView *addressView = [[[NSBundle mainBundle] loadNibNamed:@"HSPAddressView" owner:nil options:nil]lastObject];
+    addressView.personNameLabel.text = self.order.userinfo.nickname;
+    addressView.phoneNumberLabel.text = self.order.userinfo.mobile;
+    addressView.addressLabel.text = self.order.userinfo.delivery_address;
+    
+    CGFloat addressX = 0;
+    CGFloat addressY = 0;
+    CGFloat addressW = HSPScreenWidth;
+    CGFloat addressH = 98;
+    addressView.frame = CGRectMake(addressX, addressY, addressW, addressH);
+    [_scrollView addSubview:addressView];
+    
+    UIView *contentView = [[UIView alloc] init];
+    contentView.backgroundColor = [UIColor whiteColor];
+    CGFloat cX = 0;
+    CGFloat cY = CGRectGetMaxY(addressView.frame) + 10;
+    CGFloat cW = HSPScreenWidth;
+    CGFloat cH = 75 + (self.order.goodsM.count-1) * 25;
+    contentView.frame = CGRectMake(cX, cY, cW, cH);
+    [_scrollView addSubview:contentView];
+    self.contentView = contentView;
+    
+    // 订单内容
+    HSPOrderContentTitleView *contentTitleView = [[[NSBundle mainBundle] loadNibNamed:@"HSPOrderContentTitleView" owner:nil options:nil]lastObject];
+    contentTitleView.totalPriceLabel.text = [NSString stringWithFormat:@"¥%@",self.order.real_price];
+    CGFloat tX = 0;
+    CGFloat tY = 0;
+    CGFloat tW = HSPScreenWidth;
+    CGFloat tH = 40;
+    contentTitleView.frame = CGRectMake(tX, tY, tW, tH);
+    [contentView addSubview:contentTitleView];
+    // 商品
+    for (int i = 0; i<self.order.goodsM.count; i++) {
+        HSPOrderGoodsView *goodsView = [[[NSBundle mainBundle] loadNibNamed:@"HSPOrderGoodsView" owner:nil options:nil] lastObject];
+        goodsView.tag=100+i;
+        HSPGoods *goods = self.order.goodsM[i];
+        goodsView.goodsNameLabel.text = goods.goods_name;
+        goodsView.goodsCountLabel.text = goods.goods_num;
+        goodsView.goodsPriceLabel.text = [NSString stringWithFormat:@"¥%@",goods.goods_price];
+        
+        CGFloat goodsViewX = 0;
+        CGFloat goodsViewY = CGRectGetMaxY(contentTitleView.frame) + (i * 25);
+        goodsView.frame = CGRectMake(goodsViewX, goodsViewY, 300, 25);
+        [self.contentView addSubview:goodsView];
+    }
+    
+    // 订单其它信息
+    HSPOtherInfoView *otherInfoView = [[[NSBundle mainBundle] loadNibNamed:@"HSPOtherInfoView" owner:nil options:nil]lastObject];
+    otherInfoView.orderStatusLabel.text = [_order orderStatusStr:self.order.status];
+    otherInfoView.servicePriceLabel.text = [NSString stringWithFormat:@"%@元",self.order.server_price];
+    otherInfoView.payLabel.text = [self.order orderPayType:self.order.pay_type];
+    otherInfoView.orderSnLabel.text = [NSString stringWithFormat:@"订单编号: %@",self.order.order_sn];
+    otherInfoView.createdTimeLabel.text = [self.order orderTime:self.order.createtime dateFromat:@"yyyy-MM-dd  hh:mm:ss"];
+    CGFloat oX = 0;
+    CGFloat oY = CGRectGetMaxY(contentView.frame);
+    CGFloat oW = HSPScreenWidth;
+    CGFloat oH = 286;
+    otherInfoView.frame = CGRectMake(oX, oY, oW, oH);
+    [_scrollView addSubview:otherInfoView];
+    
+    // 底部
+    int s = [self.order.status intValue];
+    switch (s ) {
+        case 2:
+            [self setButtonWithStatus:self.order.real_price setTitle:@"付款" setTitleColor:HSPFontColor setBgColor:HSPBarBgColor action:@selector(pay) hiddenBtn:NO];
+            break;
+        case 4:
+            [self setButtonWithStatus:self.order.real_price setTitle:@"确认收货" setTitleColor:HSPFontColor setBgColor:HSPBarBgColor action:@selector(confirmOrder) hiddenBtn:YES];
+            break;
+        case 5:
+            [self setButtonWithStatus:self.order.real_price setTitle:@"我要评价" setTitleColor:HSPFontColor setBgColor:HSPColor(12, 175, 83) action:@selector(iSay) hiddenBtn:YES];
+            break;
+            
+        default:
+            break;
+    }
+    
+    
+    
+    CGFloat scrollH = addressView.height + contentView.height + otherInfoView.height + 50;
+    _scrollView.contentSize = CGSizeMake(HSPScreenWidth, scrollH);
+}
+
+- (void)pay
+{
+    LogFunc
+}
+- (void)confirmOrder
+{
+    int statusType;
+    if ([self.order.status isEqualToString:@"2"]) {
+        statusType = 4;
+    }else{
+        statusType = 5;
+    }
+    HSPAccount *account = [HSPAccountTool account];
+    NSMutableDictionary *params = [NSMutableDictionary dictionary];
+    params[@"user_id"] = account.user_id;
+    params[@"tokenid"] = account.userTokenid;
+    params[@"order_id"] = [NSString stringWithFormat:@"%d",_orderId];
+    params[@"status"] = [NSString stringWithFormat:@"%d",statusType];
+    __weak JZDCustomAlertView *alert=[JZDCustomAlertView sharedInstace];
+    [self.request connectionREquesturl:orderStatusChangeUrl withPostDatas:params withDelegate:nil withBackBlock:^(id backDictionary) {
+        
+        if ([[backDictionary objectForKey:@"code"] isEqualToString:@"0"]) {
+            [alert popAlert:@"提交成功"];
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                [self.navigationController popViewControllerAnimated:YES];
+            });
+            
+        }else{
+            [alert popAlert:[backDictionary objectForKey:@"message"]];
+            return;
+        }
+        
+    }];
+}
+- (void)iSay
+{
+    HSPRatingViewController *ratingVc = [[HSPRatingViewController alloc] initWithNibName:@"HSPRatingViewController" bundle:nil];
+    ratingVc.orderId = _orderId;
+    [self.navigationController pushViewController:ratingVc animated:YES];
+}
+
+
+- (void)setButtonWithStatus:(NSString *)text setTitle:(NSString *)title setTitleColor:(UIColor *)titleColor setBgColor:(UIColor *)bgColor action:(SEL)action hiddenBtn:(BOOL)yesNo
+{
+    HSPOrderBottomView *bottomView = [[[NSBundle mainBundle] loadNibNamed:@"HSPOrderBottomView" owner:nil options:nil] lastObject];
+    bottomView.totalPriceLabel.text = [NSString stringWithFormat:@"总额: %@",text];
+    bottomView.totalPriceLabel.textColor = bgColor;
+    [bottomView.confirmBtn setTitle:title forState:UIControlStateNormal];
+    [bottomView.confirmBtn setTitleColor:titleColor forState:UIControlStateNormal];
+    [bottomView.confirmBtn setBackgroundColor:bgColor];
+    [bottomView.confirmBtn addTarget:self action:action forControlEvents:UIControlEventTouchUpInside];
+    bottomView.frame = CGRectMake(0, 518, HSPScreenWidth, 50);
+    [self.view addSubview:bottomView];
+    
+    // 添加取消按钮
+    UIButton *cancelBtn = [[UIButton alloc] init];
+    cancelBtn.frame = CGRectMake(125, 11, 80, 30);
+    [cancelBtn setTitle:@"取消订单" forState:UIControlStateNormal];
+    [cancelBtn setTitleColor:HSPBarBgColor forState:UIControlStateNormal];
+    cancelBtn.titleLabel.font = [UIFont systemFontOfSize:14];
+    [cancelBtn setBackgroundColor:[UIColor clearColor]];
+    cancelBtn.layer.borderWidth = 1;
+    CGColorRef cgColor = HSPBarBgColor.CGColor;
+    cancelBtn.layer.borderColor = cgColor;
+    [cancelBtn addTarget:self action:@selector(confirmOrder) forControlEvents:UIControlEventTouchUpInside];
+    cancelBtn.hidden = yesNo;
+    [bottomView addSubview:cancelBtn];
+    
+}
+
+#pragma mark - 懒加载
+- (HSPHttpRequest *)request
+{
+    if (!_request) {
+        _request = [HSPHttpRequest Instace];
+    }
+    return _request;
+}
+
+- (NSMutableArray *)goodsM
+{
+    if (!_goodsM) _goodsM = [NSMutableArray array];
+    return _goodsM;
+}
+
+
+@end

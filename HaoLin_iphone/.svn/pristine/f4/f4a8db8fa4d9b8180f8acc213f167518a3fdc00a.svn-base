@@ -1,0 +1,121 @@
+//
+//  MDLSerViceView.m
+//  HAOLINAPP
+//
+//  Created by apple on 14-8-10.
+//  Copyright (c) 2014年 com.haolinshidai. All rights reserved.
+//
+
+#import "MDLSerViceView.h"
+
+
+
+@implementation MDLSerViceView
+
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        [self fuwubottom];
+        _SerVicetableview=[[UITableView alloc]initWithFrame:CGRectMake(0, fwbarview.frame.size.height, 320, self.frame.size.height)];
+        _SerVicetableview.BackgroundColor=BGColor;
+        //    [_tableView registerClass:[CourseCell class] forCellReuseIdentifier:cellIdenfier];
+        _SerVicetableview.delegate = self;
+        _SerVicetableview.dataSource =self;
+        [self addSubview:_SerVicetableview];
+        
+    }
+    return self;
+}
+
+#pragma mark - UITableViewDelegate
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    
+    return 3;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    
+    return 6;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    
+    return 300;
+}
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    static NSString * identifier = @"cell";
+    
+    MDLfuwuTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:identifier];
+    
+    if (!cell) {
+        cell = [[MDLfuwuTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identifier];
+        [tableView deselectRowAtIndexPath:indexPath animated:YES];
+        cell.selectionStyle=UITableViewCellSelectionStyleNone;
+//        [cell.contentButton addTarget:self action:@selector(pushToRootControoler) forControlEvents:UIControlEventTouchUpInside];
+    }
+    
+    //        cell.DataList=[]
+    return cell;
+    
+}
+
+//内容分类 3个Button
+-(void)fuwubottom
+{
+    NSArray*Btarray=[[NSArray alloc]initWithObjects:@"全部订单",@"待服务",@"以服务", nil];
+    
+    fwbarview=[[UIImageView alloc]initWithFrame:CGRectMake(0,0, 320, 40)];
+    fwbarview .backgroundColor=BGColor;
+    fwbarview .userInteractionEnabled=YES;
+    [self addSubview:fwbarview];
+    
+    fwredview =[[UIImageView alloc]initWithFrame:CGRectMake(0, 36, 110.6, 4)];
+    fwredview .backgroundColor =[UIColor yellowColor];
+    
+    int x =0;
+    for (int index =0; index <3 ; index ++) {
+        UIButton *imagebutton = [UIButton buttonWithType:UIButtonTypeCustom];
+        imagebutton.backgroundColor=[UIColor redColor];
+        imagebutton.frame=CGRectMake(0.2+x, 0.2, 106.8, 41.8);
+        //        imagebutton.titleLabel=[Btarray objectAtIndex:index];
+        [imagebutton setTitle:[Btarray objectAtIndex:index] forState:UIControlStateNormal];
+        imagebutton.tag=index;
+        [imagebutton addTarget:self action:@selector(btn:) forControlEvents:UIControlEventTouchUpInside];
+        [fwbarview addSubview:imagebutton];
+        [fwbarview addSubview:fwredview];
+        
+        x +=(imagebutton.frame.size.width+1.2);
+        
+    }
+}
+-(void)btn:(UIButton *)sender
+{
+    int indx;
+    indx = [sender tag];
+    [UIView beginAnimations:nil context:NULL];
+    fwredview .frame=CGRectMake(0+106.70*indx, 36, 106.8, 4);
+    [UIView commitAnimations];
+    
+}
+
+- (void)tableView:(UITableView *)sender didSelectRowAtIndexPath:(NSIndexPath *)path {
+    
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"pushfuwuVC" object:nil];
+    
+}
+
+
+/*
+// Only override drawRect: if you perform custom drawing.
+// An empty implementation adversely affects performance during animation.
+- (void)drawRect:(CGRect)rect
+{
+    // Drawing code
+}
+*/
+
+@end

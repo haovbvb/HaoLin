@@ -1,0 +1,86 @@
+//
+//  ZYPServeView.m
+//  HaoLin
+//
+//  Created by mac on 14-9-18.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "ZYPServeView.h"
+#define leftHeight 20
+#define topHeight 3
+#define witdthL 60
+#define height 30
+@implementation ZYPServeView
+
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        // Initialization code
+        
+        
+        //  服务费label
+        self.serveFeiLabel = [[UILabel alloc] initWithFrame:CGRectMake(leftHeight, topHeight, witdthL, height)];
+        self.serveFeiLabel.textAlignment = NSTextAlignmentLeft;
+        self.serveFeiLabel.text = @"服务费";
+        self.serveFeiLabel.font = [UIFont systemFontOfSize:chacterHong];
+        [self addSubview:self.serveFeiLabel];
+        //  总价格label
+        self.serveFeiL = [[UILabel alloc] initWithFrame:CGRectMake(leftHeight + 235, topHeight, witdthL - 10, height)];
+        self.serveFeiL.textColor = [UIColor orangeColor];
+        self.serveFeiL.textAlignment = NSTextAlignmentRight;
+        self.serveFeiL.font = [UIFont systemFontOfSize:chacterHong];
+        [self addSubview:self.serveFeiL];
+        
+        //  分割线
+        self.lineLabel = [[UILabel alloc] initWithFrame:CGRectMake(10, topHeight + height, 300, 1)];
+        self.lineLabel.backgroundColor = [UIColor lightGrayColor];
+        [self addSubview:self.lineLabel];
+        //  声音播放按钮
+        self.soundBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+        self.soundBtn.frame = CGRectMake(leftHeight, topHeight + height + 3, witdthL, height);
+        [self.soundBtn setBackgroundImage:[UIImage imageNamed:@"ZYPSoundP@2x.png"] forState:UIControlStateNormal];
+        [self.soundBtn addTarget:self action:@selector(playSound:) forControlEvents:UIControlEventTouchUpInside];
+        [self addSubview:self.soundBtn];
+        //  总价格label
+        self.totalPriceLabel = [[UILabel alloc] initWithFrame:CGRectMake(leftHeight + witdthL + 40, topHeight + height + 3, witdthL - 20, height)];
+        self.totalPriceLabel.textAlignment = NSTextAlignmentLeft;
+        self.totalPriceLabel.font = [UIFont systemFontOfSize:chacterHong];
+        [self addSubview:self.totalPriceLabel];
+        
+        //  总价格显示
+        self.totalPricel = [[UILabel alloc] initWithFrame:CGRectMake(leftHeight + witdthL + 40 + 40, topHeight + height + 3, witdthL - 20, height)];
+        self.totalPricel.textAlignment = NSTextAlignmentLeft;
+        self.totalPricel.textColor = [UIColor orangeColor];
+        self.totalPricel.font = [UIFont systemFontOfSize:chacterHong];
+        [self addSubview:self.totalPricel];
+        //  状态按钮
+        self.stateBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+        self.stateBtn.frame = CGRectMake(leftHeight + witdthL + 40 + 40 + 60 + 20, topHeight + height + 3, witdthL + 20, height);
+        [self.stateBtn addTarget:self action:@selector(go:) forControlEvents:UIControlEventTouchUpInside];
+        [self addSubview:self.stateBtn];
+    }
+    return self;
+}
+//  播放音频
+- (void)playSound:(UIButton *)btn
+{
+    NSLog(@"音频播放");
+}
+//  支付
+- (void)go:(UIButton *)btn
+{
+    NSLog(@"状态支付");
+
+}
+/*
+// Only override drawRect: if you perform custom drawing.
+// An empty implementation adversely affects performance during animation.
+- (void)drawRect:(CGRect)rect
+{
+    // Drawing code
+}
+*/
+
+@end

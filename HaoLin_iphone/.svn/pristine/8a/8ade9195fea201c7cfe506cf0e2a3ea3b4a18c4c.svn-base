@@ -1,0 +1,16 @@
+//
+//  MDLSingleView.h
+//  HAOLINAPP
+//
+//  Created by apple on 14-8-9.
+//  Copyright (c) 2014年 com.haolinshidai. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface MDLSingleView : UIView 
+
+@property (weak, nonatomic) IBOutlet UIView *navbar;
+@property (weak, nonatomic) IBOutlet UIButton *backbutton;
+
+@end

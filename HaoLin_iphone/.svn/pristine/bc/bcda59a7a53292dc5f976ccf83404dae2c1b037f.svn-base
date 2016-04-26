@@ -1,0 +1,25 @@
+//
+//  JZDBBsIntroTableViewCell.h
+//  HaoLin
+//
+//  Created by 姜泽东 on 14-8-17.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface JZDBBsIntroTableViewCell : UITableViewCell
+
+@property (nonatomic,strong) JZDItem *item;
+//头像
+@property (weak, nonatomic) IBOutlet UIButton *headImageButton;
+//点击头像
+- (IBAction)clickHeadImage:(UIButton *)sender;
+//昵称
+@property (weak, nonatomic) IBOutlet UILabel *nickName;
+//时间
+@property (weak, nonatomic) IBOutlet UILabel *timeDate;
+//用户发表内容
+@property (weak, nonatomic) IBOutlet UILabel *userContent;
+
+@end

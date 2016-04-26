@@ -1,0 +1,22 @@
+//
+//  ZYPOrderTableViewCell.h
+//  Business
+//
+//  Created by mac on 14-8-21.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+
+
+@interface ZYPOrderTableViewCell : UITableViewCell
+//  全部订单cell
+@property (weak, nonatomic) IBOutlet UILabel *lineOnelabel;
+@property (weak, nonatomic) IBOutlet UIImageView *categoryNameLabel;
+@property (weak, nonatomic) IBOutlet UILabel *goodsNameLabel;
+@property (weak, nonatomic) IBOutlet UILabel *orderTimeLabel;
+@property (weak, nonatomic) IBOutlet UILabel *nameLLabel;
+
+
+@end

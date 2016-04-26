@@ -1,0 +1,57 @@
+//
+//  ZYPPictureViewController.m
+//  HaoLin
+//
+//  Created by mac on 14-9-23.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "ZYPPictureViewController.h"
+
+@interface ZYPPictureViewController ()
+
+@end
+
+@implementation ZYPPictureViewController
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+    }
+    return self;
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    if (IS_IPHONE_5) {
+        self.view.frame = CGRectMake(0, 0, 320, 568);
+        
+    }else
+    {
+        self.view.frame = CGRectMake(0, 0, 320, 480);
+    }
+
+    if (self.array.count > 3)
+    {
+        for (int i = 0; i < self.array.count - 3; i++)
+        {
+            [self.array removeObjectAtIndex:i];
+        }
+    }
+    // Do any additional setup after loading the view from its nib.
+    ZYPPictureView *pictureView = [[[NSBundle mainBundle] loadNibNamed:@"ZYPPictureView" owner:self options:nil] lastObject];
+    pictureView.pictureVC = self;
+    pictureView.conductAraayF = self.array;
+    [self.view addSubview:pictureView];
+}
+
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+@end

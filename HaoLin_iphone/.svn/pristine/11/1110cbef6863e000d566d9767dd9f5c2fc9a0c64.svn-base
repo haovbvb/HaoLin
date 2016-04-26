@@ -1,0 +1,96 @@
+//
+//  ZYPServeOrderDetailView.m
+//  HaoLin
+//
+//  Created by mac on 14-9-24.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "ZYPServeOrderDetailView.h"
+
+@implementation ZYPServeOrderDetailView
+
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        // Initialization code
+    }
+    return self;
+}
+- (void)awakeFromNib
+{
+    self.titleLabel.backgroundColor = ZYPBGColor;
+    bottomView = [[[NSBundle mainBundle] loadNibNamed:@"ZYPServeOrderBottomView" owner:self options:nil] lastObject];
+    if (IS_IPHONE_5) {
+        self.frame = CGRectMake(0, 0, 320, 568);
+        self.scrollView.frame = CGRectMake(0, 64, 320, 444);
+    }else
+    {
+        self.frame = CGRectMake(0, 0, 320, 480);
+        self.scrollView.frame = CGRectMake(0, 64, 320, 356);
+    }
+    self.userInteractionEnabled = YES;
+    self.scrollView.userInteractionEnabled = YES;
+    self.scrollView.hidden = YES;
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(layoutView:) name:@"2" object:nil];
+}
+- (void)layoutView:(NSNotification *)no
+{
+    [self viewsFrame];
+    [self tianxieInfo];
+}
+- (IBAction)back:(id)sender
+{
+    [self.detailVC.navigationController popViewControllerAnimated:YES];
+}
+
+- (void)viewsFrame
+{
+    self.shouhuoView.frame = CGRectMake(0, 30,320,30+30);
+    
+    self.fuwustateView.frame = CGRectMake(0, 106, 320, 40);
+    self.dingdanneirongView.frame = CGRectMake(0, 162, 320, 80);
+    self.fuwufeView.frame = CGRectMake(0, 258 ,320, 40);
+    self.dingdanbianhaoView.frame = CGRectMake(0,314 ,  320, 120);
+    self.scrollView.contentSize = CGSizeMake(320,434 );
+}
+- (void)tianxieInfo
+{
+    self.servePeopleLabel.text = [NSString stringWithFormat:@"收货人:%@",self.userObject.nickname];
+    self.shouhuorenDIANhuAlABEL.text = self.userObject.mobile;
+    self.serveAddressLabel.text = self.userObject.delevery_address;
+    
+    self.dingdanStateLabel.text = @"未服务";
+    
+    self.dingdanneirongLabel.text = self.orderDetailObject.order_desc;
+    
+    self.fueuFeiLabel.text = [NSString stringWithFormat:@"￥%@",self.orderDetailObject.real_price];
+    self.dingdanshijianLabel.text = [self timeTranslate:self.orderDetailObject.createtime];
+    self.dingdanbianhaoLabel.text = self.orderDetailObject.order_sn;
+    self.scrollView.hidden = NO;
+}
+#pragma mark -时间戳时间转化
+- (NSString *)timeTranslate:(NSString *)time
+{
+    //  将时间戳转化为时间
+    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+    [formatter setDateStyle:NSDateFormatterMediumStyle];
+    [formatter setDateFormat:@"YYYY-MM-dd hh:mm:ss"];
+    NSDate *date1 = [NSDate dateWithTimeIntervalSince1970:[time intValue]];
+    NSString *dateString = [formatter stringFromDate:date1];
+    return dateString;
+}
+
+
+/*
+// Only override drawRect: if you perform custom drawing.
+// An empty implementation adversely affects performance during animation.
+- (void)drawRect:(CGRect)rect
+{
+    // Drawing code
+}
+*/
+
+@end

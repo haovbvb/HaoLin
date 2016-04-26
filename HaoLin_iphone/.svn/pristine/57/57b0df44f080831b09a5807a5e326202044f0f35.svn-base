@@ -1,0 +1,276 @@
+//
+//  MQLCharacterOrAudioHanDanView.m
+//  HaoLin
+//
+//  Created by mac on 14-8-15.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "MQLCharacterOrAudioHanDanView.h"
+
+@interface MQLCharacterOrAudioHanDanView ()<MQLHanDanCharacterInputViewDelegate, MQLHanDanAudioRecordViewDelegate>
+
+@property (nonatomic, weak) IBOutlet UIButton *backBtn;
+@property (nonatomic, weak) IBOutlet UILabel *handanTitleLab;
+@property (nonatomic, weak) IBOutlet UIView *inputOrRecordViewContainer;
+
+@property (nonatomic, strong) MQLHanDanCharacterInputView *characterInputView;
+@property (nonatomic, strong) MQLHanDanAudioRecordView *audioRecordView;
+
+
+
+-(IBAction)btnClicked:(id)sender;
+
+
+/**
+ *  自定义初始化
+ */
+-(void)customInitialization;
+
+/**
+ *  添加文字输入视图
+ */
+-(void)addCharacterInputView;
+
+/**
+ *  添加音频录制视图
+ */
+-(void)addAudioRecordView;
+
+
+
+
+@end
+
+@implementation MQLCharacterOrAudioHanDanView
+
+-(void)dealloc
+{
+    [self resignForKeyboardNotifications];
+}
+
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        // Initialization code
+    }
+    return self;
+}
+
+-(void)awakeFromNib
+{
+    //自定义初始化
+    [self customInitialization];
+    
+}
+
+-(void)setOwnerViewController:(UIViewController *)ownerViewController
+{
+    _ownerViewController = ownerViewController;
+    
+}
+
+-(void)setSelectedHanDankind:(NSDictionary *)selectedHanDankind
+{
+    _selectedHanDankind = selectedHanDankind;
+    
+    NSString *kindTitle = [selectedHanDankind objectForKey:@"kindTitle"];
+    self.handanTitleLab.text = [NSString stringWithFormat:@"%@喊单", kindTitle];
+}
+
+
+#pragma mark -- MQLCharacterOrAudioHanDanView函数扩展
+
+-(IBAction)btnClicked:(id)sender
+{
+    [self.ownerViewController.navigationController popViewControllerAnimated:YES];
+}
+
+/**
+ *  自定义初始化
+ */
+-(void)customInitialization
+{
+    
+    [self.backBtn setImage:[UIImage imageNamed:@"MQLBackNormalBtn"] forState:UIControlStateNormal];
+    [self.backBtn setImage:[UIImage imageNamed:@"MQLBackSelectedBtn"] forState:UIControlStateHighlighted];
+    
+    // 注册键盘通知事件
+    [self registerForKeyboardNotifications];
+    
+    //默认是文字输入视图，所以添加文字输入视图
+    [self addCharacterInputView];
+    
+    
+}
+
+/**
+ *  添加文字输入视图
+ */
+-(void)addCharacterInputView
+{
+    self.characterInputView = [[[NSBundle mainBundle]loadNibNamed:@"MQLHanDanCharacterInputView" owner:nil options:nil]lastObject];
+    self.characterInputView.delegate = self;
+    
+    self.characterInputView.frame = CGRectMake(self.inputOrRecordViewContainer.bounds.origin.x,
+                                               self.inputOrRecordViewContainer.bounds.size.height - self.characterInputView.bounds.size.height,
+                                               self.characterInputView.bounds.size.width,
+                                                self.characterInputView.bounds.size.height);
+    [self.inputOrRecordViewContainer addSubview:self.characterInputView];
+    
+}
+
+/**
+ *  添加音频录制视图
+ */
+-(void)addAudioRecordView
+{
+    self.audioRecordView = [[[NSBundle mainBundle]loadNibNamed:@"MQLHanDanAudioRecordView" owner:nil options:nil]lastObject];
+    self.audioRecordView.delegate = self;
+    
+    self.audioRecordView.frame = CGRectMake(self.inputOrRecordViewContainer.bounds.origin.x,
+                                               self.inputOrRecordViewContainer.bounds.size.height - self.audioRecordView.bounds.size.height,
+                                               self.audioRecordView.bounds.size.width,
+                                               self.audioRecordView.bounds.size.height);
+    [self.inputOrRecordViewContainer addSubview:self.audioRecordView];
+}
+
+/*
+ 注册键盘通知事件
+ */
+-(void)registerForKeyboardNotifications
+{
+    
+    [[NSNotificationCenter defaultCenter]addObserver:self
+                                            selector:@selector(keyboardWillShown:)
+                                                name:UIKeyboardWillShowNotification object:nil];
+    
+    [[NSNotificationCenter defaultCenter]addObserver:self
+                                            selector:@selector(keyboardWillHide:)
+                                                name:UIKeyboardWillHideNotification object:nil];
+    [[NSNotificationCenter defaultCenter]addObserver:self
+                                            selector:@selector(keyboardWillShown:)
+                                                name:UIKeyboardWillChangeFrameNotification object:nil];
+}
+
+-(void)keyboardWillShown:(NSNotification*)notification
+{
+    
+    NSDictionary *userInfo = [notification userInfo];
+    NSNumber *duration = [userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey];
+    NSValue *value = [userInfo valueForKey:UIKeyboardFrameEndUserInfoKey];
+    CGRect keyboardFrame = [value CGRectValue];
+    
+    float offset = keyboardFrame.size.height;
+    
+    
+    [UIView beginAnimations:nil context:nil];
+    [UIView setAnimationCurve:UIViewAnimationCurveLinear];
+    [UIView setAnimationDuration:[duration doubleValue]];
+    
+    self.characterInputView.frame = CGRectMake(self.characterInputView.frame.origin.x,
+                                               self.inputOrRecordViewContainer.frame.size.height - offset - self.characterInputView.frame.size.height,
+                                               self.characterInputView.frame.size.width,
+                                               self.characterInputView.frame.size.height);
+    
+    [UIView commitAnimations];
+    
+}
+
+-(void)keyboardWillHide:(NSNotification*)notification
+{
+    
+    NSDictionary *userInfo = [notification userInfo];
+    NSNumber *duration = [userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey];
+    
+    [UIView beginAnimations:nil context:nil];
+    [UIView setAnimationCurve:UIViewAnimationCurveLinear];
+    [UIView setAnimationDuration:[duration doubleValue]];
+    
+    self.characterInputView.frame = CGRectMake(self.inputOrRecordViewContainer.bounds.origin.x,
+                                               self.inputOrRecordViewContainer.frame.size.height - self.characterInputView.frame.size.height,
+                                               self.characterInputView.bounds.size.width,
+                                               self.characterInputView.bounds.size.height);
+    
+    [UIView commitAnimations];
+}
+
+/**
+ *  注销键盘通知事件
+ */
+-(void)resignForKeyboardNotifications
+{
+    [[NSNotificationCenter defaultCenter]removeObserver:self];
+}
+
+#pragma mark -- MQLHanDanCharacterInputViewDelegate
+
+/**
+ *  切换到音频录制
+ */
+-(void)changeToAudioRecord
+{
+    //先移除文字输入
+    [self.characterInputView removeFromSuperview];
+    
+    //添加音频录制视图
+    [self addAudioRecordView];
+    
+}
+
+/**
+ *  输入完后显示“发送喊单视图”
+ */
+-(void)showSendHanDanViewAfterInputFinish:(NSString*)charaters
+{
+    //先注销键盘通知事件
+    [self resignForKeyboardNotifications];
+    
+    //再显示发送喊单视图
+    MQLSendHanDanViewController *vc = [[MQLSendHanDanViewController alloc]initWithNibName:@"MQLSendHanDanViewController" bundle:nil];
+    vc.selectedHanDankind = self.selectedHanDankind;
+    vc.fromVC = self.ownerViewController;
+    
+    MQLPersonalHanDanDataManage *manage = [[MQLPersonalHanDanDataManage alloc]init];
+    manage.charaters = charaters;
+    vc.personalHanDanDataManage = manage;
+    [self.ownerViewController.navigationController pushViewController:vc animated:YES];
+}
+
+#pragma mark -- MQLHanDanAudioRecordViewDelegate
+/**
+ *  切换到文字输入
+ */
+-(void)changeToCharacterInput
+{
+    //先移除音频录制
+    [self.audioRecordView removeFromSuperview];
+    
+    //添加文字输入视图
+    [self addCharacterInputView];
+    
+}
+
+/**
+ *  录制完后显示“发送喊单视图”
+ */
+-(void)showSendHanDanViewAfterRecordFinish:(NSString*)wavFilePath
+{
+    //先注销键盘通知事件
+    [self resignForKeyboardNotifications];
+    
+    //再显示发送喊单视图
+    MQLSendHanDanViewController *vc = [[MQLSendHanDanViewController alloc]initWithNibName:@"MQLSendHanDanViewController" bundle:nil];
+    vc.selectedHanDankind = self.selectedHanDankind;
+    vc.fromVC = self.ownerViewController;
+    
+    MQLPersonalHanDanDataManage *manage = [[MQLPersonalHanDanDataManage alloc]init];
+    manage.wavFilePath = wavFilePath;
+    vc.personalHanDanDataManage = manage;
+    [self.ownerViewController.navigationController pushViewController:vc animated:YES];
+    
+}
+
+
+@end

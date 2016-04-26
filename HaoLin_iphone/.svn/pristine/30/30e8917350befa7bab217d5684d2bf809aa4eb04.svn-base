@@ -1,0 +1,364 @@
+//
+//  PetsDetailViewController.m
+//  HaoLin
+//
+//  Created by 姜泽东 on 14-8-12.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "PetsDetailViewController.h"
+
+@interface PetsDetailViewController ()<JZDCheckButtonDelegate,JZDModuleHttpRequestDelegate,JZDImageViewDelegate,UIScrollViewDelegate,UIAlertViewDelegate>
+{
+    NSMutableArray *_dataArray;
+    NSMutableArray *_groupPicArray;
+    __block NSMutableArray *_imageArrayUrl;
+    JZDSectionView *sectionView;
+    JZDModuleHttpRequest *request;
+    NSString *userIdString;
+    UIScrollView *scroll;
+}
+@property (nonatomic, copy) NSString *cachePath;
+@property (nonatomic, copy) NSString *filePath;
+@property (nonatomic, copy) NSString *wavFilePath;
+@property (nonatomic, strong) AVAudioPlayer *player;
+
+@end
+
+@implementation PetsDetailViewController
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+//        self.edgesForExtendedLayout=NO;
+        self.automaticallyAdjustsScrollViewInsets=NO;
+    }
+    return self;
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    _imageArrayUrl=[[NSMutableArray alloc] init];
+    _dataArray=[[NSMutableArray alloc] init];
+    _groupPicArray=[[NSMutableArray alloc] init];
+    [self.navigationController.navigationBar setTitleTextAttributes:[NSDictionary dictionaryWithObjectsAndKeys:
+                                                                     [UIColor whiteColor], NSForegroundColorAttributeName,nil]];
+    self.title=@"聚会详情";
+    [self uiconfig];
+}
+/**
+ *  评价
+ *
+ *  @param btn
+ */
+-(void)evaluate:(UIButton *)btn
+{
+    JZDEvaluateViewController *evaluate=[[JZDEvaluateViewController alloc] initWithNibName:@"JZDEvaluateViewController" bundle:nil];
+    evaluate.groupId=_groupId;
+    evaluate.user_id=userIdString;
+    [self.navigationController pushViewController:evaluate animated:YES];
+}
+
+-(void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    self.navigationController.navigationBarHidden=NO;
+//    sectionView=[[[NSBundle mainBundle] loadNibNamed:@"JZDSectionView" owner:self options:nil] lastObject];
+    [self sendRequest];
+}
+
+-(void)sendRequest
+{
+    request=[JZDModuleHttpRequest sharedInstace];
+    [request connectionRequestUrl:_thisUrl withDelegate:self];
+}
+/**
+ *  请求完成的代理方法
+ */
+-(void)requestFinished:(id)responseObject
+{
+    if ([[responseObject objectForKey:@"code"] isEqualToString:@"0"]) {
+        [self viewContent:responseObject];
+        [self getPicture:responseObject];
+        [self getDiscuss:responseObject];
+        [self getDescribe:responseObject];
+        [self makeSex:[[responseObject objectForKey:@"data"] objectForKey:@"gender"]];
+        [self getVoiceInfo];
+        userIdString=[[responseObject objectForKey:@"data"] objectForKey:@"user_id"];
+        __weak PetsDetailViewController *wself=self;
+        [request getImageUrl:[[responseObject objectForKey:@"data"] objectForKey:@"headimg"] withImage:^(UIImage *img) {
+            [wself.userHeadImage setBackgroundImage:[UIImage circleImageWithName:img borderWidth:0.1 borderColor:[UIColor clearColor]] forState:UIControlStateNormal];
+        }];
+        _userName.text=[[responseObject objectForKey:@"data"] objectForKey:@"nickname"];
+    }
+}
+
+-(void)makeSex:(NSString *)sex
+{
+    if ([sex isEqualToString:@"1"]) {
+        _userSex.image=[UIImage imageNamed:@"JZD_male.png"];
+    }else{
+        _userSex.image=[UIImage imageNamed:@"JZD_female.png"];
+    }
+}
+
+//获取聚会图片
+-(void)getPicture:(NSDictionary *)responseObject
+{
+    if ([[[responseObject objectForKey:@"data"] objectForKey:@"group_pic"] count]) {
+//        [_imageArrayUrl removeAllObjects];
+//        [_imageArrayUrl addObjectsFromArray:[[responseObject objectForKey:@"data"] objectForKey:@"group_pic"]];
+        [_groupPicArray removeAllObjects];
+        for(NSDictionary *dic in [[responseObject objectForKey:@"data"] objectForKey:@"group_pic"]){
+            [_groupPicArray addObject:[dic objectForKey:@"pic_url"]];
+        }
+        [self addPic:_groupPicArray];
+    }
+}
+
+//添加图片
+-(void)addPic:(NSMutableArray *)arr
+{
+    NSMutableArray *viewsArray = [@[] mutableCopy];
+    if (arr.count) {
+        for (int i = 0; i < arr.count; ++i) {
+            __block JZDImageView *groupImg = [[JZDImageView alloc] initWithFrame:CGRectMake(i*70+i*10, 0, 70, 70)];
+            groupImg.delegate=self;
+            [request getImageUrl:arr[i] withImage:^(UIImage *img) {
+                groupImg.image=img;
+                [_imageArrayUrl addObject:img];
+            }];
+            [viewsArray addObject:groupImg];
+            [_smallImageShow addSubview:groupImg];
+        }
+    }
+}
+
+-(void)imageSingelClick:(JZDImageView *)imgView
+{
+    JZDShowPicViewController *pic=[[JZDShowPicViewController alloc] initWithNibName:@"JZDShowPicViewController" bundle:nil];
+    pic.imageArray=_imageArrayUrl;
+    for(int i=0;i<_imageArrayUrl.count;i++){
+        if ([_imageArrayUrl[i] isEqual:imgView.image]) {
+            pic.currentIndex=i;
+        }
+    }
+    [self.navigationController pushViewController:pic animated:YES];
+}
+
+-(void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView
+{
+    
+}
+
+-(UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView
+{
+    JZDImageView *imgview;
+    for(JZDImageView *igv in scrollView.subviews){
+        imgview= igv;
+    }
+    return imgview;
+}
+
+-(void)viewDidDisappear:(BOOL)animated
+{
+    [super viewDidDisappear:animated];
+    [_imageArrayUrl removeAllObjects];
+}
+
+//获取聚会说明
+-(void)getDescribe:(NSDictionary *)responseObject
+{
+    for(NSString *s in [responseObject objectForKey:@"data"]){
+        if ([s isEqualToString:@"group_des"]) {
+            _describeString.text=[[responseObject objectForKey:@"data"] objectForKey:s];
+        }
+    }
+}
+
+//获取用户评论
+-(void)getDiscuss:(NSDictionary *)responseObject
+{
+    if ([[[responseObject objectForKey:@"data"] objectForKey:@"group_remark"] count]) {
+        [_dataArray removeAllObjects];
+        for(NSDictionary *dic in [[responseObject objectForKey:@"data"] objectForKey:@"group_remark"]){
+            JZDItem *item=[[JZDItem alloc] init];
+            //请求图片
+            __weak JZDItem *myItem=item;
+            [request getImageUrl:[dic objectForKey:@"headurl"] withImage:^(UIImage *img) {
+                myItem.headImage=img;
+                [_petDetailTableView reloadData];
+            }];
+            item.nickName=[dic objectForKey:@"nickname"];
+            item.publishTimeString=[dic objectForKey:@"remark_addtime"];
+            item.publishContentString=[dic objectForKey:@"remark_content"];
+            [_dataArray addObject:item];
+        }
+    }
+}
+//获取声音信息
+-(void)getVoiceInfo
+{
+    if ([_voicePath rangeOfString:@"amr"].location!= NSNotFound) {
+        [self downloadFile:_voicePath];
+    }
+}
+
+-(void)viewContent:(id)responseObject
+{
+    NSMutableDictionary *dic=[[NSMutableDictionary alloc] initWithDictionary:[responseObject objectForKey:@"data"]];
+    _doSomeThing.text=[dic objectForKey:@"group_subject"];
+    _location.text=[dic objectForKey:@"group_address"];
+    [_farAway setTitle:[NSString stringWithFormat:@"%.2fkm",_farAwayString] forState:UIControlStateNormal];
+    _numPeople.text=[NSString stringWithFormat:@"%@人",[dic objectForKey:@"group_man_num"]];
+    _joinPeople.text=[NSString stringWithFormat:@"已参加%@人",[dic objectForKey:@"group_join_num"]];
+    _timeDate.text=[dic objectForKey:@"group_addtime"];
+    _startTime.text=[dic objectForKey:@"group_partytime"];
+    _click_num.text=[NSString stringWithFormat:@"%@人浏览",[dic objectForKey:@"group_click_num"]];
+    _voicePath = [dic objectForKey:@"group_voice_url"];
+    _voiceName = [dic objectForKey:@"group_voice_name"];
+}
+
+-(void)requestFailed:(NSError *)error
+{
+    JZDCustomAlertView *alert=[JZDCustomAlertView sharedInstace];
+    [alert popAlert:[error localizedDescription]];
+}
+
+-(void)uiconfig
+{
+    _highScrollView.contentSize=CGSizeMake(CGRectGetWidth(_bottomView.frame), CGRectGetHeight(_bottomView.frame));
+    [_highScrollView addSubview:_bottomView];
+    _playVoice.buttonImageRect=CGRectMake(250, 5, 30, 30);
+    _playVoice.buttonTitleRect=CGRectMake(10, 5, 100, 30);
+    _farAway.delegate=self;
+    _farAway.buttonImageRect=CGRectMake(0, 0, 10, 10);
+    _farAway.buttonTitleRect=CGRectMake(13, -7, 60, 25);
+
+    sectionView=[[[NSBundle mainBundle] loadNibNamed:@"JZDSectionView" owner:self options:nil] lastObject];
+    [self.navigationItem setLeftItemWithImage:[UIImage imageNamed:@"HSP_back_nom"] selectedImage:[UIImage imageNamed:@"HSP_back_down"] target:self action:@selector(back)];
+    [sectionView.wantToEvaluate addTarget:self action:@selector(evaluate:) forControlEvents:UIControlEventTouchUpInside];
+}
+//返回上级页面
+-(void)back
+{
+    [self dismissViewControllerAnimated:YES completion:^{
+        
+    }];
+}
+
+-(CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
+{
+    return 40;
+}
+
+-(UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
+{
+    return sectionView;
+}
+
+-(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return 64;
+}
+
+-(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return _dataArray.count;
+}
+
+-(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    static NSString *customCell=@"custom";
+    JZDPartyDetailTableViewCell *cell=[tableView dequeueReusableCellWithIdentifier:customCell];
+    if (cell==nil) {
+        cell=[[[NSBundle mainBundle] loadNibNamed:@"JZDPartyDetailTableViewCell" owner:self options:nil] lastObject];
+    }
+    [cell setItem:[_dataArray objectAtIndex:indexPath.row]];
+    return cell;
+}
+//宠物聚会报名
+- (IBAction)applyPetsParty:(UIButton *)sender {
+    HSPAccount *user=[HSPAccountTool account];
+    if (!user.userTokenid) {
+        UIAlertView *alert=[[UIAlertView alloc] initWithTitle:@"" message:@"登录后才能评价" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
+        [alert show];
+        return;
+    }
+    if ([_outOfDute isEqualToString:@""]) {
+        JZDApplyViewController *apply=[[JZDApplyViewController alloc] initWithNibName:@"JZDApplyViewController" bundle:nil];
+        apply.group_Id=_groupId;
+        [self.navigationController pushViewController:apply animated:YES];
+    }else{
+        JZDCustomAlertView *alert=[JZDCustomAlertView sharedInstace];
+        [alert popAlert:@"圈子已过期"];
+    }
+}
+
+/**
+ *  UIAlertView 代理
+ */
+-(void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if (buttonIndex==1) {
+        
+        HSPLoginViewController *login=[[HSPLoginViewController alloc] initWithNibName:@"HSPLoginViewController" bundle:nil];
+        HSPNavigationController *nav=[[HSPNavigationController alloc] initWithRootViewController:login];
+        [self presentViewController:nav animated:YES completion:^{
+            
+        }];
+    }
+}
+
+/**
+ *  文件下载
+ *
+ *  @param urlStr 文件地址
+ */
+- (void)downloadFile:(NSString *)urlStr
+{
+    urlStr = [urlStr stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+    NSURL *url = [NSURL URLWithString:urlStr];
+    NSURLSession *session = [NSURLSession sharedSession];
+    [[session downloadTaskWithURL:url completionHandler:^(NSURL *location, NSURLResponse *response, NSError *error) {
+        self.cachePath = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
+        self.filePath = [self.cachePath stringByAppendingPathComponent:response.suggestedFilename];
+        NSURL *fileURL = [NSURL fileURLWithPath:self.filePath];
+        [[NSFileManager defaultManager] copyItemAtURL:location toURL:fileURL error:NULL];
+    }] resume];
+}
+/**
+ * 播放声音
+ */
+- (IBAction)palyTheVoice:(UIButton *)sender {
+    if (_voiceName.length>0) {
+        NSRange loc = [_voiceName rangeOfString:@"."];
+        NSString *name = [_voiceName substringToIndex:loc.location];
+        if ([self.filePath hasSuffix:@"amr"]) {
+            self.wavFilePath=[self.filePath stringByReplacingOccurrencesOfString:@"amr" withString:@"wav"];
+            [MQLAudioManage encodeToWav:self.wavFilePath fromAmr:self.filePath];
+        }else{
+            self.wavFilePath = [self.cachePath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.wav",name]];
+        }
+        NSURL *fileURL = [NSURL fileURLWithPath:self.wavFilePath];
+        self.player = [[AVAudioPlayer alloc] initWithContentsOfURL:fileURL error:nil];
+        if (!sender.selected) {
+            sender.selected=YES;
+            [self.player play];
+            // 删除AMR文件
+            [[NSFileManager defaultManager] removeItemAtPath:self.filePath error:nil];
+        }else{
+            sender.selected=NO;
+            [self.player stop];
+        }
+    }else{
+        JZDCustomAlertView *alert=[JZDCustomAlertView sharedInstace];
+        [alert popAlert:@"没有上传声音"];
+    }
+}
+
+@end

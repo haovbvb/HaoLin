@@ -1,0 +1,95 @@
+//
+//  HSPMessageCenterViewController.m
+//  HaoLin
+//
+//  Created by PING on 14-8-27.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "HSPMessageCenterViewController.h"
+
+@interface HSPMessageCenterViewController ()
+@property (weak, nonatomic) IBOutlet UISegmentedControl *navSegment;
+@property (nonatomic, strong) HSPHttpRequest *request;
+@property (nonatomic, strong) NSArray *msgArray;
+
+@end
+
+@implementation HSPMessageCenterViewController
+
+- (void)viewDidLoad
+{
+    self.tableView.backgroundColor = HSPBgColor;
+    [super viewDidLoad];
+    
+    [self setupConfig];
+    
+    [self setupData];
+    
+}
+
+- (void)setupConfig
+{
+    self.tableView.rowHeight = 100;
+    
+    self.navSegment.frame = CGRectMake(80.0f, 8.0f, 150.0f, 30.0f);
+    [self.navigationController.navigationBar addSubview:self.navSegment];
+    
+    self.navigationController.navigationBar.barTintColor = HSPBgColor;
+}
+
+- (void)setupData
+{
+    HSPAccount *account = [HSPAccountTool account];
+    NSMutableDictionary *params = [NSMutableDictionary dictionary];
+    params[@"user_id"] = account.user_id;
+    params[@"tokenid"] = account.userTokenid;
+    [self.request connectionREquesturl:messageListUrl withPostDatas:params withDelegate:nil withBackBlock:^(id backDictionary) {
+        YYLog(@"back==%@",backDictionary);
+        if ([[backDictionary objectForKey:@"code"] isEqualToString:@"0"]) {
+            self.msgArray = [HSPMessage objectArrayWithKeyValuesArray:[backDictionary objectForKey:@"data"]];
+            [self.tableView reloadData];
+        }else{
+            JZDCustomAlertView *alert = [JZDCustomAlertView sharedInstace];
+            [alert popAlert:@"请求超时"];
+        }
+        
+    }];
+}
+
+- (void)viewWillDisappear:(BOOL)animated
+{
+    [super viewWillDisappear:animated];
+    [self.navSegment removeFromSuperview];
+    self.navigationController.navigationBar.barTintColor = HSPBarBgColor;
+}
+
+#pragma mark - tabeViewDelegate
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return self.msgArray.count;
+}
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    static NSString *messageId = @"messageId";
+    HSPMessageCenterCell *cell = [tableView dequeueReusableCellWithIdentifier:messageId];
+    if (!cell) {
+        cell = [[[NSBundle mainBundle] loadNibNamed:@"HSPMessageCenterCell" owner:self options:nil] lastObject];
+    }
+    
+    [cell setMessage:self.msgArray[indexPath.row]];
+    return cell;
+    
+}
+
+
+#pragma mark - 懒加载
+- (HSPHttpRequest *)request
+{
+    if (!_request) {
+        _request = [HSPHttpRequest Instace];
+    }
+    return _request;
+}
+
+@end

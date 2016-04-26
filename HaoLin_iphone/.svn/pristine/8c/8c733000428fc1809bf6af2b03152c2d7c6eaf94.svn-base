@@ -1,0 +1,123 @@
+//
+//  MDLleidaview.m
+//  HaoLin
+//
+//  Created by apple on 14-9-5.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "MDLleidaview.h"
+#import <AVFoundation/AVFoundation.h>
+#import <MediaPlayer/MediaPlayer.h>
+
+
+@interface MDLleidaview()<AVAudioPlayerDelegate>
+{
+    AVAudioPlayer* avAudioPlayer;
+
+}
+
+@end
+
+@implementation MDLleidaview
+
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        
+    }
+    return self;
+}
+
+-(void)didMoveToWindow
+{
+    
+}
+
+-(void)didMoveToSuperview
+{
+    [self initleidaview];
+}
+
+-(void)initleidaview
+{
+    //画出雷达
+    if (_iv==nil) {
+        
+        self.iv = [[UIImageView alloc] init ];
+        if (DEVICE_IS_IPHONE5) {
+            _iv.frame=CGRectMake(110, 10, 100 , 100);
+        }else{
+            _iv.frame=CGRectMake(110, 10, 100, 100);
+        }
+        CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"transform"];
+        //        animation.delegate = self;
+        animation.toValue = [NSValue valueWithCATransform3D:CATransform3DMakeRotation(M_PI , 0, 0, 1.0)];
+        animation.duration = 1.0;
+        animation.cumulative = YES;
+        animation.repeatCount = INT_MAX;
+        [_iv.layer addAnimation:animation forKey:@"animation"];
+    }
+    
+    UILabel *lable =[[UILabel alloc]initWithFrame:CGRectMake(_iv.frame.origin.x+14, _iv.frame.origin.y+_iv.frame.size.height/2-15, 80, 30)];
+    lable.text=@"正在收单中...";
+    lable.font=[UIFont systemFontOfSize:12];
+    lable.textColor=[UIColor orangeColor];
+    lable.backgroundColor=[UIColor clearColor];
+    
+    [_iv setImage:[UIImage imageNamed:@"MDLyuan@2x"]];
+    //CALayer *rotate_layer = iv.layer;
+    [self addSubview:_iv];
+    
+    self.avbutton=[UIButton buttonWithType:UIButtonTypeCustom];
+    _avbutton.backgroundColor=[UIColor clearColor];
+    _avbutton.frame=CGRectMake(_iv.frame.origin.x+25, _iv.frame.origin.y+_iv.frame.size.height/2-40, 100, 80);
+//    [_avbutton addTarget:self action:@selector(promptbtn:) forControlEvents:UIControlEventTouchUpInside];
+    [self addSubview:_avbutton];
+    [self addSubview:lable];
+    
+    
+}
+-(void)promptbtn:(UIButton *)sender
+{
+    NSString *path = [[NSBundle mainBundle] pathForResource:@"xiguan" ofType:@"mp3"];
+    //组装并播放音效
+    SystemSoundID soundID;
+    NSURL *filePath = [NSURL fileURLWithPath:path isDirectory:NO];
+    
+    AudioServicesCreateSystemSoundID((__bridge CFURLRef)filePath, &soundID);
+    AudioServicesPlaySystemSound(1007);
+    
+    NSLog(@"播放系统音乐");
+    
+    //        //创建音乐文件路径
+    //        NSString *musicFilePath = [[NSBundle mainBundle] pathForResource:@"xiguan" ofType:@"mp3"];
+    //
+    //        //判断文件是否存在
+    //        if ([[NSFileManager defaultManager] fileExistsAtPath:musicFilePath])
+    //        {
+    //            NSURL *musicURL = [NSURL fileURLWithPath:musicFilePath];
+    //            NSError *myError = nil;
+    //
+    //            AVAudioPlayer*myBackMusic = [[AVAudioPlayer alloc] initWithContentsOfURL:musicURL error:&myError];
+    //            if (myBackMusic == nil)
+    //            {
+    //                NSLog(@"error === %@",[myError description]);
+    //            }
+    //            [myBackMusic setVolume:1];              //设置音量大小
+    //            myBackMusic.numberOfLoops = -1;         //设置音乐播放次数  -1为一直循环
+    //            [myBackMusic prepareToPlay];
+    //            [myBackMusic play];
+    //        }
+}
+/*
+// Only override drawRect: if you perform custom drawing.
+// An empty implementation adversely affects performance during animation.
+- (void)drawRect:(CGRect)rect
+{
+    // Drawing code
+}
+*/
+
+@end

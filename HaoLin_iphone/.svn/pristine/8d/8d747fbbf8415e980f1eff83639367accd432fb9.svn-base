@@ -1,0 +1,85 @@
+//
+//  MDLXuanzeViewController.m
+//  HaoLin
+//
+//  Created by apple on 14-9-3.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "MDLXuanzeViewController.h"
+
+@interface MDLXuanzeViewController ()
+
+@end
+
+@implementation MDLXuanzeViewController
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+    }
+    return self;
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    
+    [_searchbar setAutocapitalizationType:UITextAutocapitalizationTypeNone];
+    [_searchbar sizeToFit];
+    _searchbar.autocapitalizationType=UITextAutocapitalizationTypeSentences;
+    
+    
+    // Do any additional setup after loading the view from its nib.
+}
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    return 1;
+}
+-(NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
+{
+    return 0;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    
+    NSInteger rows = 0;
+    
+        return rows;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    
+    return 60;
+}
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    static NSString *CellIdentifier = @"Cell";
+    
+    UITableViewCell *cell = [_mytableview dequeueReusableCellWithIdentifier:CellIdentifier];
+    
+    if (cell == nil) {
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
+        cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+        cell.selectionStyle=UITableViewCellSelectionStyleNone;
+    }
+    return cell;
+}
+
+#pragma mark UITableViewDelegate End -
+
+- (IBAction)backbtn:(id)sender {
+    
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+@end

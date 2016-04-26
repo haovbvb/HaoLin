@@ -1,0 +1,23 @@
+//
+//  JZD_loopView.h
+//  LoopScrollViewDemo
+//
+//  Created by 姜泽东 on 14-8-22.
+//  Copyright (c) 2014年 freewolf.me. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface JZD_loopView : UIView<UIScrollViewDelegate>
+
+@property (nonatomic,strong) UIPageControl *pageControl;
+@property (nonatomic,assign) int currentPageIndex;
+@property (nonatomic,assign) int totalPageCount;
+@property (nonatomic,assign) int tempIndex;
+@property (nonatomic,strong) void(^tapCountIndex)(int index);
+@property (nonatomic,strong) NSMutableArray *contenViewArray;
+@property (nonatomic,strong) UIScrollView *scrollView;
+@property (nonatomic,strong) UIView *(^blockView)(int number);
+@property (nonatomic,strong) int(^blockNum)(void);
+
+@end

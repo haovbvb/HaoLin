@@ -1,0 +1,57 @@
+//
+//  HSPFeedbackViewController.m
+//  HaoLin
+//
+//  Created by PING on 14-8-28.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "HSPFeedbackViewController.h"
+
+@interface HSPFeedbackViewController ()
+@property (weak, nonatomic) IBOutlet UITextView *textView;
+@property (weak, nonatomic) IBOutlet UITextField *phoneNumber;
+@property (weak, nonatomic) IBOutlet UIButton *ideaBtn;
+@property (weak, nonatomic) IBOutlet UIButton *wrongBtn;
+- (IBAction)submit:(id)sender;
+
+- (IBAction)checkBtnClick:(UIButton *)sender;
+
+
+@end
+
+@implementation HSPFeedbackViewController
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+    }
+    return self;
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    self.textView.alwaysBounceHorizontal = YES;
+    
+    self.title = @"意见反馈";
+    [self.navigationController.navigationBar setTitleTextAttributes:[NSDictionary dictionaryWithObjectsAndKeys:HSPFontColor,NSForegroundColorAttributeName, nil]];
+}
+
+
+- (IBAction)submit:(id)sender {
+}
+
+- (IBAction)checkBtnClick:(UIButton *)sender {
+    sender.selected = !sender.isSelected;
+    if (sender == self.ideaBtn ) {
+        self.wrongBtn.selected = NO;
+    }else if(sender == self.wrongBtn){
+        self.ideaBtn.selected = NO;
+    }else{
+        self.ideaBtn.selected = YES;
+    }
+}
+@end

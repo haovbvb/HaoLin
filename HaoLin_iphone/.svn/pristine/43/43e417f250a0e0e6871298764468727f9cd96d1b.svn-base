@@ -1,0 +1,280 @@
+//
+//  ZYPOrderDetailVC.m
+//  HaoLin
+//
+//  Created by mac on 14-9-5.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "ZYPOrderDetailVC.h"
+
+@interface ZYPOrderDetailVC ()
+@property (nonatomic, strong)ZYPUserObject * userObject;
+@property (nonatomic, strong)ZYPOrderDetailObject *orderDetailObject;
+@end
+@implementation ZYPOrderDetailVC
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+    }
+    return self;
+}
+- (IBAction)back:(id)sender
+{
+    [self.navigationController popViewControllerAnimated:YES];
+}
+//  移除观察者
+-(void)dealloc
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"退出啦" object:nil];
+    
+}
+//  方法
+- (void)backInto
+{
+    [self.navigationController popToRootViewControllerAnimated:YES];
+}
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    //  添加观察者
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(backInto) name:@"退出啦" object:nil];
+
+    // Do any additional setup after loading the view from its nib.
+    [self getSource];
+}
+- (void)getSource
+{
+    __weak ZYPOrderDetailVC *detailVC = self;
+    ZYPNetWorkGetSourceManger *manger = [[ZYPNetWorkGetSourceManger alloc] init];
+    ZYPObjectManger *object = [ZYPObjectManger shareInstance];
+    NSString *urlString = [NSString stringWithFormat:@"%@user_id=%@&tokenid=%@&order_id=%@",orderDetailInfor,object.loginInObject.user_id,object.loginInObject.tokenid,self.orderObject.order_id];
+    [manger connectWithUrlStr:urlString completion:^(id respondObject) {
+        NSLog(@"%@",respondObject);
+//        if ([respondObject isKindOfClass:[NSDictionary class]]) {
+//            NSDictionary *dic = respondObject;
+//            NSDictionary *dicSource = [dic objectForKey:@"data"];
+//            detailVC.orderDetailObject = [[ZYPOrderDetailObject alloc] initWithOrderDetailDic:dicSource];
+//            detailVC.userObject = [[ZYPUserObject alloc] initUserObjectWithDic:[dic objectForKey:@"userinfo"]];
+//        }
+        NSDictionary *dic1 = @{@"user_id": @"57",@"nick_name":@"黑人牙膏300克装",@"delevery_address":@"西三旗",@"mobile":@"1234567"};
+        NSDictionary *dic2 = @{@"user_id": @"57",@"nick_name":@"黑人牙膏300克装",@"delevery_address":@"西三旗",@"mobile":@"1234567"};
+        NSDictionary *dic3 = @{@"user_id": @"57",@"nick_name":@"黑人牙膏300克装",@"delevery_address":@"西三旗",@"mobile":@"1234567"};
+        NSArray *array = [NSArray arrayWithObjects:dic1,dic2,dic3, nil];
+        
+        NSDictionary *dic = @{@"order_id": @"67",@"order_sn":@"201408251408965715",@"order_type":@"1",@"user_id":@"4",@"merchant_id":@"6",@"should_price":@"228",@"real_price":@"230",@"server_price":@"4",@"pay_type":@"1",@"coupons":@"0",@"order_desc":@"想要一盒中华香烟",@"order_audio":@"",@"status":@"3",@"createtime":@"1408965715",@"changetime":@"1",@"goodsinfo":array};
+        detailVC.orderDetailObject = [[ZYPOrderDetailObject alloc] initWithOrderDetailDic:dic];
+        detailVC.userObject = [[ZYPUserObject alloc] initUserObjectWithDic:dic1];
+        [self.tableView reloadData];
+    }];
+}
+#pragma mark - tableView代理方法
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+{
+    return 1;
+}
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return 6;
+}
+
+//  定义headerView
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
+{
+    UIView *customView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 40)];
+    UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(20, 10, 100, 25)];
+    label.font = [UIFont systemFontOfSize:15];
+    label.text = @"详情";
+    label.textColor = [UIColor orangeColor];
+    [customView addSubview:label];
+    return customView;
+}
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
+{
+    return 40;
+}
+//  定制cell
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    if (indexPath.row == 0)
+    {
+        static NSString *indentifier = @"indentifier";
+        ZYPCustomOrderCell * cell = [tableView dequeueReusableCellWithIdentifier:indentifier];
+        if (cell == nil) {
+            cell = [[[NSBundle mainBundle] loadNibNamed:@"ZYPCustomOrderCell" owner:self options:nil] lastObject];
+        }
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        cell.nameLabel.text = [NSString stringWithFormat:@"收货人: %@",self.userObject.nickname];
+        cell.addressLabel.text = self.userObject.delevery_address;
+        cell.phoneLabel.text = self.userObject.mobile;
+        return cell;
+    }else if (indexPath.row == 1 || indexPath.row == 5)
+    {
+        //  第五行和第一行共用一套cell
+        static NSString *indentifier = @"indentif";
+        ZYPLastCell * cell = [tableView dequeueReusableCellWithIdentifier:indentifier];
+        if (cell == nil) {
+            cell = [[[NSBundle mainBundle] loadNibNamed:@"ZYPLastCell" owner:self options:nil] lastObject];
+        }
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        if (indexPath.row == 1) {
+            //  等接口
+            cell.stateLabel.text = @"订单状态";
+            cell.totalLabel.text = @"总共:";
+            cell.priceLabel.text = [NSString stringWithFormat:@"￥%@",self.orderDetailObject.should_price];
+            //  获取商品详情数组
+            NSArray *array = (NSArray *)self.orderDetailObject.goodsinfo;
+            for (int i = 0; i < array.count; i++) {
+                ZYPAddView *addV = [[ZYPAddView alloc] initWithFrame:CGRectMake(0, 40 + i*30 + 10*i, 300, 30)];
+                NSDictionary *dic = [array objectAtIndex:i];
+                ZYPOrderReleatedObject *relatedObject = [[ZYPOrderReleatedObject alloc] initWithReleatedOrderDictionary:dic];
+                addV.goodsAmount.text = [NSString stringWithFormat:@"￥%@",relatedObject.goods_num];
+                addV.goodslabel.text = relatedObject.goods_name;
+                addV.goodsPrice.text = [NSString stringWithFormat:@"￥%@",relatedObject.goods_price];
+                [cell.contentView addSubview:addV];
+            }
+            return cell;
+        }else if (indexPath.row == 5)
+        {
+            cell.stateLabel.text = @"订单";
+            [cell.contentLabel removeFromSuperview];
+            for (int i = 0; i < 2; i++)
+            {
+                if (i == 0)
+                {
+                    ZYPOderView *orderView = [[ZYPOderView alloc] initWithFrame:CGRectMake(0, 45  , 320, 40)];
+                    orderView.nameLabel.text = @"订单编号:";
+                    orderView.caseLabel.text = self.orderDetailObject.order_sn;
+                    [cell.contentView addSubview:orderView];
+                }else if (i == 1)
+                {
+                    ZYPOderView *orderView = [[ZYPOderView alloc] initWithFrame:CGRectMake(0, 45 + 5 + 40 , 320, 40)];
+                    orderView.nameLabel.text = @"订单时间:";
+                    orderView.caseLabel.text = self.orderDetailObject.createtime;
+                    [cell.contentView addSubview:orderView];
+                }
+            }
+            return cell;
+        }
+    }else if (indexPath.row == 2 || indexPath.row == 3 || indexPath.row == 4)
+    {
+        //  第2，3，4行共用一套cell
+        static NSString *indentifier = @"indent";
+        ZYPPlainCell * cell = [tableView dequeueReusableCellWithIdentifier:indentifier];
+        if (cell == nil) {
+            cell = [[[NSBundle mainBundle] loadNibNamed:@"ZYPPlainCell" owner:self options:nil] lastObject];
+        }
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        if (indexPath.row == 2) {
+            cell.stateLabel.text = @"订单状态:";
+            if ([self.orderDetailObject.status intValue] == 0) {
+                cell.nextLabel.text = @"订单取消";
+            }else if ([self.orderDetailObject.status intValue] == 1)
+            {
+                cell.nextLabel.text = @"已确认";
+
+            }else if ([self.orderDetailObject.status intValue] ==2)
+            {
+                cell.nextLabel.text = @"未支付";
+            }else if ([self.orderDetailObject.status intValue] == 3)
+            {
+                cell.nextLabel.text = @"已支付";
+            }else if ([self.orderDetailObject.status intValue] == 4)
+            {
+                cell.nextLabel.text = @"已发货";
+            }else if ([self.orderDetailObject.status intValue] == 5)
+            {
+                cell.nextLabel.text = @"已完成";
+            }else if ([self.orderDetailObject.status intValue] == 6)
+            {
+                cell.nextLabel.text = @"已评价";
+            }
+            return cell;
+        }else if (indexPath.row == 3)
+        {
+            cell.stateLabel.text = @"配送费:";
+            cell.righetLabel.text = [NSString stringWithFormat:@"￥%@",self.orderDetailObject.server_price];
+            return cell;
+        }else if (indexPath.row == 4)
+        {
+            cell.stateLabel.text = @"支付方式:";
+            if ([self.orderDetailObject.pay_type intValue] == 1) {
+                 cell.righetLabel.text = @"在线支付";
+            }else if ([self.orderDetailObject.pay_type intValue] == 2)
+            {
+                cell.righetLabel.text = @"货到付款";
+            }else if ([self.orderDetailObject.pay_type intValue] == 3)
+            {
+                cell.righetLabel.text = @"其他支付";
+            }
+            return cell;
+        }
+    }else
+    {
+        return nil;
+    }
+    return nil;
+}
+//  返回cell高度
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    if (indexPath.row == 0) {
+        return 70.0;
+    }else if (indexPath.row == 1)
+    {
+        NSArray *array = (NSArray *)self.orderDetailObject.goodsinfo;
+        return 40 + array.count *(27  + 10);
+    }else if (indexPath.row == 2 || indexPath.row == 3 || indexPath.row == 4)
+    {
+        return 44.0;
+    }else if (indexPath.row == 5)
+    {
+        return 95.0 + 40;
+    }
+    return 0;
+}
+- (UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section
+{
+    UIView *customeView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 60)];
+    UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(10, 0, 120, 60)];
+    label.textColor = [UIColor orangeColor];
+    label.text = [NSString stringWithFormat:@"金额:%@",self.orderDetailObject.real_price];
+    [customeView addSubview:label];
+    
+    UIButton *btn = [UIButton buttonWithType:UIButtonTypeCustom];
+    btn.frame = CGRectMake(230, 10, 70, 40);
+    btn.backgroundColor = [UIColor orangeColor];
+    btn.titleLabel.textColor = [UIColor whiteColor];
+    [btn addTarget:self action:@selector(makeSure:) forControlEvents:UIControlEventTouchUpInside];
+    btn.titleLabel.font = [UIFont systemFontOfSize:15];
+    if ([self.orderDetailObject.status intValue] == 1)
+    {
+        [btn setTitle:@"确认发货" forState:UIControlStateNormal];
+        [customeView addSubview:btn];
+    }else
+    {
+        [btn setTitle:@"确认发货" forState:UIControlStateNormal];
+        btn.enabled = NO;
+        [customeView addSubview:btn];
+    }
+    return customeView;
+}
+- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section
+{
+    return 80;
+}
+//  确认发货按钮
+- (void)makeSure:(UIButton *)btn
+{
+    
+}
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+@end

@@ -1,0 +1,29 @@
+//
+//  ZYPLastCell.m
+//  HaoLin
+//
+//  Created by mac on 14-9-5.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "ZYPLastCell.h"
+
+@implementation ZYPLastCell
+
+- (void)awakeFromNib
+{
+    // Initialization code
+    self.contentLabel.numberOfLines = 0;
+    self.contentLabel.lineBreakMode = NSLineBreakByCharWrapping;
+}
+
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated
+{
+    [super setSelected:selected animated:animated];
+
+    // Configure the view for the selected state
+}
+- (IBAction)playMusic:(id)sender {
+}
+
+@end

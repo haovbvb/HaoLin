@@ -1,0 +1,994 @@
+//
+//  MDLXZoneView.m
+//  HaoLin
+//
+//  Created by apple on 14-8-20.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+
+#import "MDLXZoneView.h"
+
+
+@interface MDLXZoneView()<UITextFieldDelegate>
+{
+    MDLbasicdataobj   *basicdataobj;
+    MDLNetworkservice *service;
+    ZYPObjectManger   *zypobjectmanger;
+    MDLLijiqiangdan   *lijidata;
+    MDLPicView        *picview;
+    UITableView       *goodstableview;
+    UIView            *LBview;
+    UIView            *picyinying;
+    HSPAccount        *account;
+    MDLRefreshView    *refreshview;
+    
+}
+@property(nonatomic ,retain)MDLgoodsdata    *goosdata;
+@property(nonatomic ,retain)NSMutableArray  *selectedArray;
+@property(nonatomic ,retain)NSString        *pidid;
+
+@end
+
+
+@implementation MDLXZoneView
+
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+    }
+    return self;
+}
+
+-(void)style
+{
+    
+    self.Nvbview.backgroundColor=MDLBGColor;
+    _completebtn.layer.borderWidth = 1;
+    [_completebtn.layer setMasksToBounds:YES];
+    [_completebtn.layer setCornerRadius:5.0];
+    //    _completebtn.layer.borderColor = [UIColor darkGrayColor].CGColor;
+    _completebtn.layer.borderColor = [UIColor whiteColor].CGColor;
+    
+    [self.lestitm setBackgroundImage:[UIImage imageNamed:@"MDLfanhui@2x"] forState:(UIControlStateNormal)];
+    //    [self.lestitm setBackgroundImage:[UIImage imageNamed:@"MDLfanhui2@2x"] forState:(UIControlStateSelected)];
+    
+    self.fanweibtn.backgroundColor =BGColor;
+    [_fanweibtn.layer setMasksToBounds:YES];
+    [_fanweibtn.layer setCornerRadius:5.0];
+    _fanweibtn.layer.borderWidth = 1;
+    _fanweibtn.layer.borderColor = [UIColor whiteColor].CGColor;
+    
+    UIImage   *img  =[UIImage imageNamed:@"MDLjiantouxia"];
+    self.image.image=img;
+    
+}
+
+-(void)awakeFromNib
+{
+    
+    [self style];
+    self.backgroundColor  =BGColor;
+    self.fenleiview.hidden=YES;
+    self.selectedArray    = [[NSMutableArray alloc] init];
+    //初始化视图
+    [self initViews];
+    
+    //请求单例
+    service =[MDLNetworkservice shareservice];
+    
+    account = [HSPAccountTool account];
+    //获取登陆数据单例
+    zypobjectmanger=[ZYPObjectManger shareInstance];
+    basicdataobj =[MDLbasicdataobj sharebasicdataobj];
+    
+    _subviewarry =[[NSMutableArray alloc]initWithCapacity:0];
+    _tablearry   =[[NSMutableArray alloc]initWithCapacity:0];
+    lijidata=[[MDLLijiqiangdan alloc]init];
+    
+    //请求数据
+    [self requsetdata];
+    
+    [self bringSubviewToFront:_fenleiview];
+    [self bringSubviewToFront:_subtableview];
+    NOK  =YES;
+    COOL =YES;
+    [self.JYtableview reloadData];
+}
+-(void)reloadHeader
+{
+    [self.JYtableview addHeaderWithTarget:self action:@selector(requsetdata)];
+    [self.JYtableview headerBeginRefreshing];
+    
+//    [self.JYtableview footerEndRefreshing];
+}
+-(void)reloadtable
+{
+    [self.JYtableview reloadData];
+}
+-(void)initsearchbar
+{
+    UIImageView *imageView =[[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 320, 44)];
+    imageView.backgroundColor = BGColor;
+    [_searchbar insertSubview:imageView atIndex:1];
+    
+    _searchbar.delegate=self;
+    [_searchbar setAutocapitalizationType:UITextAutocapitalizationTypeNone];
+    [_searchbar sizeToFit];
+    [_searchbar setPlaceholder:@"请输入关键搜索词"];
+    _searchbar.autocapitalizationType=UITextAutocapitalizationTypeSentences;
+    
+    [self inittijiaoView];
+}
+-(void)inittijiaoView
+{
+    LBview=[[UIView alloc]initWithFrame:CGRectMake(0, 0, KDeviceWidth,KDeviceHeight)];
+    MDLHeaderView *headerview=[[[NSBundle mainBundle]loadNibNamed:@"MDLHeaderView" owner:self options:nil]lastObject];
+    headerview.frame=CGRectMake(0, 20, KDeviceWidth,80);
+    goodstableview =[[UITableView alloc]initWithFrame:CGRectMake(0, 102, KDeviceWidth, KDeviceHeight-100) style:UITableViewStylePlain];
+    goodstableview.delegate=self;
+    goodstableview.dataSource=self;
+    goodstableview.backgroundColor=BGColor;
+    
+    MDLFooterView *FooterView=[[[NSBundle mainBundle]loadNibNamed:@"MDLFooterView" owner:self options:nil]lastObject];
+    FooterView.frame=CGRectMake(0, KDeviceHeight-KDeviceHeight*50/KDeviceHeight, KDeviceWidth,50);
+    FooterView.backgroundColor=[UIColor clearColor];
+    [FooterView.Cancelbtn addTarget:self
+                             action:@selector(Canbtn)
+                   forControlEvents:UIControlEventTouchUpInside];
+    [FooterView.Determinebtn addTarget:self
+                                action:@selector(Deterbtn)
+                      forControlEvents:UIControlEventTouchUpInside];
+    /**
+     *  刷新全部商品View
+     */
+    refreshview=[[[NSBundle mainBundle]loadNibNamed:@"MDLRefreshView" owner:self options:nil]lastObject];
+    refreshview.frame=CGRectMake(0, 109, KDeviceWidth, KDeviceHeight);
+    UIImage *refreshimage=[UIImage imageNamed:@"MDLrefresh@2x"];
+    [refreshview.Refreshbtn setBackgroundImage:refreshimage forState:UIControlStateNormal];
+    [refreshview.Refreshbtn addTarget:self action:@selector(Refreshbtn:) forControlEvents:UIControlEventTouchUpInside];
+    
+    [LBview addSubview:headerview];
+    [LBview addSubview:goodstableview];
+    [LBview addSubview:FooterView];
+    [self   addSubview:refreshview];
+    refreshview.hidden=YES;
+    NSLog(@"%d",[self.subviews indexOfObject:LBview]);
+    //        NSLog(@"%d",[self.subviews indexOfObject:self]);
+}
+-(void)Refreshbtn:(UIButton *)sender
+{
+    [self requsetdata];
+    [self reloadHeader];
+    [self reloadtable];
+}
+/**
+ *  商品全选
+ */
+-(void)quanxuanbtn
+{
+    UIView *view =[[UIView alloc]initWithFrame:CGRectMake(0, 0, 320, 40)];
+    view.backgroundColor=BGColor;
+    
+    self.qbLable=[[UILabel alloc]init];
+    _qbLable.text =@"全选";
+    _qbLable.frame=CGRectMake(40, view.frame.origin.x+10, 40, 20);
+    [view addSubview:_qbLable];
+    
+    self.iamgeView =[[UIImageView alloc]initWithFrame:CGRectMake(8, view.frame.origin.x+10, 18, 18)];
+    _iamgeView.image=[UIImage imageNamed:@"MDLuncheck2@2x"];
+    _iamgeView.backgroundColor=[UIColor whiteColor];
+    [view addSubview:_iamgeView];
+    
+    UIButton *qxbtn=[UIButton buttonWithType:UIButtonTypeCustom];
+    qxbtn.frame=CGRectMake(5, 8, 100, 25);
+    qxbtn.backgroundColor=[UIColor clearColor];
+    [qxbtn addTarget:self action:@selector(quanxuan) forControlEvents:UIControlEventTouchUpInside];
+    [view addSubview:qxbtn];
+    self.JYtableview.tableHeaderView=view;
+    NICK=YES;
+    [self initsearchbar];
+    
+}
+//完成按钮点击事件
+- (IBAction)comple:(id)sender {
+    
+    if ([self.selectedArray count]>0) {
+        //  过渡动画实例
+        CATransition *animation = [CATransition animation];
+        animation.delegate = self;
+        animation.duration = 1;
+        animation.timingFunction = UIViewAnimationCurveEaseInOut;
+        animation.fillMode = kCAFillModeBackwards;
+        animation.type = kCATransitionMoveIn;
+        animation.subtype = kCATransitionFromBottom;
+        
+        //        [self exchangeSubviewAtIndex:7 withSubviewAtIndex:8];
+        [self addSubview:LBview];
+        [goodstableview reloadData];
+        [self.layer addAnimation:animation forKey:@"animation"];
+        
+    }if ([self.selectedArray count]==0) {
+        UIAlertView *aler = [[UIAlertView alloc] initWithTitle:@"警告" message:@"您还没有选择商品！" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil,nil];
+        
+        [aler show];
+    }
+}
+
+#pragma mark - searchbar-Delegate
+-(void)searchBarBookmarkButtonClicked:(UISearchBar *)searchBar
+{
+    [self search];
+}
+
+- (BOOL)searchBarShouldBeginEditing:(UISearchBar *)searchBar
+{
+    return YES;
+}
+- (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText
+{
+    self.searctext = searchText;
+}
+- (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar
+{
+    [self search];
+    [_searchbar resignFirstResponder];
+}
+#pragma mark - searchbar-Delegate-END
+
+-(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    [picview.pictext resignFirstResponder];
+}
+- (BOOL)textFieldShouldReturn:(UITextField *)textField {
+    
+    [picview.pictext resignFirstResponder];
+    return YES;
+}
+
+//- (BOOL)textFieldShouldReturn:(UITextField *)theTextField {
+//    if (theTextField == picview.pictext) {
+//        [theTextField resignFirstResponder];
+//    }
+//    return YES;
+//}
+
+//textField只允许输入数字的代理方法
+- (BOOL)textField:(UITextField *)textField
+shouldChangeCharactersInRange:(NSRange)range
+replacementString:(NSString *)string {
+    
+    NSCharacterSet *coos;
+    coos = [[NSCharacterSet characterSetWithCharactersInString:kNumbersPeriod] invertedSet];
+    NSString *filtered =[[string componentsSeparatedByCharactersInSet:coos] componentsJoinedByString:@""];
+    BOOL basic = [string isEqualToString:filtered];
+    return basic;
+}
+
+#pragma mark - searchbar 搜索
+-(void)search
+{
+    if ([self.searctext length] > 0) {
+        [_tablearry removeAllObjects];
+        ZYPNetWorkGetSourceManger *manger = [[ZYPNetWorkGetSourceManger alloc] init];
+        
+        NSString *urlString = [NSString stringWithFormat:@"%@user_id=%@&tokenid=%@&goods_name=%@",goodsList,account.user_id,account.userTokenid,self.searctext];
+        NSLog(@"urlString:%@",urlString);
+        [manger connectWithUrlStr:urlString completion:^(id responedObject) {
+            if ([responedObject isKindOfClass:[NSDictionary class]]) {
+                NSDictionary *dic = responedObject;
+                NSArray *array = [dic objectForKey:@"data"];
+                for (NSMutableDictionary *data in  array) {
+                    MDLgoodsdata *goodsdata=[[MDLgoodsdata alloc]init];
+                    goodsdata.goodsid=[data objectForKey:@"goods_id"];
+                    goodsdata.goodsname=[data objectForKey:@"goods_name"];
+                    goodsdata.goodsprice=[data objectForKey:@"goods_price"];
+                    [_tablearry addObject:goodsdata];
+                    
+                }
+                [self.JYtableview reloadData];
+                
+            }
+        }];
+    }
+}
+
+#pragma mark ------------请求数据----------------
+
+//大分类-数据
+-(void)requsetdata
+{
+    //  显示加载图标
+    [MBProgressHUD showHUDAddedTo:self animated:YES];
+    [service Connectdafenlei:account.user_id tokenid:account.userTokenid withJSON:^(id responseObject) {
+        if ([responseObject isKindOfClass:[NSError class]]) {
+            [MBProgressHUD hideAllHUDsForView:self animated:YES];
+            refreshview.hidden=NO;
+            JZDCustomAlertView *alert=[JZDCustomAlertView sharedInstace];
+            [alert popAlert:@"请检查您的网络"];
+
+            return ;
+        }else{
+            NSMutableDictionary *dic =responseObject;
+            NSLog(@"%@",[dic objectForKey:@"message"]);
+            if ([[dic objectForKey:@"code"] isEqualToString:@"0"]) {
+                NSMutableArray *arry =[dic objectForKey:@"data"];
+                felerarry =[dic objectForKey:@"data"];
+                for (NSDictionary *dic1 in  arry) {
+                    MDLXuanzeshangpin *xuanze=[[MDLXuanzeshangpin alloc]init];
+                    xuanze.cat_id     =[dic1 objectForKey:@"cat_id"];
+                    xuanze.cat_name   =[dic1 objectForKey:@"cat_name"];
+                    xuanze.cat_pid    =[dic1 objectForKey:@"cat_pid"];
+                    xuanze.createtime =[dic1 objectForKey:@"createtime"];
+                    self.pidid        =[dic1 objectForKey:@"cat_pid"];
+                    [_subviewarry addObject:xuanze];
+                    
+                }
+                [self reloadtableview];
+                //  隐藏加载图标
+                //            [MBProgressHUD hideAllHUDsForView:self animated:YES];
+                [self performSelector:@selector(goosrequsetdata) withObject:nil afterDelay:1];
+                
+            }else{
+                [MBProgressHUD hideAllHUDsForView:self animated:YES];
+            }
+        }
+    }];
+    
+}
+-(void)reloadtableview
+{
+    [self.subtableview reloadData];
+}
+
+-(void)goosrequsetdata:(MDLXuanzeshangpin *)obj
+{
+    [_tablearry removeAllObjects];
+    [_JYtableview reloadData];
+    [service ConnectToobtaindic:account.user_id tokenid:account.userTokenid catid:obj.cat_id page:nil withJSON:^(id responseObject) {
+        if ([responseObject isKindOfClass:[NSError class]]) {
+            return ;
+        }else{
+            NSMutableDictionary *dic =responseObject;
+//            NSLog(@"分类下的商品%@",dic);
+            NSLog(@"%@",[dic objectForKey:@"message"]);
+            if ([[dic objectForKey:@"code"] isEqualToString:@"0"]) {
+                NSMutableArray *goosarry=[dic objectForKey:@"data"];
+                for (id data in goosarry) {
+                    MDLgoodsdata *goodsdata=[[MDLgoodsdata alloc]init];
+                    goodsdata.goodsid      =[data objectForKey:@"goods_id"];
+                    goodsdata.goodsname    =[data objectForKey:@"goods_name"];
+                    goodsdata.goodsprice   =[data objectForKey:@"goods_price"];
+                    NSLog(@"%@",goodsdata.goodspid);
+                    [_tablearry addObject:goodsdata];
+                }
+                [self.JYtableview reloadData];
+                [MBProgressHUD hideAllHUDsForView:self animated:YES];
+                
+            }else{
+                
+                [MBProgressHUD hideAllHUDsForView:self animated:YES];
+                UIAlertView *aler1 = [[UIAlertView alloc] initWithTitle:@"暂无商品" message:nil delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil,nil];
+                [aler1 show];
+                
+                
+            }
+            self.fenleiview.hidden=YES;
+        }
+    }];
+}
+
+-(void)goosrequsetdata
+{
+    [_tablearry removeAllObjects];
+    NSString *urlString = [NSString stringWithFormat:@"%@user_id=%@&tokenid=%@",goodsList,account.user_id,account.userTokenid];
+    ZYPNetWorkGetSourceManger *manger = [[ZYPNetWorkGetSourceManger alloc] init];
+    [manger connectWithUrlStr:urlString completion:^(id respondObject) {
+        if ([respondObject isKindOfClass:[NSError class]]) {
+            return ;
+            [MBProgressHUD hideAllHUDsForView:self animated:YES];
+            UIAlertView *Valer = [[UIAlertView alloc] initWithTitle:@"暂无商品" message:nil delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil,nil];
+            [Valer show];
+            
+        }else{
+            NSDictionary *dic = respondObject;
+            if ([[dic objectForKey:@"code"] isEqualToString:@"0"]) {
+                NSArray *array = [dic objectForKey:@"data"];
+                for (id data in array) {
+                    MDLgoodsdata *goodsdata=[[MDLgoodsdata alloc]init];
+                    goodsdata.goodsid   =[data objectForKey:@"goods_id"];
+                    goodsdata.goodsname =[data objectForKey:@"goods_name"];
+                    goodsdata.goodsprice=[data objectForKey:@"goods_price"];
+                    goodsdata.goodsnum  =@"1";
+                    [_tablearry addObject:goodsdata];
+                }
+                [MBProgressHUD hideAllHUDsForView:self animated:YES];
+                [self.JYtableview reloadData];
+                [self.JYtableview headerEndRefreshing];
+                refreshview.hidden=YES;
+                
+            }else{
+                
+                [MBProgressHUD hideAllHUDsForView:self animated:YES];
+                UIAlertView *aler = [[UIAlertView alloc] initWithTitle:@"暂无商品" message:nil delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil,nil];
+                [aler show];
+            }
+        }
+    }];
+    
+    //    [service ConnectToobtaindic:zypobjectmanger.loginInObject.user_id tokenid:zypobjectmanger.loginInObject.tokenid catid:self.pidid page:nil withJSON:^(id responseObject) {
+    //        NSMutableDictionary *dic =responseObject;
+    //        NSLog(@"全部数据：：%@",dic);
+    //        NSLog(@"111%@",[dic objectForKey:@"message"]);
+    //
+    //        NSMutableArray *goosarry=[dic objectForKey:@"data"];
+    //        if ([[dic objectForKey:@"code"] isEqualToString:@"0"]&&[[dic objectForKey:@"data"] count]) {
+    //            for (id data in goosarry) {
+    //                MDLgoodsdata *goodsdata=[[MDLgoodsdata alloc]init];
+    //                goodsdata.goodsid=[data objectForKey:@"goods_id"];
+    //                goodsdata.goodsname=[data objectForKey:@"goods_name"];
+    //                goodsdata.goodsprice=[data objectForKey:@"goods_price"];
+    //                [_tablearry addObject:goodsdata];
+    //            }
+    //            //  隐藏加载图标
+    //            [MBProgressHUD hideAllHUDsForView:self animated:YES];
+    //            [self.JYtableview reloadData];
+    //
+    //        }else{
+    //        }
+    //    }];
+}
+
+-(void)initViews
+{
+    self.JYtableview=[[UITableView alloc]initWithFrame:CGRectMake(0, 109, KDeviceWidth, KDeviceHeight-100) style:UITableViewStylePlain];
+    _JYtableview.delegate = self;
+    _JYtableview.dataSource =self;
+    //    _JYtableview.backgroundColor=BGColor;
+    [self addSubview:_JYtableview];
+    [self initAlertView];
+    
+}
+-(void)initAlertView
+{
+    picyinying=[[UIView alloc]initWithFrame:CGRectMake(0, 0, KDeviceWidth, KDeviceHeight)];
+    picyinying.backgroundColor=[UIColor blackColor];
+    picyinying.alpha=0.5;
+    [self addSubview:picyinying];
+    picyinying.hidden=YES;
+    picview= [[[NSBundle mainBundle]loadNibNamed:@"MDLPicView" owner:self options:nil]lastObject];
+    if (DEVICE_IS_IPHONE5) {
+        picview.frame=CGRectMake(KDeviceWidth/2-picview.size.width/2, KDeviceHeight-KDeviceHeight*60/100, picview.size.width, picview.size.height);
+    }else{
+        picview.frame=CGRectMake(KDeviceWidth/2-picview.size.width/2, KDeviceHeight-KDeviceHeight*70/100, picview.size.width, picview.size.height);
+        
+    }
+    [self addSubview:picview];
+    [picview.layer setMasksToBounds:YES];
+    [picview.layer setCornerRadius:10.0];
+    picview.layer.borderWidth = 1;
+    picview.layer.borderColor = [UIColor orangeColor].CGColor;
+    picview.pictext.delegate=self;
+    picview.hidden=YES;
+    picview.backgroundColor=[UIColor  clearColor];
+    //    UIImage *ima=[UIImage imageNamed:@"MDLtishikuang"];
+    //    picview.beijingimage.image=ima;
+    picview.backgroundColor=[UIColor whiteColor];
+    UIImage *fengeimage=[UIImage imageNamed:@"MDLtishifengexian"];
+    picview.fengeimage.image=fengeimage;
+    UIImage *qudingima=[UIImage imageNamed:@"MDLtishichangtaizuo"];
+    [picview.quedingbtn setBackgroundImage:qudingima forState:UIControlStateNormal];
+    UIImage *qudingima1=[UIImage imageNamed:@"MDLtishikuangzuo"];
+    [picview.quedingbtn setBackgroundImage:qudingima1 forState:UIControlStateSelected];
+    
+    UIImage *quxiaoima=[UIImage imageNamed:@"MDLtishichangtaiyou"];
+    [picview.quxiaobtn setBackgroundImage:quxiaoima forState:UIControlStateNormal];
+    UIImage *quxiaoima1=[UIImage imageNamed:@"MDLtishikuangyou"];
+    [picview.quxiaobtn setBackgroundImage:quxiaoima1 forState:UIControlStateSelected];
+    UIImage *textima=[UIImage imageNamed:@"MDLtishishuru"];
+    [picview.pictext setBackground:textima];
+    
+    [self quanxuanbtn];
+    
+}
+
+#pragma mark - UITableViewDelegate
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    if (tableView  ==_subtableview) {
+        return 1;
+    }if (tableView ==_JYtableview)  {
+        return 1;
+    }if (tableView ==goodstableview){
+        return 1;
+    }
+    return 1;
+}
+
+//-(NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
+//{
+//    if (tableView==_subtableview) {
+//        return 0;
+//    }if (tableView==_JYtableview) {
+//        return 0;
+//    }
+//    return 0;
+//}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    
+    if (tableView ==_subtableview) {
+        return [_subviewarry count];
+        
+    }if (tableView==_JYtableview){
+        
+        return [self.tablearry count];
+    }if (tableView ==goodstableview){
+        
+        return [self.selectedArray count];
+    }
+    
+    return 0;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    if  (tableView==_subtableview) {
+        return 30;
+    }if (tableView==_JYtableview) {
+        return 60;
+    }if (tableView ==goodstableview){
+        return 40;
+    }
+    
+    return 0;
+}
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    if (tableView==_subtableview) {
+        
+        static NSString *CellIdentifier = @"subCell";
+        UITableViewCell *acell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+        if (acell == nil) {
+            acell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
+        }
+        for (UIView *view in acell.contentView.subviews) {
+            [view removeFromSuperview];
+        }
+        //            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+        //            cell.selectionStyle=UITableViewCellSelectionStyleNone;
+        MDLXuanzeshangpin *xuanzeobj=[_subviewarry objectAtIndex:indexPath.row];
+        acell.textLabel.text=xuanzeobj.cat_name;
+        return acell;
+        
+    }if (tableView ==goodstableview){
+        static NSString *goodscell =@"cell";
+        UITableViewCell *cell=[tableView dequeueReusableCellWithIdentifier:goodscell];
+        if (!cell) {
+            cell=[[UITableViewCell alloc]initWithStyle:UITableViewCellStyleDefault  reuseIdentifier:goodscell];
+        }
+        for (UIView *view in cell.contentView.subviews) {
+            [view removeFromSuperview];
+        }
+        cell.selectionStyle=UITableViewCellAccessoryNone;
+        MDLgoodscellView *goodscellview =[[[NSBundle mainBundle]loadNibNamed:@"MDLgoodscellView" owner:self options:nil]lastObject];
+        [cell.contentView addSubview:goodscellview];
+        if ([self.selectedArray count]==0) {
+            NSLog(@"没有选中任何商品");
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"暂无商品" message:nil delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+            [alert show];
+        }else{
+            MDLgoodsdata *goodsdata=[self.selectedArray objectAtIndex:indexPath.row];
+            goodscellview.goodsname.text  =goodsdata.goodsname;
+            goodscellview.goodspic .text  =[NSString stringWithFormat:@"%@元",goodsdata.goodsprice];
+            goodscellview.goodsnumber.text=goodsdata.goodsnum;
+        }
+        return cell;
+    }if (tableView==_JYtableview) {
+        
+        static NSString *CellIdentifier = @"MDLWuPinTableViewCell";
+        MDLWuPinTableViewCell *cell= (MDLWuPinTableViewCell *)[tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+        if (cell == nil)
+        {
+            cell= (MDLWuPinTableViewCell *)[[[NSBundle  mainBundle]  loadNibNamed:@"MDLWuPinTableViewCell" owner:self options:nil]  lastObject];
+            
+            MDLgoodsdata *goodsdata=[self.tablearry objectAtIndex:indexPath.row];
+            
+            //        for (UIView *view in cell.contentView.subviews) {
+            //            [view removeFromSuperview];
+            //        }
+            
+            cell.selectionStyle=UITableViewCellEditingStyleNone;
+            
+            if ([self.tablearry count]==0) {
+                NSLog(@"没有数据");
+                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"暂无商品" message:nil delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+                [alert show];
+                
+                [self.JYtableview reloadData];
+                
+            }else{
+                
+                int PID=[self.pidid intValue];
+                NSLog(@"pid:%@",self.pidid);
+                if (PID==1) {
+                    cell.cellview=[[[NSBundle mainBundle]loadNibNamed:@"MDLCellView" owner:self options:nil]lastObject];
+                    [cell.contentView addSubview:cell.cellview];
+                    [cell.cellview.xuandingbtn setBackgroundImage:[UIImage imageNamed:@"MDLuncheck2@2x"] forState:UIControlStateNormal];
+                    [cell.cellview.xuandingbtn setBackgroundImage:[UIImage imageNamed:@"MDLxuanzhong@2x"] forState:UIControlStateSelected];
+                    
+                    cell.cellview.NameLable.text=goodsdata.goodsname;
+                    NSLog(@"%@",goodsdata.goodsname);
+                    cell.cellview.PriceLable.text=[NSString stringWithFormat:@"%@元",goodsdata.goodsprice];
+                    
+                }if (PID==2) {
+                    
+                    cell.fuwuview=[[[NSBundle mainBundle]loadNibNamed:@"MDLFuwuView" owner:self options:nil]lastObject];
+                    [cell.fuwuview.Fuwuxuanbtn setBackgroundImage:[UIImage imageNamed:@"MDLuncheck2@2x"] forState:UIControlStateNormal];
+                    [cell.fuwuview.Fuwuxuanbtn setBackgroundImage:[UIImage imageNamed:@"MDLxuanzhong@2x"] forState:UIControlStateSelected];
+                    [cell.contentView addSubview:cell.fuwuview];
+                    cell.fuwuview.nameLable.text=goodsdata.goodsname;
+                    cell.fuwuview.picLable.text =[NSString stringWithFormat:@"%@元",goodsdata.goodsprice];
+                    
+                }
+            }
+            goodsdata.goodsnum=cell.cellview.NumberLable.text;
+            
+        }
+        if (NICK==YES) {
+            cell.cellview.xuandingbtn.selected = NO;
+            cell.fuwuview.Fuwuxuanbtn.selected = NO;
+            [cell.cellview.bjimageview setImage:[UIImage imageNamed:@"MDLshuliangchangtai@2x"]];
+            cell.cellview.Addbtn.enabled =NO;
+            cell.cellview.Jianbtn.enabled=NO;
+            cell.cellview.changepricebtn.enabled=NO;
+            cell.fuwuview.choosebtn.enabled=NO;
+            
+            
+        }else if(NICK==NO){
+            cell.cellview.xuandingbtn.selected = YES;
+            cell.fuwuview.Fuwuxuanbtn.selected = YES;
+            
+            [cell.cellview.bjimageview setImage:[UIImage imageNamed:@"MDLNumber@2x"]];
+            cell.cellview.Addbtn.enabled =YES;
+            cell.cellview.Jianbtn.enabled=YES;
+            cell.cellview.changepricebtn.enabled=YES;
+            cell.fuwuview.choosebtn.enabled=YES;
+            
+        }
+        [cell.cellview.xuandingbtn addTarget:self
+                                      action:@selector(danxuan:) forControlEvents:UIControlEventTouchUpInside];
+        cell.cellview.xuandingbtn.tag=indexPath.row;
+        
+        [cell.fuwuview.choosebtn addTarget:self
+                                    action:@selector(changepric:) forControlEvents:UIControlEventTouchUpInside];
+        cell.fuwuview.choosebtn.tag=indexPath.row;
+        
+        [cell.fuwuview.Fuwuxuanbtn addTarget:self action:@selector(danxuan:) forControlEvents:UIControlEventTouchUpInside];
+        cell.fuwuview.Fuwuxuanbtn.tag=indexPath.row;
+        
+        
+        UIImage *addimage=[UIImage imageNamed:@"MDLNumberadd@2x"];
+        [cell.cellview.Addbtn setBackgroundImage:addimage forState:UIControlStateNormal];
+        [cell.cellview.Addbtn addTarget:self
+                                 action:@selector(jianshao:)
+                       forControlEvents:UIControlEventTouchUpInside];
+        cell.cellview.Addbtn.tag=indexPath.row;
+        
+        UIImage *jianimage=[UIImage imageNamed:@"MDLNumberjian@2x"];
+        [cell.cellview.Jianbtn setBackgroundImage:jianimage forState:UIControlStateNormal];
+        [cell.cellview.Jianbtn addTarget:self
+                                  action:@selector(zengjia:) forControlEvents:UIControlEventTouchUpInside];
+        [cell.cellview.changepricebtn addTarget:self
+                                         action:@selector(changepric:) forControlEvents:UIControlEventTouchUpInside];
+        cell.cellview.changepricebtn.tag=indexPath.row;
+        cell.cellview.Jianbtn.       tag=indexPath.row;
+        cell.cellview.NumberLable.   tag=indexPath.row;
+        return (UITableViewCell *)cell;
+        //        return cell;
+    }
+    return nil;
+}
+#pragma mark -tableview点击
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    
+    if (tableView==_subtableview) {
+        [MBProgressHUD showHUDAddedTo:self animated:YES];
+        MDLXuanzeshangpin *xuanze=[_subviewarry objectAtIndex:indexPath.row];
+        //        self.catid=xuanze.cat_id;
+        NOK=YES;
+        UIImage *ima=[UIImage imageNamed:@"MDLjiantouxia@2x"];
+        self.image.image    =ima;
+        self.quanbuLable.text=xuanze.cat_name;
+        [self goosrequsetdata:xuanze];
+    }if (tableView==_JYtableview) {
+        
+    }if (tableView ==goodstableview){
+        
+    }
+    self.subtableview.hidden=YES;
+    //    picview.hidden=YES;
+    [picview.pictext resignFirstResponder];
+    [_searchbar resignFirstResponder];
+    
+    
+}
+#pragma mark UITableViewDelegate End -
+
+#pragma mark-点击事件
+
+//取消
+-(void)Canbtn
+{
+    [LBview removeFromSuperview];
+}
+//选择确定
+-(void)Deterbtn
+{
+    [LBview removeFromSuperview];
+    
+    [[NSNotificationCenter defaultCenter]postNotificationName:@"LBviewtext" object:_selectedArray];
+    self.MDLJingyingViewController.tabBarController.tabBar.hidden=NO;
+    [self.MDLJingyingViewController.navigationController popToRootViewControllerAnimated:YES];
+    
+}
+
+//***************提示框---价格的修改开始****************
+-(void)changepric:(UIButton *)sender
+{
+    NSInteger index=sender.tag;
+    NSIndexPath *path = [NSIndexPath indexPathForRow:index inSection:0];
+    MDLWuPinTableViewCell* cell=(MDLWuPinTableViewCell *)[_JYtableview cellForRowAtIndexPath:path];
+    //    picview.frame=CGRectMake(KDeviceWidth/2-picview.size.width/2,cell.superview.size.height, picview.size.width, picview.size.height);
+    picview.hidden=NO;
+    picyinying.hidden=NO;
+    picview.pictext.text=nil;
+    if (cell.cellview) {
+        picview.picname.text=cell.cellview.NameLable.text;
+    }if (cell.fuwuview) {
+        picview.picname.text=cell.fuwuview.nameLable.text;
+    }
+    [picview.quxiaobtn addTarget:self action:@selector(quxiao:) forControlEvents:UIControlEventTouchUpInside];
+    [picview.quedingbtn addTarget:self action:@selector(queding:) forControlEvents:UIControlEventTouchUpInside];
+    picview.quedingbtn.tag=index;
+    
+}
+-(void)quxiao:(UIButton *)btn
+{
+    picview.   hidden=YES;
+    picyinying.hidden=YES;
+    
+}
+-(void)queding:(UIButton *)btn
+{
+    NSInteger index=btn.tag;
+    MDLgoodsdata*data = [self.tablearry objectAtIndex:index];
+    
+    NSIndexPath *path = [NSIndexPath indexPathForRow:index inSection:0];
+    MDLWuPinTableViewCell* cell=(MDLWuPinTableViewCell *)[_JYtableview cellForRowAtIndexPath:path];
+    if ([picview.pictext.text length]>0) {
+        cell.cellview.PriceLable.text=[NSString stringWithFormat:@"%@元",picview.pictext.text];
+        cell.fuwuview.picLable.text  =[NSString stringWithFormat:@"%@元",picview.pictext.text];
+        //        data.goodsprice=nil;
+        data.goodsprice  = picview.pictext.text;
+        picview.   hidden=YES;
+        picyinying.hidden=YES;
+        
+        
+    }else{
+    }
+    NSLog(@"goodsprice:%@",data.goodsprice);
+}
+//***************提示框---价格的修改结束****************
+
+-(void)zengjia:(UIButton *)sender
+{
+    //    MDLWuPinTableViewCell * cell = (MDLWuPinTableViewCell *)[[sender superview] superview];
+    
+    NSIndexPath *path = [NSIndexPath indexPathForRow:sender.tag inSection:0];
+    MDLWuPinTableViewCell* cell=(MDLWuPinTableViewCell *)[_JYtableview cellForRowAtIndexPath:path];
+    
+    MDLgoodsdata *data = [self.tablearry objectAtIndex:sender.tag];
+    NSLog(@"daoota:%@",data);
+    
+    NSString * lableNumber = cell.cellview.NumberLable.text;
+    int lableCount = 1;
+    if (!lableNumber || [lableNumber isEqualToString:@""]) {
+    }else {
+        lableCount = [lableNumber intValue]+1;
+    }
+    cell.cellview.NumberLable.text = [NSString stringWithFormat:@"%d",lableCount];
+    if ([cell.cellview.NumberLable.text length]>0) {
+        data.goodsnum=cell.cellview.NumberLable.text;
+        
+    }else{
+        
+    }
+    //    NSLog(@"goodsnum:%@",data.goodsnum);
+}
+
+-(void)jianshao:(UIButton *)sender
+{
+    NSIndexPath *path = [NSIndexPath indexPathForRow:sender.tag inSection:0];
+    MDLWuPinTableViewCell* cell=(MDLWuPinTableViewCell *)[_JYtableview cellForRowAtIndexPath:path];
+    NSLog(@"sender.tag:%d",sender.tag);
+    MDLgoodsdata *data = [self.tablearry objectAtIndex:sender.tag];
+    
+    NSString * lableNumber = cell.cellview.NumberLable.text;
+    int lableCount = 1;
+    if (!lableNumber || [lableNumber isEqualToString:@""]) {
+    }else {
+        lableCount = [lableNumber intValue]-1;
+        if (lableCount<1) {
+            lableCount=1;
+        }
+    }
+    cell.cellview.NumberLable.text = [NSString stringWithFormat:@"%d",lableCount];
+    data.goodsnum                  =cell.cellview.NumberLable.text;
+    //    lijidata.goods_price=cell.cellview.NumberLable.text;
+    NSLog(@"goodsnum:%@",data.goodsnum);
+}
+-(void)danxuan:(UIButton *)sender
+{
+    NSIndexPath *path = [NSIndexPath indexPathForRow:sender.tag inSection:0];
+    MDLWuPinTableViewCell* cell=(MDLWuPinTableViewCell *)[_JYtableview cellForRowAtIndexPath:path];
+    MDLgoodsdata *data = [self.tablearry objectAtIndex:sender.tag];
+    
+    if ([self.selectedArray containsObject:data]) {
+        [self.selectedArray removeObject:data];
+    }else {
+        [self.selectedArray addObject:data];
+    }
+    
+    NSLog(@"selectedArray:%@",self.selectedArray);
+    
+    //        MDLInformation *Information =[[MDLInformation alloc]init];
+    //    NSInteger index=sender.tag;
+    //    NSMutableArray *arry=[Information.goodsubarry objectAtIndex:index];
+    
+    if (cell.fuwuview) {
+        cell.fuwuview.Fuwuxuanbtn.selected = !cell.fuwuview.Fuwuxuanbtn.selected;
+        
+        if (!cell.fuwuview.Fuwuxuanbtn.selected) {
+            cell.fuwuview.choosebtn.enabled=NO;
+            
+        }else{
+            cell.fuwuview.choosebtn.enabled=YES;
+            
+        }
+        
+    }if (cell.cellview) {
+        cell.cellview.xuandingbtn.selected = !cell.cellview.xuandingbtn.selected;
+        
+        if (!cell.cellview.xuandingbtn.selected) {
+            
+            [cell.cellview.bjimageview setImage:[UIImage imageNamed:@"MDLshuliangchangtai@2x"]];
+            cell.cellview.Addbtn.enabled   =NO;
+            cell.cellview.Jianbtn.enabled  =NO;
+            cell.cellview.changepricebtn.enabled=NO;
+            cell.cellview.NumberLable.text =@"1";
+            COOL=YES;
+            
+        } else {
+            
+            [cell.cellview.bjimageview setImage:[UIImage imageNamed:@"MDLNumber@2x"]];
+            cell.cellview. Addbtn.enabled=YES;
+            cell.cellview.Jianbtn.enabled=YES;
+            cell.cellview.changepricebtn.enabled=YES;
+            
+            COOL=NO;
+        }
+        
+    }
+}
+
+//-----选中/全部
+-(void)quanxuan
+{
+    if (NICK==NO) {
+        
+        _iamgeView.image=[UIImage imageNamed:@"MDLuncheck2@2x"];
+        _qbLable.textColor=[UIColor blackColor];
+        [self.selectedArray removeAllObjects];
+        NICK=YES;
+    }else if(NICK==YES){
+        
+        [self.selectedArray addObjectsFromArray:self.tablearry];
+        
+        _iamgeView.image=[UIImage imageNamed:@"MDLxuanzhong@2x"];
+        _qbLable.textColor=[UIColor redColor];
+        
+        NICK =NO;
+    }
+    NSLog(@"selectedArray:%@",self.selectedArray);
+    
+    [self.JYtableview reloadData];
+}
+
+//-----分类/全部
+- (IBAction)fenleixuanzebtn:(id)sender {
+    self.quanbuLable.text=@"全部";
+    [self.quanbuLable setTextColor:MDLBGColor];
+    
+    if (NOK==NO) {
+        UIImage *ima=[UIImage imageNamed:@"MDLjiantouxia@2x"];
+        self.image.image    =ima;
+        _fenleiview.hidden  =YES;
+        _subtableview.hidden=YES;
+        NOK=YES;
+    }else if(NOK==YES){
+        UIImage *ima=[UIImage imageNamed:@"MDLjiantoushang@2x"];
+        self.image.image=ima;
+        self.subtableview =[[UITableView alloc]initWithFrame:CGRectMake(0, 105, 90, 90)];
+        _subtableview.delegate  =self;
+        _subtableview.dataSource=self;
+        [self addSubview:_subtableview];
+        
+        [_subtableview.layer setMasksToBounds:YES];
+        [_subtableview.layer setCornerRadius:1.0];
+        _subtableview.layer.borderWidth = 1;
+        _subtableview.layer.borderColor = [UIColor orangeColor].CGColor;
+        
+        _fenleiview.hidden=NO;
+        NOK =NO;
+    }
+    //    [UIView beginAnimations:@"clockwiseAnimation" context:NULL];
+    //    [UIView setAnimationDuration:1.0f];
+    //    [UIView setAnimationDelegate:self];
+    //    //停止动画时候调用clockwiseRotationStopped方法
+    //    //    [UIView setAnimationDidStopSelector:@selector(clockwiseRotationStopped:finished:context:)];
+    //    //顺时针旋转90度
+    //    self.image.transform = CGAffineTransformMakeRotation((90.0f * M_PI) / 90.0f);
+    //    /* Commit the animation */
+    //    [UIView commitAnimations];
+    
+}
+
+- (IBAction)backitm:(id)sender
+{
+    self.MDLJingyingViewController.navigationController.tabBarController.tabBar.hidden=NO;
+    [self.MDLJingyingViewController.navigationController popViewControllerAnimated:YES];
+}
+
+/*
+ //自定义搜索取消button title
+ -(void)searchDisplayControllerWillBeginSearch:(UISearchDisplayController *)controller{
+ [self.searchbar setShowsCancelButton:YES animated:NO];
+ UIView *topView = controller.searchBar.subviews[0];
+ 
+ for (UIView *subView in topView.subviews) {
+ if ([subView isKindOfClass:NSClassFromString(@"UINavigationButton")]) {
+ UIButton *cancelButton = (UIButton*)subView;
+ [cancelButton setTitle:@"取消" forState:UIControlStateNormal];
+ }
+ }
+ }
+ 
+ //        [UIView beginAnimations:@"animationID"context:nil];//开始一个动画块，第一个参数为动画块标识
+ //        [UIView setAnimationDuration:1.5f];//设置动画的持续时间
+ ////        [UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
+ //        [UIView setAnimationRepeatAutoreverses:NO];//设置是否自动反转当前的动画效果
+ ////        [UIView seta]
+ //        [UIView setAnimationTransition:UIViewAnimationTransitionFlipFromLeft forView:self cache:YES];
+ //        [self exchangeSubviewAtIndex:7 withSubviewAtIndex:8];
+ //        [UIView commitAnimations];//提交动画
+ 
+ - (void)pressed:(id)sender {
+ UITableViewCell * cell = (UITableViewCell *)[[sender superview] superview];
+ NSIndexPath * path = [self.tableView indexPathForCell:cell];
+ NSLog(@"index row%d", [path row]);
+ //NSLog(@"view:%@", [[[sender superview] superview] description]);
+ }
+ 
+ // Only override drawRect: if you perform custom drawing.
+ // An empty implementation adversely affects performance during animation.
+ - (void)drawRect:(CGRect)rect
+ {
+ // Drawing code
+ }
+ */
+
+@end

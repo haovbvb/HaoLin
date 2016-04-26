@@ -1,0 +1,117 @@
+//
+//  MDLfuwuTableViewCell.m
+//  HAOLINAPP
+//
+//  Created by apple on 14-8-7.
+//  Copyright (c) 2014年 com.haolinshidai. All rights reserved.
+//  商户 - 销售订单 - 服务列表视图
+
+#import "MDLfuwuTableViewCell.h"
+
+@implementation MDLfuwuTableViewCell
+
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
+{
+    self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
+    if (self) {
+        [self fuwubuju];
+    }
+    return self;
+}
+-(void)fuwubuju
+{
+    
+    
+    self.fuwutypeimgae = [[UIImageView alloc] initWithFrame:CGRectMake(10, 10, 30, 25)];
+    _fuwutypeimgae.backgroundColor=[UIColor blueColor];
+    [self.contentView addSubview:_fuwutypeimgae];
+    
+    
+    self.fuwutypeLabel = [[UILabel alloc] initWithFrame:CGRectMake(50, 10, 30, 25)];
+    _fuwutypeLabel.backgroundColor=[UIColor blackColor];
+    _fuwutypeLabel.text=@"类型";
+    [_fuwutypeLabel setFont:[UIFont systemFontOfSize:12]];
+    [self.contentView addSubview:_fuwutypeLabel];
+    
+    self.fuwutimerLabel = [[UILabel alloc] initWithFrame:CGRectMake(160, 10, 150, 25)];
+    _fuwutimerLabel.backgroundColor=[UIColor orangeColor];
+    _fuwutimerLabel.text=@"下单时间:23-32-42 13：32";
+    [_fuwutimerLabel setFont:[UIFont systemFontOfSize:12]];
+    [self.contentView addSubview:_fuwutimerLabel];
+    
+    self.fuwunumberLable = [[UILabel alloc] initWithFrame:CGRectMake(150, self.fuwutimerLabel.frame.origin.y+self.fuwutimerLabel.frame.size.height+20, 60, 25)];
+    _fuwunumberLable.backgroundColor=[UIColor orangeColor];
+    _fuwunumberLable.text=@"数量：23";
+    [_fuwunumberLable setFont:[UIFont systemFontOfSize:12]];
+    [self.contentView addSubview:_fuwunumberLable];
+    
+    
+    self.fuwunameLabel = [[UILabel alloc] initWithFrame:CGRectMake(10, self.fuwutimerLabel.frame.origin.y+self.fuwutimerLabel.frame.size.height+20, 80, 25)];
+    _fuwunameLabel.backgroundColor=[UIColor orangeColor];
+    _fuwunameLabel.text=@"商品名称";
+    [_fuwunameLabel setFont:[UIFont systemFontOfSize:12]];
+    [self.contentView addSubview:_fuwunameLabel];
+    
+    self.fuwuLabel = [[UILabel alloc] initWithFrame:CGRectMake(10, self.fuwunameLabel.frame.origin.y+self.fuwunameLabel.frame.size.height+20, 60, 25)];
+    [_fuwuLabel setFont:[UIFont systemFontOfSize:12]];
+    _fuwuLabel.text=@"配送费";
+    _fuwuLabel.backgroundColor=[UIColor orangeColor];
+    [self.contentView addSubview:_fuwuLabel];
+    
+    self.fuwupriceLabel = [[UILabel alloc] initWithFrame:CGRectMake(260, self.fuwutimerLabel.frame.origin.y+self.fuwutimerLabel.frame.size.height+20, 50, 25)];
+    [_fuwupriceLabel setFont:[UIFont systemFontOfSize:12]];
+    _fuwupriceLabel.text=@"价格:34";
+    _fuwupriceLabel.backgroundColor=[UIColor orangeColor];
+    [self.contentView addSubview:_fuwupriceLabel];
+    
+    self.fuwuPSpriceLabel = [[UILabel alloc] initWithFrame:CGRectMake(280, self.fuwunameLabel.frame.origin.y+self.fuwunameLabel.frame.size.height+20, 30, 25)];
+    [_fuwuPSpriceLabel setFont:[UIFont systemFontOfSize:12]];
+    _fuwuPSpriceLabel.text=@"3";
+    _fuwuPSpriceLabel.backgroundColor=[UIColor orangeColor];
+    [self.contentView addSubview:_fuwuPSpriceLabel];
+    
+    self.fuwutotalLabel = [[UILabel alloc] initWithFrame:CGRectMake(230, self.fuwuPSpriceLabel.frame.origin.y+self.fuwuPSpriceLabel.frame.size.height+20, 80, 25)];
+    [_fuwutotalLabel setFont:[UIFont systemFontOfSize:12]];
+    _fuwutotalLabel.text=@"总计";
+    _fuwutotalLabel.backgroundColor=[UIColor orangeColor];
+    [self.contentView addSubview:_fuwutotalLabel];
+    
+    self.fuwustateLable = [[UILabel alloc] initWithFrame:CGRectMake(10,self.fuwutotalLabel.frame.origin.y+self.fuwutotalLabel.frame.size.height+20 , 120, 25)];
+    [_fuwustateLable setFont:[UIFont systemFontOfSize:12]];
+    _fuwustateLable.text=@"订单状态";
+    _fuwustateLable.backgroundColor=[UIColor orangeColor];
+    [self.contentView addSubview:_fuwustateLable];
+    
+    
+    self.fuwustateimage = [[UIImageView alloc] initWithFrame:CGRectMake(230, self.fuwutotalLabel.frame.origin.y+self.fuwutotalLabel.frame.size.height+10,80 , 40)];
+    //        [_stateimage.layer setCornerRadius:20];
+    //        [_stateimage.layer setMasksToBounds:YES];
+    _fuwustateimage.backgroundColor=[UIColor blueColor];
+    [self.contentView addSubview:_fuwustateimage];
+    
+//    self.contentButton = [[UIButton alloc] initWithFrame:CGRectZero];
+//    self.contentButton.backgroundColor = [UIColor clearColor];
+//    [self addSubview:self.contentButton];
+    
+}
+
+- (void)awakeFromNib
+{
+    // Initialization code
+}
+
+- (void)layoutSubviews
+{
+    [super layoutSubviews];
+    self.contentButton.frame = self.bounds;
+  
+}
+
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated
+{
+    [super setSelected:selected animated:animated];
+
+    // Configure the view for the selected state
+}
+
+@end

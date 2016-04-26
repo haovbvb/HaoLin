@@ -1,0 +1,89 @@
+//
+//  ZYPProductDescVc.m
+//  HaoLin
+//
+//  Created by mac on 14-9-12.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "ZYPProductDescVc.h"
+
+@interface ZYPProductDescVc ()<UITextViewDelegate>
+
+@end
+
+@implementation ZYPProductDescVc
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+    }
+    return self;
+}
+- (IBAction)over:(id)sender
+{
+    [self prama:@"product_desc" realNss:self.productDescText.text];
+}
+- (IBAction)back:(id)sender
+{
+    [self.navigationController popViewControllerAnimated:YES];
+}
+- (void)prama:(NSString *)str realNss:(NSString *)source
+{
+    __weak ZYPProductDescVc *nameVC = self;
+    ZYPObjectManger *object = [ZYPObjectManger shareInstance];
+    ZYPNetWorkGetSourceManger *manger = [[ZYPNetWorkGetSourceManger alloc] init];
+    NSString *urlString = [NSString stringWithFormat:@"%@user_id=%@&%@=%@",changeBusinessInfor,object.loginInObject.user_id,str,source];
+    NSLog(@"%@",urlString);
+    [manger connectWithUrlStr:urlString completion:^(id respondObject)
+     {
+         NSDictionary *dic = respondObject;
+         if ([[dic objectForKey:@"code"] isEqualToString:@"0"]) {
+             [nameVC alertWithMessage:@"提交成功"];
+         }else
+         {
+             [nameVC alertWithMessage:@"提交失败,请重新编辑..."];
+         }
+     }];
+    
+}
+//  自定义alert
+- (void)alertWithMessage:(NSString *)mesage
+{
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:mesage message:nil delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+    [alert show];
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    self.productDescText.text = self.produceText;
+    [self.productDescText becomeFirstResponder];
+}
+- (BOOL)textViewShouldBeginEditing:(UITextView *)textView
+{
+    if ([textView.text length] > 300) {
+        return NO;
+    }else
+    {
+        return YES;
+    }
+}
+- (void)textViewDidChange:(UITextView *)textView
+{
+    NSLog(@"%d",[textView.text length]); 
+    if ([textView.text length] > 300)
+    {
+        [textView resignFirstResponder];
+    }
+}
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+@end

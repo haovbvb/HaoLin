@@ -1,0 +1,32 @@
+//
+//  ZYPObjectManger.m
+//  HaoLin
+//
+//  Created by mac on 14-8-29.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "ZYPObjectManger.h"
+static ZYPObjectManger *manger = nil;
+@implementation ZYPObjectManger
+//  单例，保证线程安全
++ (ZYPObjectManger *)shareInstance
+{
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        manger = [[ZYPObjectManger alloc] init];
+        manger.state = -1;
+        manger.barTitle1 = @"上去啦";
+    });
+    return manger;
+}
+
++ (void)free
+{
+    if (manger) {
+        manger = nil;
+    }
+}
+
+
+@end

@@ -1,0 +1,28 @@
+//
+//  MDLDDnrView.h
+//  HAOLINAPP
+//
+//  Created by apple on 14-8-11.
+//  Copyright (c) 2014年 com.haolinshidai. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface MDLCellView : UIView
+{
+//    BOOL COOL;
+
+}
+
+@property (weak, nonatomic) IBOutlet UIImageView  *bjimageview;
+@property (weak, nonatomic) IBOutlet UILabel      *NumberLable;   //数量
+@property (weak, nonatomic) IBOutlet UIButton     *Jianbtn;
+@property (weak, nonatomic) IBOutlet UIButton     *Addbtn;
+@property (weak, nonatomic) IBOutlet UITextField  *TextPrice;     //输入价格
+@property (weak, nonatomic) IBOutlet UILabel      *PriceLable;
+@property (weak, nonatomic) IBOutlet UILabel      *NameLable;
+@property (weak, nonatomic) IBOutlet UIButton     *xuandingbtn;
+//@property (nonatomic,retain)MDLWuPinTableViewCell *wupincell;
+@property (nonatomic, assign)int     count;
+
+@end

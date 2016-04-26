@@ -1,0 +1,429 @@
+//
+//  MQLSendHanDanView.m
+//  HaoLin
+//
+//  Created by maqianli on 14-8-21.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "MQLSendHanDanView.h"
+
+@interface MQLSendHanDanView ()<UITableViewDataSource, UITableViewDelegate, \
+                                MQLPushBusinessScopeCellInSendHanDanViewDelegate,
+                                MQLConfirmOrAgainCellInSendHanDanViewDelegate>
+
+@property (nonatomic, weak) IBOutlet UIButton *backBtn;
+@property (nonatomic, weak) IBOutlet UILabel *handanTitleLab;
+@property (nonatomic, weak) IBOutlet UITableView *contentTableView;
+
+
+
+-(IBAction)backBtnClicked:(id)sender;
+
+/**
+ *  自定义初始化
+ */
+-(void)customInitialization;
+
+/**
+ *  添加tap手势
+ */
+-(void)addTapGusture;
+
+/**
+ *  显示提示
+ *
+ *  @param title
+ *  @param msg
+ *  @param tag
+ */
+-(void)showAlertViewWithTitle:(NSString*)title msg:(NSString*)msg tag:(int)tag;
+
+/**
+ *  注册通知
+ NotificationOfPersonalHanDanRequestOver
+ */
+-(void)registerNotifications;
+
+
+@end
+
+@implementation MQLSendHanDanView
+
+-(void)dealloc
+{
+    [[NSNotificationCenter defaultCenter]removeObserver:self];
+}
+
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        // Initialization code
+    }
+    return self;
+}
+
+-(void)awakeFromNib
+{
+    //自定义初始化
+    [self customInitialization];
+    
+}
+
+-(void)setOwnerViewController:(UIViewController *)ownerViewController
+{
+    _ownerViewController = ownerViewController;
+    
+}
+
+-(void)setSelectedHanDankind:(NSDictionary *)selectedHanDankind
+{
+    _selectedHanDankind = selectedHanDankind;
+    NSString *kindTitle = [selectedHanDankind objectForKey:@"kindTitle"];
+    
+    self.handanTitleLab.text = [NSString stringWithFormat:@"%@喊单", kindTitle];
+}
+
+-(void)setPersonalHanDanDataManage:(MQLPersonalHanDanDataManage *)personalHanDanDataManage
+{
+    _personalHanDanDataManage = personalHanDanDataManage;
+}
+
+/**
+ *  刷新contentTableView
+ */
+-(void)refreshContentTableView
+{
+    [self.contentTableView reloadData];
+    
+}
+
+#pragma mark --MQLSendHanDanView函数扩展
+
+-(IBAction)backBtnClicked:(id)sender
+{
+    [self.ownerViewController.navigationController popViewControllerAnimated:YES];
+}
+
+/**
+ *  自定义初始化
+ */
+-(void)customInitialization
+{
+    [self.backBtn setImage:[UIImage imageNamed:@"MQLBackNormalBtn"] forState:UIControlStateNormal];
+    [self.backBtn setImage:[UIImage imageNamed:@"MQLBackSelectedBtn"] forState:UIControlStateHighlighted];
+    
+    // 添加tap手势
+    [self addTapGusture];
+    
+    //注册通知
+    [self registerNotifications];
+    
+}
+
+/**
+ *  添加tap手势
+ */
+-(void)addTapGusture
+{
+    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(onTap:)];
+    [self.contentTableView addGestureRecognizer:tap];
+}
+
+-(void)onTap:(UITapGestureRecognizer*)tap
+{
+    [[[UIApplication sharedApplication]keyWindow]endEditing:NO];
+}
+
+/**
+ *  显示提示
+ *
+ *  @param title
+ *  @param msg
+ *  @param tag
+ */
+-(void)showAlertViewWithTitle:(NSString*)title msg:(NSString*)msg tag:(int)tag
+{
+    UIAlertView *alert = [[UIAlertView alloc]initWithTitle:title message:msg delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+    [alert show];
+}
+
+/**
+ *  注册通知
+ NotificationOfPersonalHanDanRequestOver
+ */
+-(void)registerNotifications
+{
+    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+    [center addObserver:self selector:@selector(onReceiveNotificationOfPersonalHanDanRequestOver:) name:NotificationOfPersonalHanDanRequestOver object:nil];
+    
+}
+
+-(void)onReceiveNotificationOfPersonalHanDanRequestOver:(NSNotification*)notification
+{
+    NSLog(@"%@", notification.userInfo);
+    ViewKind viewkind = [[notification.userInfo objectForKey:@"viewkind"]intValue];
+    if (viewkind != ViewKind_SendHanDan) {
+        return;
+    }
+    
+    [MBProgressHUD hideHUDForView:self.contentTableView animated:YES];
+    
+    int code = [[[notification.userInfo objectForKey:@"userInfo"] objectForKey:@"code"]intValue];
+    if (code == 0) {
+        
+        int merchant_num = [[[[notification.userInfo objectForKey:@"userInfo"] objectForKey:@"data"]objectForKey:@"merchant_num"]intValue];
+        if (merchant_num > 0) {
+            
+            //展示等待
+            MQLHanDanWaitingViewController *vc = [[MQLHanDanWaitingViewController alloc]initWithNibName:@"MQLHanDanWaitingViewController" bundle:nil];
+            vc.selectedHanDankind = self.selectedHanDankind;
+            vc.personalHanDanDataManage = self.personalHanDanDataManage;
+            vc.dataOfHanDanOver = [[notification.userInfo objectForKey:@"userInfo"] objectForKey:@"data"];
+            [self.ownerViewController.navigationController pushViewController:vc animated:YES];
+            
+        }else{
+            
+            NSString *msg = @"对不起，没有找到符合您需要的商家。";
+            [self showAlertViewWithTitle:@"提示" msg:msg tag:-1];
+        }
+        
+
+        
+    }else{
+        
+        //提示error
+        NSString *msg = [[notification.userInfo objectForKey:@"userInfo"] objectForKey:@"message"];
+        [self showAlertViewWithTitle:@"提示" msg:msg tag:-1];
+    }
+    
+    
+}
+
+#pragma mark -- UITableViewDataSource, UITableViewDelegate
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return 5;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+        switch (indexPath.row) {
+            case 0:
+            {
+                if (self.personalHanDanDataManage.charaters.length == 0) {
+                    
+                    NSString *reuseIdentifier = @"reuseIdentifierOfTryListen";
+                    MQLTryListenCellInSendHanDanView *cell = [tableView dequeueReusableCellWithIdentifier:reuseIdentifier];
+                    if (cell == nil) {
+                        
+                        cell = [[[NSBundle mainBundle]loadNibNamed:@"MQLTryListenCellInSendHanDanView" owner:nil options:nil]lastObject];
+                        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+                        cell.backgroundColor = [UIColor clearColor];
+                        
+                    }
+                    
+                    cell.personalHanDanDataManage = self.personalHanDanDataManage;
+                    
+                    return cell;
+                    
+                }else{
+                    
+                    NSString *reuseIdentifier = @"reuseIdentifierOfCharacter";
+                    MQLCharacterCellInSendHanDanView *cell = [tableView dequeueReusableCellWithIdentifier:reuseIdentifier];
+                    if (cell == nil) {
+                        
+                        cell = [[[NSBundle mainBundle]loadNibNamed:@"MQLCharacterCellInSendHanDanView" owner:nil options:nil]lastObject];
+                        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+                        
+                    }
+                    
+                    cell.personalHanDanDataManage = self.personalHanDanDataManage;
+                    
+                    return cell;
+                    
+                }
+            }
+                break;
+            case 1:
+            {
+                NSString *reuseIdentifier = @"reuseIdentifierOfServiceCharge";
+                MQLServiceChargeCellInSendHanDanView *cell = [tableView dequeueReusableCellWithIdentifier:reuseIdentifier];
+                if (cell == nil) {
+                    
+                    cell = [[[NSBundle mainBundle]loadNibNamed:@"MQLServiceChargeCellInSendHanDanView" owner:nil options:nil]lastObject];
+                    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+                    cell.backgroundColor = [UIColor clearColor];
+                    
+                }
+                
+                cell.personalHanDanDataManage = self.personalHanDanDataManage;
+                
+                return cell;
+            }
+                break;
+            case 2:
+            {
+                NSString *reuseIdentifier = @"reuseIdentifierOfSendAddress";
+                MQLSendAddressCellInSendHanDanView *cell = [tableView dequeueReusableCellWithIdentifier:reuseIdentifier];
+                if (cell == nil) {
+                    
+                    cell = [[[NSBundle mainBundle]loadNibNamed:@"MQLSendAddressCellInSendHanDanView" owner:nil options:nil]lastObject];
+                    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+                    cell.backgroundColor = [UIColor clearColor];
+                    
+                }
+                
+                cell.personalHanDanDataManage = self.personalHanDanDataManage;
+                
+                return cell;
+            }
+                break;
+            case 3:
+            {
+                NSString *reuseIdentifier = @"reuseIdentifierOfPushBusinessScope";
+                MQLPushBusinessScopeCellInSendHanDanView *cell = [tableView dequeueReusableCellWithIdentifier:reuseIdentifier];
+                if (cell == nil) {
+                    
+                    cell = [[[NSBundle mainBundle]loadNibNamed:@"MQLPushBusinessScopeCellInSendHanDanView" owner:nil options:nil]lastObject];
+                    cell.delegate = self;
+                    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+                    cell.backgroundColor = [UIColor clearColor];
+                }
+                
+                cell.personalHanDanDataManage = self.personalHanDanDataManage;
+                
+                return cell;
+                
+            }
+                break;
+            case 4:
+            {
+                NSString *reuseIdentifier = @"reuseIdentifierOfConfirmOrAgain";
+                MQLConfirmOrAgainCellInSendHanDanView *cell = [tableView dequeueReusableCellWithIdentifier:reuseIdentifier];
+                if (cell == nil) {
+                    
+                    cell = [[[NSBundle mainBundle]loadNibNamed:@"MQLConfirmOrAgainCellInSendHanDanView" owner:nil options:nil]lastObject];
+                    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+                    cell.backgroundColor = [UIColor clearColor];
+                    
+                }
+                
+                cell.personalHanDanDataManage = self.personalHanDanDataManage;
+                cell.delegate = self;
+                
+                return cell;
+            }
+                break;
+                
+        }
+
+    return nil;
+
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    CGFloat height = 0.0;
+    switch (indexPath.row) {
+        case 0:
+        {
+            if (self.personalHanDanDataManage.charaters.length == 0) {
+                
+                height = 152;
+            }else{
+                
+                height = 152;
+            }
+        }
+            break;
+        case 1:
+        {
+            height = 44;
+        }
+            break;
+        case 2:
+        {
+            height = 80;
+        }
+            break;
+        case 3:
+        {
+            height = 44;
+        }
+            break;
+        case 4:
+        {
+            height = 204;
+        }
+            break;
+            
+        default:
+            break;
+    }
+    return height;
+}
+
+#pragma mark -- MQLPushBusinessScopeCellInSendHanDanViewDelegate
+
+-(void)setBusinessLocationBtnClicked
+{
+    MQLRequiredBusinessLocationViewController *vc = [[MQLRequiredBusinessLocationViewController alloc]initWithNibName:@"MQLRequiredBusinessLocationViewController" bundle:nil];
+    
+    vc.personalHanDanDataManage = self.personalHanDanDataManage;
+    [self.ownerViewController.navigationController pushViewController:vc animated:YES];
+}
+
+#pragma mark -- MQLConfirmOrAgainCellInSendHanDanViewDelegate
+
+-(void)confirmSendBtnClicked
+{
+    if (self.personalHanDanDataManage.sendAddress.length) {
+        
+       ZYPObjectManger *manager = [ZYPObjectManger shareInstance];
+        
+        MQLHttpRequestManage *httpRequestManage = [MQLHttpRequestManage instance];
+        [httpRequestManage sendPersonalHanDanRequest:manager personalHanDanDataManage:self.personalHanDanDataManage selectedHanDankind:self.selectedHanDankind inWhichView:ViewKind_SendHanDan];
+        
+        [MBProgressHUD showHUDAddedTo:self.contentTableView animated:YES];
+        
+    }else{
+        
+        [self showAlertViewWithTitle:@"提示" msg:@"请输入配送地址" tag:-1];
+    }
+}
+
+-(void)hanDanAgainBtnClicked
+{
+    [self.ownerViewController.navigationController popToRootViewControllerAnimated:YES];
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@end

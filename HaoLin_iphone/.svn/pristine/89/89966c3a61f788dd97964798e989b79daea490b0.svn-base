@@ -1,0 +1,19 @@
+//
+//  MDLPhySicalView.h
+//  HAOLINAPP
+//
+//  Created by apple on 14-8-10.
+//  Copyright (c) 2014年 com.haolinshidai. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface MDLPhySicalView : UIView<UITableViewDelegate,UITableViewDataSource>
+{
+    UIImageView *redview;
+    UIImageView *barview;
+
+}
+@property(nonatomic ,retain) id target;
+@property(nonatomic ,readonly) UITableView *PhySicatableview;
+@end

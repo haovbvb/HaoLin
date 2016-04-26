@@ -1,0 +1,44 @@
+//
+//  JZDBBsIntroTableViewCell.m
+//  HaoLin
+//
+//  Created by 姜泽东 on 14-8-17.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "JZDBBsIntroTableViewCell.h"
+
+@implementation JZDBBsIntroTableViewCell
+@synthesize item=_item;
+- (void)awakeFromNib
+{
+    // Initialization code
+}
+
+-(JZDItem *)item
+{
+    return _item;
+}
+
+-(void)setItem:(JZDItem *)item
+{
+    _item=item;
+    [_headImageButton setBackgroundImage:[UIImage circleImageWithName:_item.headImage borderWidth:0.1 borderColor:nil] forState:UIControlStateNormal];
+    _nickName.text=item.nickName;
+    _theme.text=item.bbsTheme;
+    _timeDate.text=item.timeForStart;
+    _userContent.text=item.describeString;
+}
+
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated
+{
+    [super setSelected:selected animated:animated];
+
+    // Configure the view for the selected state
+}
+
+- (IBAction)clickHeadImage:(UIButton *)sender {
+    
+}
+
+@end

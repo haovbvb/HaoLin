@@ -1,0 +1,57 @@
+//
+//  MDLServiceXZViewController.m
+//  HaoLin
+//
+//  Created by apple on 14-8-26.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "MDLServiceXZViewController.h"
+
+@interface MDLServiceXZViewController ()
+
+@end
+
+@implementation MDLServiceXZViewController
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+    }
+    return self;
+}
+-(void)loadView{
+    self.leixingview.backgroundColor=[UIColor redColor];
+    
+    
+}
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    
+
+}
+#pragma mark -点击事件
+
+- (IBAction)qbbtn:(id)sender {
+    BOOL a=YES;
+    if (a==NO) {
+        self.leixingview.hidden=YES;
+        a=YES;
+    }else if(a==YES){
+        self.leixingview.hidden=NO;
+        a=NO;
+    }
+}
+
+
+
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+@end

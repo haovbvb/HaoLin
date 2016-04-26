@@ -1,0 +1,38 @@
+//
+//  HSPProfileLoginTopView.m
+//  HaoLin
+//
+//  Created by PING on 14-9-1.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "HSPProfileLoginTopView.h"
+
+@implementation HSPProfileLoginTopView
+@synthesize  account= _account;
+
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        // Initialization code
+    }
+    return self;
+}
+
+- (HSPAccount *)account
+{
+    return _account;
+}
+
+
+- (void)setAccount:(HSPAccount *)account
+{
+    _account = account;
+    NSURL *url = [NSURL URLWithString:account.headimg];
+    _headIcon.image = [UIImage circleImageWithName:[UIImage imageWithData:[NSData dataWithContentsOfURL:url]] borderWidth:0.1 borderColor:nil];
+//    _headIcon.image = [UIImage circleImageWithName:account.tempHeadImg borderWidth:0.1 borderColor:nil];
+    _nickName.text = account.nickname;
+}
+
+@end

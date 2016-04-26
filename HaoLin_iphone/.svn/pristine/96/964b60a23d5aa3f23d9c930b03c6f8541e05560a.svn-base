@@ -1,0 +1,18 @@
+//
+//  HSPSettingViewController.h
+//  HaoLin
+//
+//  Created by PING on 14-8-25.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface HSPSettingViewController : UITableViewController
+
+// 数据列表
+@property (nonatomic, strong) NSArray *dataList;
+
+@property (nonatomic, strong) UIImage *headPhoto;
+
+@end

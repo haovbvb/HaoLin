@@ -1,0 +1,33 @@
+//
+//  HSPOrderUserInfo.h
+//  HaoLin
+//
+//  Created by PING on 14-9-12.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+
+@interface HSPOrderUserInfo : NSObject
+
+/**
+ *  "userinfo": {
+ "user_id": "4",
+ "nickname": "robin",
+ "mobile": "15910216409",
+ "delivery_address": "北京市海淀区中关村创业大厦1255"
+ },
+ "merchantinfo": {
+ "merchant_id": "6",
+ "merchant_name": "小小鸟餐厅2hello",
+ "shop_address": "北京市三里屯",
+ "mobile": "15910216402",
+ "phone": "010-32536586"
+ },
+ */
+// userinfo
+@property (nonatomic, copy) NSString *nickname;
+@property (nonatomic, copy) NSString *mobile;
+@property (nonatomic, copy) NSString *delivery_address;
+
+@end

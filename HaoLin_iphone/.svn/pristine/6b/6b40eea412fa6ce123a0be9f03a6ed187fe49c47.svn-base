@@ -1,0 +1,274 @@
+//
+//  Main.h
+//  HaoLin
+//
+//  Created by mac on 14-8-7.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+//  controller 类
+#import "ZYPLoginViewController.h" //  登陆
+#import "ZYPRegiseterViewController.h" // 注册
+#import "ZYPChangePasswordViewController.h" // 修改密码
+#import "ZYPBusinrssOrderViewController.h"
+#import "ZYPGoodsSheftViewController.h"//  我的货架
+#import "ZYPGoodsCategaryVC.h" //  商品分类
+#import "ZYPDetaiCategaryViewCV.h"
+#import "ZYPMyRemainVC.h"
+#import "ZYPCommitCashVC.h"
+#import "ZYPCheckViewController.h"
+#import "ZYPInformationViewCC.h"
+#import "ZYPRegWriteInformationVC.h"
+#import "ZYPMapViewController.h"
+#import "ZYPScopeVC.h" //  商家经营范围
+
+
+
+//  商家详情更改前
+#import "ZYPBusinessDetailVC.h"
+//  商家详情更改后
+#import "ZYPDetailBusinVC.h"
+//  修改商家资料
+#import "ZYPPhoneChangeVC.h"//修改商户电话
+#import "ZYPShopAddressVC.h"
+#import "ZYPShopNameVC.h"
+#import "ZYPShopDescVC.h"
+#import "ZYPProductDescVc.h"
+#import "ZYPActiveDescVC.h"
+#import "ZYPPictureDescVC.h"
+
+
+
+#import "ZYPCompleteinfoVC.h"
+#import "ZYPScopeViewController.h"
+#import "ZYPOverViewController.h"
+#import "ZYPInforDetailVC.h"//订单信息详情
+#import "ZYPOrderDetailVC.h"//订单详情
+#import "ZYPServerViewController.h"//  服务订单controller
+#import "ZYPServeOrderDetailVC.h"//  服务订单详情
+#import "ZYPBankSelectedVC.h"//  银行选择界面
+#import "ZYPBusinessListVC.h"//  商户列表
+#import "ZYPBUDetalVC.h"//商家详情
+#import "ZYPBUEvaluteVC.h"//  评价列表
+
+#import "ZYPPictureViewController.h"
+
+
+
+// model 类
+#import "ZYPLoginAndRegisterManger.h"// 登录注册管理类
+#import "ZYPNetWorkGetSourceManger.h" //  请求数据管理类
+#import "ZYPObjectManger.h"//  对象管理类
+#import "ZYPLoginInformation.h" //  成功登陆实例对象
+#import "ZYPGoodsinfoListObject.h"//  商品信息列表对象
+#import "ZYPCategaryListObject.h"//  商品分类列表对象
+#import "ZYPorderObject.h"//订单实例
+#import "ZYPOrderReleatedObject.h"//  订单关联实例
+#import "ZYPOrderDetailObject.h"//  订单详情对象
+#import "ZYPUserObject.h"//  个人对象
+#import "ZYPServeObject.h"// 服务对象
+#import "ZYPBusinessObject.h"//  商家对象
+#import "ZYPBusinessDetailObject.h"//  商家详情对象
+#import "ZYPPictureDescObject.h"//  图片介绍实例
+#import "ZYPAudioPlayManger.h"
+#import "EvaluateObject.h"
+
+#import "ZYPNotificationLoginManger.h"
+
+//  自定义View 类
+#import "ZYPHomeBottomView.h" //  business视图底部view
+#import "ZYPloginOverView.h" //  登陆视图
+#import "ZYPHomeRegisterView.h" // 注册视图
+#import "ZYPorderTopView.h" //  销售订单顶部view
+#import "ZYPAddView.h"
+#import "ZYPNextView.h"
+#import "ZYPAlertView.h"
+#import "ZYPAddDetailView.h"
+#import "ZYPNavagationView.h"
+#import "ZYPbusinessDetailView.h"
+#import "ZYPDetailGoodsObject.h"
+#import "ZYPInformationObject.h"
+#import "ZYPOderView.h"
+#import "ZYPLoginView.h"
+#import "ZYPAddImageView.h"
+#import "ZYPServeView.h"
+#import "ZYPServ1View.h"
+#import "ZYPNext1View.h"
+#import "ZYPHomeView.h"
+#import "ZYPEntityOrderView.h"
+#import "ZYPServeOrderView.h"
+#import "ZYPServeOrderTopView.h"
+#import "ZYPOrderLogoutView.h"
+
+
+#import "ZYPCustomBottomView.h"
+#import "ZYPServeOrderBottomView.h"
+#import "ZYPPictureView.h"
+#import "ZYPLoginStateView.h"
+
+
+#import "ZYPEntityOrderDetailView.h"
+#import "ZYPServeOrderDetailView.h"
+
+
+
+
+
+
+
+//  自定义Cell
+#import "ZYPHomeTableViewCell.h" //  商家枪单cell
+#import "ZYPOrderTableViewCell.h" //  销售订单cell
+#import "ZYPGoodsSheftCell.h" //  我的货架cell
+#import "ZYPDetailCell.h"//  我的货架最后一页
+#import "ZYPRecommendCell.h"
+#import "ZYPInformationCell.h"
+#import "ZYPSelectedCell.h"
+#import "ZYPCustomeCell.h"
+#import "ZYPAddImageCell.h"
+#import "ZYPOverCell.h"
+//  订单详情cell
+#import "ZYPPlainCell.h"
+#import "ZYPCustomOrderCell.h"
+#import "ZYPLastCell.h"
+//  服务订单cell
+#import "ZYPServeOrderCell.h"
+#import "ZYPBUPlainCell.h"//  商家详情普通cell
+#import "ZYPTableViewCell.h"
+
+
+#import "ZYPPictureCell.h"
+#import "ZYPEvaluateCell.h"//  评价cell
+
+//  宏定义  请求数据
+////  登陆用  (post)
+//#define loginUrl @"http://192.168.1.88:7878/home/user/login?" //  登陆url
+//#define pushUserId @"12345"  //  推送时用的，已知
+//#define channelId @"1234567"  // 已知
+//#define deviceType @"2"
+////  注册用(post)
+//#define registerUrl @"http://192.168.1.88:7878/home/user/register?"//  注册url
+////  修改密码使用  (post)
+//#define changeUrl @"http://192.168.1.88:7878/home/user/changepassword?" // 修改密码url
+//#define userId @""  //  user_id
+//#define tokeniD @"" //  tokenid
+//#define newpassword @""//  可选
+//
+////  上传用户头像 (post)
+//#define uploadUrl @"http://192.168.1.88:7878/home/user/uploadheadimg?"
+////  商户审核资料上交(post)
+//#define businessUploadUrl @"http://192.168.1.88:7878/home/user/useraudit"
+////  商品分类列表 (get)
+//#define goodsCategaryList @"http://192.168.1.88:7878/home/goods/categorylist?"
+////  修改商品(post)
+//#define changeGoods @"http://192.168.1.88:7878/home/goods/changegoods?"
+////  修改商户资料(post)
+//#define changeBusinessInfor @"http://192.168.1.88:7878/home/user/changeuserannex?"
+////  获取分类下的商品列表(post)
+//#define goodsList @"http://192.168.1.88:7878/home/goods/goodslist?"
+////  获取商户经营范围分类(post)
+//#define scopeCategary @"http://192.168.1.88:7878/home/goods/merchantcatgory?"
+////  商户订单 (get)
+//#define bushinessOrder @"http://192.168.1.88:7878/home/order/merchantorder?"
+////  消息（系统消息和订单消息）(post)
+//#define information @"http://192.168.1.88:7878/home/message/messagelist?"
+////  标记消息（post）
+//#define markInformation @"http://192.168.1.88:7878/home/message/readmessage?"
+////  删除商品(post)
+//#define deleteGoods @"http://192.168.1.88:7878/home/goods/removegoods?"
+////  添加商品(post)
+//#define addGood @"http://192.168.1.88:7878/home/goods/addgoods?"
+////  获取喊单详情
+//#define handanDetail   @"http://192.168.1.88:7878/home/order/talkinfos?"
+////  获取订单详情（get）
+//#define orderDetailInfor @"http://192.168.1.88:7878/home/order/orderinfo?"
+////  我的余额
+//#define myRemainM @"http://192.168.1.12/youlin/index.php?"
+////  提现(get)
+//#define cashM @"http://192.168.1.12/youlin/index.php?m=home&c=amount&a=checkMemberIsMoney&"
+////  提现表单(post)
+//#define commitMenu @"http://192.168.1.12/youlin/index.php?m=home&c=amount&a=postMemberAcquireMoney&"
+////  注销登录 post
+//#define cancelLoginUrl @"http://192.168.1.88:7878/home/user/loginout?"
+////  获取商户列表(get)
+//#define businessListUrl @"http://192.168.1.88:7878/home/user/merchantlist?"
+////  商家详情
+//#define businessDetailUrl @"http://192.168.1.88:7878/home/user/merchantinfo?"
+//
+////  添加图片 post
+//#define addImageUrl @"http://192.168.1.88:7878/home/merphoto/addmerphoto?"
+////  删除图片
+//#define deleteImageUrl @"http://192.168.1.88:7878/home/merphoto/delmerphoto?"
+
+
+
+////  外网访问
+//  登陆用  (post)
+#define loginUrl @"http://t9.wxwork.cn/home/user/login?" //  登陆url
+#define pushUserId @""  //  推送时用的，已知
+#define channelId @""  // 已知
+#define deviceType @"2"
+//  注册用(post)
+#define registerUrl @"http://t9.wxwork.cn/home/user/register?"//  注册url
+//  修改密码使用  (post)
+#define changeUrl @"http://192.168.1.88:7878/home/user/changepassword?" // 修改密码url
+#define userId @""  //  user_id
+#define tokeniD @"" //  tokenid
+#define newpassword @""//  可选
+
+//  上传用户头像 (post)
+#define uploadUrl @"http://t9.wxwork.cn/home/user/uploadheadimg?"
+//  商户审核资料上交(post)
+#define businessUploadUrl @"http://t9.wxwork.cn/home/user/useraudit"
+//  商品分类列表 (get)
+#define goodsCategaryList @"http://t9.wxwork.cn/home/goods/categorylist?"
+//  修改商品(post)
+#define changeGoods @"http://t9.wxwork.cn/home/goods/changegoods?"
+//  修改商户资料(post)
+#define changeBusinessInfor @"http://t9.wxwork.cn/home/user/changeuserannex?"
+//  获取分类下的商品列表(post)
+#define goodsList @"http://t9.wxwork.cn/home/goods/goodslist?"
+//  获取商户经营范围分类(post)
+#define scopeCategary @"http://t9.wxwork.cn/home/goods/merchantcatgory?"
+//  商户订单 (get)
+#define bushinessOrder @"http://t9.wxwork.cn/home/order/merchantorder?"
+//  消息（系统消息和订单消息）(post)
+#define information @"http://t9.wxwork.cn/home/message/messagelist?"
+//  标记消息（post）
+#define markInformation @"http://t9.wxwork.cn/home/message/readmessage?"
+//  删除商品(post)
+#define deleteGoods @"http://t9.wxwork.cn/home/goods/removegoods?"
+//  添加商品(post)
+#define addGood @"http://t9.wxwork.cn/home/goods/addgoods?"
+//  获取喊单详情
+#define handanDetail   @"http://t9.wxwork.cn/home/order/talkinfos?"
+//  获取订单详情
+#define orderDetailInfor @"http://t9.wxwork.cn/home/order/orderinfo?"
+//  获取订单详情（get）
+#define orderDetailInfor @"http://t9.wxwork.cn/home/order/orderinfo?"
+//  获取商户列表(get)
+#define businessListUrl @"http://t9.wxwork.cn/home/user/merchantlist?"
+//  商家详情
+#define businessDetailUrl @"http://t9.wxwork.cn/home/user/merchantinfo?"
+//  注销登录 post
+#define cancelLoginUrl @"http://t9.wxwork.cn/home/user/loginout?"
+//  添加图片 post
+#define addImageUrl @"http://t9.wxwork.cn/home/merphoto/addmerphoto"
+//  删除图片
+#define deleteImageUrl @"http://t9.wxwork.cn/home/merphoto/delmerphoto?"
+//  修改订单状态(post)
+#define changeDingDanState @"http://t9.wxwork.cn/home/order/changeorderstatus?"
+//  商户评价列表
+#define evaluteList @"http://t9.wxwork.cn/home/user/mercommentlist?"
+
+
+//  第三方
+#import "AFHTTPRequestOperation.h" //  AFNetWorking 操作
+#import "MJRefresh.h"
+
+#define ZYPBGColor [UIColor colorWithRed:255/255 green:75/255 blue:0/255 alpha:1.0]
+#define chacterHong 16
+
+static NSString *zypNotificationLogin = @"notificationLogin";
+
+

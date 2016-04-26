@@ -1,0 +1,209 @@
+//
+//  Main.h
+//  HaoLin
+//
+//  Created by mac on 14-8-7.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+// 分类
+#import "UIBarButtonItem+HSP.h"
+#import "UIImage+HSP.h"
+#import "UIView+HSP.h"
+
+#import "HSPPotosView.h"
+#import "HSPMyPartyDetailController.h"
+#import "HSPPartyViewController.h"
+
+#import "HSPHttpRequest.h"
+#import "MJExtension.h"
+
+#import "HSPNavigationController.h"
+#import "HSPNavigationBar.h"
+
+#import "HSPTextView.h"
+
+// 个人中心
+#import "HSPBalanceViewController.h"
+#import "HSPCashViewController.h"
+#import "HSPCashStutasViewController.h"
+#import "HSPCashRuleViewController.h"
+#import "HSPProfileViewController.h"
+#import "HSPProfileCell.h"
+#import "HSPProfileGroup.h"
+#import "HSPProfileItem.h"
+#import "HSPProfileTopView.h"
+#import "HSPLogoutBtnView.h"
+#import "HSPSettingViewController.h"
+#import "HSPUserInfo.h"
+#import "HSPAboutHaoLinTopView.h"
+#import "HSPSettingInfoView.h"
+#import "HSPSettingHeadIconView.h"
+#import "HSPDeliveryAddressView.h"
+#import "HSPEditViewController.h"
+#import "HSPAccount.h"
+#import "HSPAccountTool.h"
+#import "HSPProfileLoginTopView.h"
+#import "HSPRegisterViewController.h"
+#import "HSPForgetPasswordController.h"
+#import "HSPProfileTabBarViewController.h"
+#import "HSPBankViewController.h"
+
+#import "HSPProfileView.h"
+#import "HSPOrderView.h"
+
+// 订单
+#import "HSPOrderCreatedTimeView.h"
+#import "HSPOrderCountView.h"
+#import "HSPOrderStatusView.h"
+#import "HSPOrderGoodsView.h"
+#import "HSPOrder.h"
+#import "HSPOrderAllCell.h"
+#import "HSPGoods.h"
+#import "HSPSegmentedControl.h"
+#import "HSPOrderWaitingReceiveController.h"
+#import "HSPAddressView.h"
+#import "HSPOtherInfoView.h"
+#import "HSPOrderContentTitleView.h"
+#import "HSPOrderUserInfo.h"
+#import "HSPOrderBottomView.h"
+#import "HSPOrderPayView.h"
+#import "HSPOrderPayViewController.h"
+#import "HSPOrderPayGoodsListView.h"
+#import "HSPTextStepperField.h"
+#import "HSPServiceCountView.h"
+#import "HSPRatingView.h"
+#import "HSPRatingViewController.h"
+#import "HSPOrderViewController.h"
+
+
+
+// 我的代金劵
+#import "HSPConponCell.h"
+#import "HSPCoponViewController.h"
+#import "HSPConpon.h"
+
+// 消息中心
+#import "HSPMessageCenterViewController.h"
+#import "HSPMessageCenterCell.h"
+#import "HSPMessage.h"
+
+// 自我推广收益
+#import "HSPIncomeCell.h"
+#import "HSPIncomeViewController.h"
+
+// 通讯录
+#import "HSPPhoneBooksViewController.h"
+
+// 登录注册
+#import "HSPLoginViewController.h"
+
+// 关于好邻
+#import "HSPFeedbackViewController.h"
+
+/**
+ *  个人中心
+ */
+// 用户注册
+#define HSPRegisterUrl    @"http://t9.wxwork.cn/home/user/register"
+
+// 用户登录
+#define HSPLoginUrl       @"http://t9.wxwork.cn/home/user/login"
+
+// 修改密码
+#define changePasswordUrl @"http://t9.wxwork.cn/home/user/changepassword"
+
+// 个人信息修改
+#define changeUserInfoUrl @"http://t9.wxwork.cn/home/user/changeuserinfo"
+
+// 用户头像上传
+#define uploadHeadImgUrl  @"http://t9.wxwork.cn/home/user/uploadheadimg"
+
+// 提取用户详细信息
+#define userInfoUrl       @"http://t9.wxwork.cn/home/user/userinfos"
+
+// 我的代金券列表
+#define conponListUrl     @"http://t9.wxwork.cn/home/user/mycoupon"
+// 激活代金券
+#define conponActivateUrl @"http://t9.wxwork.cn/home/user/activatecoupon"
+
+// 消息列表
+#define messageListUrl    @"http://t9.wxwork.cn/home/message/messagelist"
+
+// 我的订单
+#define userOrderUrl      @"http://t9.wxwork.cn/home/order/userorder?"
+// 订单评价
+#define orderCommentUrl   @"http://t9.wxwork.cn/home/order/ordercomment"
+// 获取订单详情
+#define orderDetailUrl    @"http://t9.wxwork.cn/home/order/orderinfo?user_id=%@&tokenid=%@&order_id=%d"
+// 修改订单状态
+#define orderStatusChangeUrl @"http://t9.wxwork.cn/home/order/changeorderstatus"
+
+// 检测版本更新
+#define updateVersionUrl  @"http://t9.wxwork.cn/home/system/changeversion"
+
+// 提交反馈信息
+#define feedbackUrl       @"http://t9.wxwork.cn/home/user/activatecoupon"
+
+
+
+
+
+
+// 余额
+#define balanceUrl        @"http://t9.wxwork.cn/index.php?m=home&c=amount&a=acquireMemberMoneyInfo&user_id=%@&tokenid=%@"
+#define checkAccountUrl   @"http://t9.wxwork.cn/index.php?m=home&c=amount&a=checkMemberIsMoney&user_id=%@&tokenid=%@"
+#define getCashUrl        @"http://t9.wxwork.cn/index.php?m=home&c=amount&a=postMemberAcquireMoney&tokenid=%@"
+
+
+
+// 服务器 t9.wxwork.cn
+// 本地 192.168.1.12
+
+// 聚会主页
+#define partyListUrl      @"http://t9.wxwork.cn/index.php?m=home&c=group&a=lists&type=0&hot=%d&page=%d"
+// 我发起的聚会
+#define myPartyListUrl    @"http://t9.wxwork.cn/index.php?m=home&c=space&a=mySendGroup&user_id=14&type=0&page=%d&tokenid=CABS918K1J14KJFS"
+// 我参与的聚会
+#define joinPartyListUrl  @"http://t9.wxwork.cn/index.php?m=home&c=space&a=myJoinGroupList&user_id=14&type=0&page=%d&tokenid=CABS918K1J14KJFS"
+// 聚会详情
+#define detailPartyUrl    @"http://t9.wxwork.cn/index.php?m=home&c=space&a=myGroupOneApply&user_id=14&group_id=%@&page=%@&tokenid=CABS918K1J14KJFS"
+// 发布聚会
+#define postPartyUrl      @"http://t9.wxwork.cn/index.php?m=home&c=group&a=addGroup"
+
+// 查看报名我的活动的同意状况
+#define CheckAgreeParty   @"http://t9.wxwork.cn/index.php?m=home&c=space&a=myGroupOneApply&user_id=14&group_id=%@&page=%@&tokenid=CABS918K1J14KJFS"
+
+#define PublishPartyActivity @"http://t9.wxwork.cn/index.php?m=home&c=group&a=addGroup"
+
+
+// 设置颜色
+#define HSPColor(r,g,b) [UIColor colorWithRed:(r)/255.0 green:(g)/255.0 blue:(b)/255.0 alpha:255/255.0]
+#define HSPBgColor HSPColor(238, 238, 238)
+#define HSPSubBgColor HSPColor(248, 248, 248)
+#define HSPFontColor [UIColor whiteColor]
+#define HSPBarBgColor HSPColor(255,75,0)
+
+
+// Log调用的函数
+#define LogFunc             YYLog(@"%s", __func__);
+// Log指定视图的边界
+#define LogFrame(view)      YYLog(@"%@", NSStringFromCGRect(view.frame));
+// Log指定视图中的所有子视图
+#define LogSubViews(view)   YYLog(@"%@", view.subviews);
+
+//
+#define HSPScreenWidth [UIScreen mainScreen].bounds.size.width
+#define HSPScreenHeight [UIScreen mainScreen].bounds.size.height
+
+// 忽略-Warc-performSelector-leaks警告
+#define SuppressPerformSelectorLeakWarning(Stuff) \
+do { \
+    _Pragma("clang diagnostic push") \
+    _Pragma("clang diagnostic ignored \"-Warc-performSelector-leaks\"") \
+    Stuff; \
+    _Pragma("clang diagnostic pop") \
+} while (0)
+
+
+

@@ -1,0 +1,189 @@
+//
+//  MDLWupinView.m
+//  HaoLin
+//
+//  Created by apple on 14-8-21.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "MDLWupinView.h"
+
+@implementation MDLWupinView
+
+/*
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        // Initialization code
+    }
+    return self;
+}
+-(void)awakeFromNib
+{
+    self.backgroundColor=BGColor;
+
+    NICK=YES;
+    
+    [self.lestitm setBackgroundImage:[UIImage imageNamed:@"MDLshuliangzuo@2x"] forState:UIControlStateNormal];
+    
+    UIView *view =[[UIView alloc]initWithFrame:CGRectMake(0, 0, 320, 40)];
+    view.backgroundColor=BGColor;
+    
+    self.qbLable=[[UILabel alloc]init];
+    _qbLable.text =@"全部";
+    _qbLable.frame=CGRectMake(40, view.frame.origin.x+10, 40, 20);
+    [view addSubview:_qbLable];
+    
+    self.iamgeView =[[UIImageView alloc]initWithFrame:CGRectMake(8, view.frame.origin.x+10, 18, 18)];
+    _iamgeView.image=[UIImage imageNamed:@"MDLuncheck2@2x"];
+    _iamgeView.backgroundColor=[UIColor whiteColor];
+    [view addSubview:_iamgeView];
+    
+    UIButton *qxbtn=[UIButton buttonWithType:UIButtonTypeCustom];
+    qxbtn.frame=CGRectMake(5, 8, 100, 25);
+    qxbtn.backgroundColor=[UIColor clearColor];
+    [qxbtn addTarget:self action:@selector(quanxuan) forControlEvents:UIControlEventTouchUpInside];
+    [view addSubview:qxbtn];
+    
+    self.XZtableView=[[UITableView alloc]initWithFrame:CGRectMake(0, 65, 320, KDeviceHeight-100)];
+    _XZtableView.delegate=self;
+    _XZtableView.dataSource=self;
+    _XZtableView.backgroundColor=[UIColor clearColor];
+    self.XZtableView.tableHeaderView.backgroundColor=[UIColor orangeColor];
+    self.XZtableView.tableHeaderView=view;
+    [self addSubview:_XZtableView];
+    
+}
+#pragma mark - 点击事件
+
+- (IBAction)poproot:(id)sender {
+    [_delegate poprootzhu];
+}
+
+
+//选中全部button
+-(void)quanxuan
+{
+//    static BOOL NICK=YES;
+    if (NICK==NO) {
+        
+        _iamgeView.image=[UIImage imageNamed:@"MDLuncheck2@2x"];
+        _qbLable.textColor=[UIColor blackColor];
+        
+        NICK=YES;
+    }else if(NICK==YES){
+        
+        _iamgeView.image=[UIImage imageNamed:@"MDLxuanzhong@2x"];
+        _qbLable.textColor=[UIColor orangeColor];
+        
+        NICK =NO;
+    }
+    [self.XZtableView reloadData];
+}
+
+- (IBAction)back:(id)sender {
+    
+    [[NSNotificationCenter defaultCenter]postNotificationName:@"popleixingvc" object:nil];
+    
+}
+
+#pragma mark - UITableViewDelegate
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    
+    return 1;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    
+    return 6;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    
+    return 60;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    static NSString *CellIdentifier = @"MDLWuPinTableViewCell";
+    
+    MDLWuPinTableViewCell *cell= (MDLWuPinTableViewCell *)[tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+    if (cell == nil)
+    {
+        cell= (MDLWuPinTableViewCell *)[[[NSBundle  mainBundle]  loadNibNamed:@"MDLWuPinTableViewCell" owner:self options:nil]  lastObject];
+
+        if (NICK==YES) {
+            [cell.XuanzhongButton setBackgroundImage:[UIImage imageNamed:@"MDLuncheck2@2x"] forState:UIControlStateNormal];
+            [cell.SLbeijingimageview setImage:[UIImage imageNamed:@"MDLshuliangchangtai@2x"]];
+        }else if(NICK==NO){
+            [cell.XuanzhongButton setBackgroundImage:[UIImage imageNamed:@"MDLxuanzhong@2x"] forState:UIControlStateNormal];
+            [cell.SLbeijingimageview setImage:[UIImage imageNamed:@"DMLshuliang@2x"]];
+        }
+        number =1;
+        self.wupincell.numberLable.text=@"1";
+        self.wupincell.numberLable.tag=indexPath.row;
+        self.wupincell=cell;
+        
+        [cell.ZuoButton setBackgroundImage:[UIImage imageNamed:@"MDLshuliangzuo@2x"] forState:UIControlStateNormal];
+        [cell.ZuoButton addTarget:self action:@selector(jianshaoButton:)
+                 forControlEvents:UIControlEventTouchUpInside];
+        cell.ZuoButton.tag=indexPath.row;
+        
+        [cell.YouButton setBackgroundImage:[UIImage imageNamed:@"MDLshuliangzeng@2x"] forState:UIControlStateNormal];
+         [cell.YouButton addTarget:self action:@selector(zengjiaButton:) forControlEvents:UIControlEventTouchUpInside];
+        cell.YouButton.tag=indexPath.row;
+        
+        cell.NameLable.backgroundColor=[UIColor clearColor];
+        
+//        cell.selectionStyle=UITableViewCellSelectionStyleNone;
+        
+    }
+    return (UITableViewCell *)cell;
+}
+
+#pragma mark UITableViewDelegate End -
+
+//数量增加
+-(void)jianshaoButton:(UIButton *)sender
+{
+    UIButton *btn=nil;
+    btn.tag=sender.tag;
+    
+    if (number<=0) {
+        number=1;
+    }else{
+
+        self.wupincell.numberLable.text=[NSString stringWithFormat:@"%d",number++];
+        
+    }
+//    [numlablearry addObject:self.numberLable.text];
+//    NSLog(@"%@",numlablearry);
+}
+//数量减少
+-(void)zengjiaButton:(UIButton *)sender
+{
+    if (number<=0) {
+        number=1;
+    }else{
+        self.wupincell.numberLable.text=[NSString stringWithFormat:@"%d",number--];
+    }
+}
+
+- (void)tableView:(UITableView *)sender didSelectRowAtIndexPath:(NSIndexPath *)path
+{
+    MDLJiansuoViewController *jiansuovc=[[MDLJiansuoViewController alloc]init];
+    [self.MDLWuPinViewController.navigationController pushViewController:jiansuovc animated:YES];
+}
+/*
+// Only override drawRect: if you perform custom drawing.
+// An empty implementation adversely affects performance during animation.
+- (void)drawRect:(CGRect)rect
+{
+    // Drawing code
+}
+*/
+
+@end

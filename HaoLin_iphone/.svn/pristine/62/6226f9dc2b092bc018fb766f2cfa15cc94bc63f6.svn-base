@@ -1,0 +1,168 @@
+//
+//  MDQiangdanView.m
+//  HAOLINAPP
+//
+//  Created by apple on 14-8-13.
+//  Copyright (c) 2014年 com.haolinshidai. All rights reserved.
+//
+
+#import "MDQiangdanView.h"
+
+
+@interface MDQiangdanView ()
+
+{
+    MDLNetworkservice *service;
+    int talktype;
+    ZYPObjectManger *zypobjectmanger;
+    MDLQiangdanliebiao *liebiao;
+    MDLbasicdataobj *basicdataobj;
+}
+@property (nonatomic ,retain)MDLXZoneView *xuanzeview;
+@end
+
+
+@implementation MDQiangdanView
+
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        
+    }
+    return self;
+}
+
+-(void)awakeFromNib
+{
+    
+    _quxiaobtn.layer.borderWidth = 1;
+    [_quxiaobtn.layer setMasksToBounds:YES];
+    [_quxiaobtn.layer setCornerRadius:5.0];
+    _quxiaobtn.layer.borderColor = [UIColor orangeColor].CGColor;
+    //请求单例
+    service =[MDLNetworkservice shareservice];
+    //获取登陆数据单例
+    zypobjectmanger=[ZYPObjectManger shareInstance];
+    //公共数据单例
+    basicdataobj=[MDLbasicdataobj sharebasicdataobj];
+    self.SRTextField.delegate=self;
+//    liebiao=[[MDLQiangdanliebiao alloc]init];
+
+//    self.SRTextField.delegate=self;
+//    self.SRTextField.placeholder=@"输入商品名称";
+//    self.SRTextField.clearButtonMode=YES;
+//    self.timerLable.       text=@"30s";
+//    self.SRTextField.adjustsFontSizeToFitWidth=YES;
+//    self.SRTextField.minimumFontSize = 20;
+    
+    
+    
+//    NSString *s =self.SRTextField.text;
+//    UIFont *font = [UIFont fontWithName:@"Arial" size:12];
+//    CGSize size = CGSizeMake(320,2000);
+//    CGSize textfieldsize = [s sizeWithFont:font constrainedToSize:size lineBreakMode:UILineBreakModeWordWrap];
+//   self.SRTextField.frame = CGRectMake(0.0, 0.0, textfieldsize.width, textfieldsize.height );
+    
+    
+//    self.AddressLable.   text=@"";
+//    self.NeirongLable.   text=@"";
+//    self.QiangdanZTLable.text=@"";
+//    self.DistributionMoneyLable.text=@"";
+    
+}
+
+//立即抢单按钮
+- (IBAction)LijiQiangDan:(id)sender {
+    
+    NSString * XZUSERID1 =zypobjectmanger.loginInObject.user_id;
+    NSString * XZTOKENID1=zypobjectmanger.loginInObject.tokenid;
+    NSString * XZTALKID  =basicdataobj.talkid;
+    NSString * GOODSINFO =self.SRTextField.text;
+
+    [service ConnectSubmit:XZUSERID1 tokenid:XZTOKENID1 talkid:XZTALKID goodsinfo:GOODSINFO withJSON:^(id responseObject) {
+        NSMutableDictionary *dic =responseObject;
+        NSLog(@"%@",responseObject);
+        NSLog(@"222222%@",[dic objectForKey:@"message"]);
+    }
+  ];
+}
+
+//选择物品VC
+- (IBAction)PUSH:(id)sender {
+    
+//    [service Connectdafenlei:zypobjectmanger.loginInObject.user_id tokenid:zypobjectmanger.loginInObject.tokenid withJSON:^(id responseObject) {
+//        NSMutableDictionary *dic =responseObject;
+//        NSLog(@"%@",[dic objectForKey:@"message"]);
+//        //将数据添加到数组中
+//        if ([[responseObject objectForKey:@"code"] isEqualToString:@"0"]&&[[responseObject objectForKey:@"data"] count]) {
+//        NSMutableArray *arry =[dic objectForKey:@"data"];
+//        basicdataobj.xzdata=arry;
+//        for (NSDictionary *dic1 in  arry) {
+//            talktype=[[dic1 objectForKey:@"cat_pid"]intValue];
+//            NSLog(@"%d",talktype);
+//            //      basicdataobj.catid=[dic1 objectForKey:@"cat_id"];
+//        }
+//        }
+//    }];
+//        if (talktype==0) {
+
+        [[NSNotificationCenter defaultCenter]postNotificationName:@"pushSZVC" object:nil];
+            
+//        }else if(talktype==1){
+
+        //PUSH 到serviceXZViewController
+//        [[NSNotificationCenter defaultCenter]postNotificationName:@"pushFWXZVC" object:nil];
+//    }
+}
+//PUSH地图界面
+- (IBAction)Mappush:(id)sender {
+    
+//    if (self.delegate && [self.delegate respondsToSelector:@selector(pushimap:)]) {
+//        [self.delegate pushimap:self];
+//    }
+    
+    [[NSNotificationCenter defaultCenter]postNotificationName:@"pushMapVC" object:nil];
+    
+}
+
+- (IBAction)textFiledReturnEditing:(id)sender {
+
+    [sender resignFirstResponder];
+}
+//输入账号框回收键盘机制
+-(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    [self.SRTextField resignFirstResponder];
+}
+
+//开始编辑输入框的时候，软键盘出现，执行此事件
+-(void)textFieldDidBeginEditing:(UITextField *)textField
+{
+    if (DEVICE_IS_IPHONE5) {
+    }else{
+        [[NSNotificationCenter defaultCenter]postNotificationName:@"Notification" object:nil];
+    }
+
+}
+
+-(void)textFieldDidEndEditing:(UITextField *)textField{     //结束编辑时，整体下移
+
+    if (DEVICE_IS_IPHONE5) {
+    }else{
+        [[NSNotificationCenter defaultCenter]postNotificationName:@"EndinputNotification" object:nil];
+    }
+
+
+}
+
+/*
+// Only override drawRect: if you perform custom drawing.
+// An empty implementation adversely affects performance during animation.
+- (void)drawRect:(CGRect)rect
+{
+    // Drawing code
+}
+*/
+
+@end

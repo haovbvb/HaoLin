@@ -1,0 +1,23 @@
+//
+//  ZYPServeView.h
+//  HaoLin
+//
+//  Created by mac on 14-9-18.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+
+@class ZYPServerViewController;
+@interface ZYPServeView : UIView
+@property (nonatomic, strong)UILabel *lineLabel;// 分割线
+@property (nonatomic, strong)UILabel *totalPricel;//  总费用
+@property (nonatomic, strong)UIButton *soundBtn;//  声音按钮
+@property (nonatomic, strong)UILabel *totalPriceLabel;//  总费用label
+@property (nonatomic, strong)UIButton *stateBtn;//  状态btn
+@property (nonatomic ,strong)UILabel *serveFeiLabel;// 服务费label
+@property (nonatomic ,strong)UILabel *serveFeiL;// 服务费显示
+@property (nonatomic, strong)ZYPServerViewController *serVC;
+@property (nonatomic, strong)NSString *urlString;//播放url音频
+@end

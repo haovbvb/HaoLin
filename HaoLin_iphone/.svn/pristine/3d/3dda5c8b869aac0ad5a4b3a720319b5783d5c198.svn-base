@@ -1,0 +1,184 @@
+
+//  MQLPartyViewController.m
+//  HaoLin
+//
+//  Created by mac on 14-8-7.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "MQLPartyViewController.h"
+
+@interface MQLPartyViewController ()
+@property (nonatomic, weak) IBOutlet UIView *adjustView;    //适配视图（0，-20，0，69），因为app start form ios7, 所以该引用备用
+
+
+/**
+ *  自定义初始化
+ */
+-(void)customInitialization;
+
+/**
+ *  添加我的视图
+ */
+-(void)addMyView;
+
+
+
+@end
+
+@implementation MQLPartyViewController
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+    }
+    return self;
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    
+    //自定义初始化
+    [self customInitialization];
+    
+    
+}
+
+-(void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    
+    //添加我的视图
+    [self addMyView];
+    
+}
+
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+#pragma mark -- MQLPartyViewController函数扩展
+/**
+ *  自定义初始化
+ */
+-(void)customInitialization
+{
+    self.view.backgroundColor = BGColor;
+}
+
+/**
+ *  添加我的视图
+ */
+-(void)addMyView
+{
+    MQLAppDelegate *appDelegate = (MQLAppDelegate*)[UIApplication sharedApplication].delegate;
+    int lastTabBarItemIndex = appDelegate.rootViewController.lastTabBarItemIndex;
+    
+    switch (lastTabBarItemIndex) {
+        case 0://从个人切过来的
+        {
+            //添加你的代码
+            YYLog(@"从个人切过来的")
+//            [self openProfileController];
+            [self shangjia:lastTabBarItemIndex];
+        }
+            break;
+        case 1://从商家切过来的
+        {
+            //添加你的代码
+            YYLog(@"从商家切过来的")
+//            [self profileController];
+            [self shangjia:lastTabBarItemIndex];
+        }
+            break;
+            
+        default:
+            break;
+    }
+}
+
+- (void)shangjia:(NSInteger)tag
+{
+    ZYPObjectManger *manger = [ZYPObjectManger shareInstance];
+//    manger.barTitle = @"part";
+    //添加你的代码
+    if (manger.state == 0)
+    {
+        [self tapInto:tag];
+    }else if(manger.state == 1)
+    {
+        HSPLoginViewController *loginVC = [[HSPLoginViewController alloc] initWithNibName:@"HSPLoginViewController" bundle:nil];
+        [self presentViewController:loginVC animated:YES completion:nil];
+    }
+    
+}
+- (void)tapInto:(NSInteger)tag
+{
+    ZYPObjectManger *manger = [ZYPObjectManger shareInstance];
+    if ([manger.loginInObject.user_mark isEqualToString:@"2"]) {
+            if (tag == 1) {
+                ZYOHomeViewController *homeVC = [[ZYOHomeViewController alloc] initWithNibName:@"ZYOHomeViewController" bundle:nil];
+                [self.navigationController pushViewController:homeVC animated:NO];
+            }else if (tag == 0)
+            {
+                //  个人界面
+                HSPProfileViewController *profile = [[HSPProfileViewController alloc] initWithNibName:@"HSPProfileViewController" bundle:nil];
+                [self.navigationController pushViewController:profile animated:NO];
+            }
+        
+    }else if ([manger.loginInObject.user_mark isEqualToString:@"0"] ||  [manger.loginInObject.user_mark isEqualToString:@"1"])
+    {
+        //  个人界面
+        HSPProfileViewController *profile = [[HSPProfileViewController alloc] initWithNibName:@"HSPProfileViewController" bundle:nil];
+        [self.navigationController pushViewController:profile animated:NO];
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//  商家
+- (void)profileController
+{
+    HSPAccount *account = [HSPAccountTool account];
+    if (account == nil) {
+        HSPLoginViewController *loginViewController = [[HSPLoginViewController alloc] initWithNibName:@"HSPLoginViewController" bundle:nil];
+        HSPNavigationController *loginNav = [[HSPNavigationController alloc] initWithRootViewController:loginViewController];
+        [self presentViewController:loginNav animated:YES completion:nil];
+        return;
+    }
+    ZYOHomeViewController *home = [[ZYOHomeViewController alloc] initWithNibName:@"ZYOHomeViewController" bundle:nil];
+    [self.navigationController pushViewController:home animated:NO];
+}
+// 个人
+- (void)openProfileController
+{
+    HSPAccount *account = [HSPAccountTool account];
+    if (account == nil) {
+        HSPLoginViewController *loginViewController = [[HSPLoginViewController alloc] initWithNibName:@"HSPLoginViewController" bundle:nil];
+        HSPNavigationController *loginNav = [[HSPNavigationController alloc] initWithRootViewController:loginViewController];
+        [self presentViewController:loginNav animated:YES completion:nil];
+        return;
+    }
+    HSPProfileViewController *profileViewController = [[HSPProfileViewController alloc] initWithNibName:@"HSPProfileViewController" bundle:nil];
+    [self.navigationController pushViewController:profileViewController animated:NO];
+}
+
+@end

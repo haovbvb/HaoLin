@@ -1,0 +1,35 @@
+//
+//  MDLWuPinTableViewCell.h
+//  HaoLin
+//
+//  Created by apple on 14-8-15.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+@class MDLCellView;
+@interface MDLWuPinTableViewCell : UITableViewCell
+
+{
+    int number;
+    NSMutableArray *numlablearry;
+    BOOL col;
+}
+@property (weak, nonatomic) IBOutlet UILabel *NameLable;    //物品名称
+@property (weak, nonatomic) IBOutlet UILabel *PriceLable;   //价格
+
+@property (weak, nonatomic) IBOutlet UILabel *numberLable;  //数量
+@property (weak, nonatomic) IBOutlet UIButton *ZuoButton;   //左边BUTTON
+@property (weak, nonatomic) IBOutlet UIButton *YouButton;   //右边BUTTON
+@property (unsafe_unretained, nonatomic) IBOutlet UIButton *XuanzhongButton;
+                                                            //选中Button
+@property (unsafe_unretained, nonatomic) IBOutlet UIImageView *SLbeijingimageview;
+                                                            //物品数量背景
+
+@property (nonatomic ,retain)NSMutableArray *numlablearry;
+
+@property (retain ,strong)MDLCellView *cellview;
+
+//-(void)jianshaobutton;
+
+@end

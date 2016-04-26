@@ -1,0 +1,65 @@
+//
+//  ZYPOverViewController.m
+//  HaoLin
+//
+//  Created by mac on 14-8-29.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "ZYPOverViewController.h"
+
+@interface ZYPOverViewController ()
+
+@end
+
+@implementation ZYPOverViewController
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+    }
+    return self;
+}
+- (IBAction)back:(id)sender
+{
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(40, 100, 240, 200)];
+    label.text = @"信息资料审核成功,可以到商户中心添加商品啦!";
+    label.textAlignment = NSTextAlignmentCenter;
+    label.textColor = [UIColor blackColor];
+    label.layer.borderColor = [UIColor lightGrayColor].CGColor;
+    label.layer.borderWidth= 1;
+    label.layer.cornerRadius = 5;
+    label.numberOfLines = 0;
+    [self.view addSubview:label];
+}
+//  label自适应高度
+- (CGFloat)heightOfLabelFromString:(NSString *)text
+{
+    NSDictionary *attribute = [NSDictionary dictionaryWithObjectsAndKeys:[UIFont systemFontOfSize:15],NSFontAttributeName, nil];
+    CGSize size1 = [text boundingRectWithSize:CGSizeMake(280, 0) options:  NSStringDrawingTruncatesLastVisibleLine | NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading  attributes:attribute context:nil].size;
+    return size1.height;
+}
+- (IBAction)login:(id)sender
+{
+    HSPLoginViewController *view = [[HSPLoginViewController alloc] initWithNibName:@"HSPLoginViewController" bundle:nil];
+    [self.navigationController pushViewController:view animated:YES];
+}
+
+//  完成提交信息
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+@end

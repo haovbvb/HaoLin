@@ -1,0 +1,27 @@
+//
+//  MQLTimerViewInHanDanWaitingView.h
+//  HaoLin
+//
+//  Created by MQL on 14-9-4.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@protocol MQLTimerViewInHanDanWaitingViewDelegate <NSObject>
+
+/**
+ *  等待结束
+ */
+-(void)waitingOver;
+
+
+@end
+
+@interface MQLTimerViewInHanDanWaitingView : UIView
+
+@property (nonatomic, weak) id<MQLTimerViewInHanDanWaitingViewDelegate> delegate;
+@property (nonatomic) int merchant_num;
+
+
+@end

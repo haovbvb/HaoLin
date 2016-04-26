@@ -1,0 +1,51 @@
+//
+//  MDLSuccessfulView.m
+//  HaoLin
+//
+//  Created by apple on 14-8-16.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "MDLSuccessfulView.h"
+
+@implementation MDLSuccessfulView
+
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+
+    }
+    return self;
+}
+-(void)awakeFromNib
+{
+//    MDLLijiqiangdan *liji=[[MDLLijiqiangdan alloc]init];
+    
+//    [self.DianhuahaoButton setTitle:nil forState:UIControlStateNormal];
+    
+}
+- (IBAction)CallPhone:(id)sender {
+    
+    NSString *phoneNum = @"15210926718";// 电话号码
+    NSURL *phoneURL = [NSURL URLWithString:[NSString stringWithFormat:@"tel:%@",phoneNum]];
+    if ( !_phoneWebView ) {
+        _phoneWebView = [[UIWebView alloc]initWithFrame:CGRectZero];
+    }
+    [_phoneWebView loadRequest:[NSURLRequest requestWithURL:phoneURL]];
+    
+    
+//    NSString *num = [[NSString alloc]initWithFormat:@"telprompt://%@",phoneNum];
+//    
+//    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:num]]; //拨号
+}
+/*
+// Only override drawRect: if you perform custom drawing.
+// An empty implementation adversely affects performance during animation.
+- (void)drawRect:(CGRect)rect
+{
+    // Drawing code
+}
+*/
+
+@end

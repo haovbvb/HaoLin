@@ -1,0 +1,13 @@
+//
+//  JZD_MDLItem.h
+//  HaoLin
+//
+//  Created by Zidon on 14-9-17.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+
+@interface JZD_MDLItem : NSObject
+
+@end

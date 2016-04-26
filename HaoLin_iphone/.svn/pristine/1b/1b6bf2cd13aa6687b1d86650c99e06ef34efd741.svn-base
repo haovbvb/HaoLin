@@ -1,0 +1,41 @@
+//
+//  MDLView.m
+//  HaoLin
+//
+//  Created by apple on 14-9-23.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "MDLView.h"
+
+@implementation MDLView
+
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        // Initialization code
+    }
+    return self;
+}
+-(void)awakeFromNib
+{
+    self.view1.backgroundColor=BGOJColor;
+    self.view2.backgroundColor=BGOJColor1;
+    self.view3.backgroundColor=BGOJColor2;
+    self.view4.backgroundColor=BGOJColor3;
+    self.view5.backgroundColor=BGOJColor4;
+    self.view6.backgroundColor=BGOJColor5;
+    self.view7.backgroundColor=BGOJColor6;
+
+}
+/*
+// Only override drawRect: if you perform custom drawing.
+// An empty implementation adversely affects performance during animation.
+- (void)drawRect:(CGRect)rect
+{
+    // Drawing code
+}
+*/
+
+@end

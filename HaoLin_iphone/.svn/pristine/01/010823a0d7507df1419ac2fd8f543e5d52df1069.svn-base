@@ -1,0 +1,346 @@
+//
+//  HSPSettingViewController.m
+//  HaoLin
+//
+//  Created by PING on 14-8-25.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "HSPSettingViewController.h"
+@class HSPAccount;
+
+@interface HSPSettingViewController () <UIActionSheetDelegate,UIImagePickerControllerDelegate,UINavigationControllerDelegate>
+
+@property (nonatomic, strong) HSPHttpRequest *request;
+@property (nonatomic, strong) UIImage *imageUpload;
+@property (nonatomic, strong) HSPUserInfo *userInfo;
+@property (nonatomic, strong) HSPAccount *account;
+@property (nonatomic, strong) HSPDeliveryAddressView *addressView;
+
+
+@end
+
+@implementation HSPSettingViewController
+
+
+- (id)initWithStyle:(UITableViewStyle)style
+{
+    return [super initWithStyle:UITableViewStyleGrouped];
+}
+
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    self.dataList = [HSPProfileGroup groupsWithName:@"user.plist"];
+    
+    [self setupConfig];
+    
+    // 发送请求
+    [self sendRequest];
+}
+
+
+/**
+ *  发送请求 
+ */
+- (void)sendRequest
+{
+    
+    NSMutableDictionary *params = [NSMutableDictionary dictionary];
+    params[@"user_id"] = self.account.user_id;
+    params[@"tokenid"] = self.account.userTokenid;
+    [self.request connectionREquesturl:userInfoUrl withPostDatas:params withDelegate:nil withBackBlock:^(id backDictionary) {
+        YYLog(@"backDictionary==%@",backDictionary);
+        if ([[backDictionary objectForKey:@"code"] isEqualToString:@"0"]) {
+            _userInfo = [HSPUserInfo objectWithKeyValues:[backDictionary objectForKey:@"data"]];
+            self.addressView.userInfoItem = _userInfo;
+            
+            if ([_userInfo.gender isEqualToString:@"1"]) {
+                _userInfo.gender = @"男";
+            }else{
+               _userInfo.gender = @"女";
+            }
+            
+        }
+        [self.tableView reloadData];
+    }];
+}
+
+- (void)setupConfig
+{
+    self.title = @"完善个人资料";
+    [self.navigationController.navigationBar setTitleTextAttributes:[NSDictionary dictionaryWithObjectsAndKeys:HSPFontColor, NSForegroundColorAttributeName, nil]];
+    self.view.backgroundColor = HSPBgColor;
+    [self.addressView.changeAddress addTarget:self action:@selector(changeAddress) forControlEvents:UIControlEventTouchUpInside];
+}
+
+/**
+ *  修改地址
+ */
+- (void)changeAddress
+{
+    HSPEditViewController *vc = [[HSPEditViewController alloc] initWithNibName:@"HSPEditViewController" bundle:nil];
+    vc.title = @"常用收货地址";
+    vc.submitTextId = @"delivery_address";
+    vc.submitText = _userInfo.delivery_address;
+    [self.navigationController pushViewController:vc animated:YES];
+}
+
+#pragma mark - Table view data source
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+{
+    return self.dataList.count;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    if (indexPath.section == 0 && indexPath.row == 0) {
+        return 62;
+    }else{
+        return 40;
+    }
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
+{
+    return 1;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    NSArray *items = [self.dataList[section] items];
+    return items.count;
+}
+
+- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
+{
+    HSPProfileGroup *group = self.dataList[section];
+    return group.header;
+}
+
+- (NSString *)tableView:(UITableView *)tableView titleForFooterInSection:(NSInteger)section
+{
+    return [self.dataList[section] footer];
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    static NSString *ID = @"ProfileCell";
+    HSPProfileCell *cell = [tableView dequeueReusableCellWithIdentifier:ID];
+    if (!cell) {
+        cell = [[HSPProfileCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:ID];
+    }
+    
+    // 取出indexPath(section,row)对应设置条目
+    HSPProfileGroup *group = self.dataList[indexPath.section];
+    HSPProfileItem *item = group.items[indexPath.row];
+    
+    item.userInfo = _userInfo;
+    
+    cell.item = item;
+    
+    return cell;
+}
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    HSPProfileGroup *group = self.dataList[indexPath.section];
+    HSPProfileItem *item = group.items[indexPath.row];
+    YYLog(@"sec==%d,,row==%d",indexPath.section,indexPath.row);
+    // 检查是否PUSH新的视图控制器
+    if (item.destClassName) {
+        HSPEditViewController *vc = [[HSPEditViewController alloc] initWithNibName:@"HSPEditViewController" bundle:nil];
+        if (indexPath.section == 1 && indexPath.row == 0) {
+            vc.submitTextId = @"nickname";
+            vc.submitText = _userInfo.nickname;
+        }else  if (indexPath.section == 1 && indexPath.row == 2) {
+            vc.submitTextId = @"qq_number";
+            vc.submitText = _userInfo.qq_number;
+        }else if (indexPath.section == 1 && indexPath.row == 3) {
+            vc.submitTextId = @"email";
+            vc.submitText = _userInfo.email;
+        }else if (indexPath.section == 1 && indexPath.row == 4) {
+            vc.submitTextId = @"phone";
+            vc.submitText = _userInfo.mobile;
+        }else if (indexPath.section == 1 && indexPath.row == 5) {
+            vc.submitTextId = @"user_desc";
+            vc.submitText = _userInfo.user_desc;
+        }
+        
+        vc.title = item.title;
+        [self.navigationController pushViewController:vc animated:YES];
+    }
+    // 调用方法
+    if (item.callFunction) {
+        SEL func = NSSelectorFromString(item.callFunction);
+        SuppressPerformSelectorLeakWarning([self performSelector:func]);
+
+    }
+}
+
+/**
+ *  修改性别
+ */
+- (void)chooseGender
+{
+    UIActionSheet *sheet=[[UIActionSheet alloc] initWithTitle:@"性别" delegate:self cancelButtonTitle:@"取消" destructiveButtonTitle:nil otherButtonTitles:@"男",@"女", nil];
+    sheet.tag = 1;
+    [sheet showInView:self.view];
+    
+}
+
+/**
+ *  修改图片
+ */
+- (void)chooseHeadIcon
+{
+    UIActionSheet *sheet=[[UIActionSheet alloc] initWithTitle:@"图片来源" delegate:self cancelButtonTitle:@"取消" destructiveButtonTitle:nil otherButtonTitles:@"相册",@"拍照", nil];
+    sheet.tag = 0;
+    [sheet showInView:self.view];
+}
+
+-(void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if (actionSheet.tag == 0) {
+        // 上传图片
+        if (buttonIndex==0) {
+            // 从相册选择
+            if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypePhotoLibrary]) {
+                [self getPhotoWithSourceType];
+            }
+        }else{
+            // 拍照获得
+            if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
+                [self cameraGetPhoto];
+            }
+        }
+    }else{
+        // 修改性别
+        [self requestGender:buttonIndex + 1];
+    }
+    
+}
+
+
+- (void)requestGender:(NSInteger)genderIndex
+{
+    if (genderIndex == 1) {
+        _userInfo.gender = @"男";
+    }else if (genderIndex == 2){
+        _userInfo.gender = @"女";
+    }else{
+        return;
+    }
+    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:1 inSection:1];
+    [self.tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:NO];
+    
+    HSPAccount *account = [HSPAccountTool account];
+    NSMutableDictionary *params = [NSMutableDictionary dictionary];
+    params[@"user_id"] = account.user_id;
+    params[@"tokenid"] = account.userTokenid;
+    params[@"gender"] = [NSString stringWithFormat:@"%d",genderIndex];
+    [self.request connectionREquesturl:changeUserInfoUrl withPostDatas:params withDelegate:nil withBackBlock:^(id backDictionary) {
+        if ([[backDictionary objectForKey:@"code"] isEqualToString:@"0"]) {
+        }
+    }];
+}
+
+/**
+ *  从相册选择
+ */
+-(void)getPhotoWithSourceType
+{
+    UIImagePickerController *pic=[[UIImagePickerController alloc] init];
+    [pic setSourceType:UIImagePickerControllerSourceTypePhotoLibrary];
+    pic.delegate=self;
+    [self presentViewController:pic animated:YES completion:nil];
+}
+
+/**
+ *  从拍照选择
+ */
+-(void)cameraGetPhoto
+{
+    UIImagePickerController *ipc=[[UIImagePickerController alloc] init];
+    ipc.sourceType=UIImagePickerControllerSourceTypeCamera;
+    ipc.delegate=self;
+    [self presentViewController:ipc animated:YES completion:nil];
+}
+
+-(void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
+{
+    UIImage *image=[info objectForKey:@"UIImagePickerControllerOriginalImage"];
+    self.imageUpload=[image imageWithImageSimple:image scaledToSize:CGSizeMake(100, 100)];
+    _headPhoto=[image thumbnailWithImageWithoutScale:image size:CGSizeMake(60, 60)];
+    self.userInfo.tempHeadImg = _headPhoto;
+    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
+    [self.tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:NO];
+    if (picker.sourceType==UIImagePickerControllerSourceTypeCamera) {
+        // 将拍的照片保存到相册
+        if (picker.sourceType == UIImagePickerControllerCameraCaptureModeVideo) {
+            [NSThread detachNewThreadSelector: @selector(saveImage:) toTarget:self withObject:image];
+        }
+        [picker dismissViewControllerAnimated:YES completion:nil];
+    }else{
+        [picker dismissViewControllerAnimated:YES completion:nil];
+    }
+    
+    if (self.imageUpload) {
+        [self uploadHeadImage];
+    }
+}
+
+/**
+ *  上传头像
+ */
+- (void)uploadHeadImage
+{
+    NSMutableDictionary *params = [NSMutableDictionary dictionary];
+    params[@"user_id"] = self.account.user_id;
+    params[@"tokenid"] = self.account.userTokenid;
+    params[@"headimg"] = @"headimg";
+    [self.request connectionUpLoadImage:self.imageUpload parameters:params url:uploadHeadImgUrl];
+    
+}
+
+-(void)saveImage:(UIImage *)image
+{
+    UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil);
+}
+
+#pragma mark - 懒加载
+- (HSPHttpRequest *)request
+{
+    if (!_request) {
+        _request = [HSPHttpRequest Instace];
+    }
+    return _request;
+}
+
+- (HSPUserInfo *)userInfo
+{
+    if (!_userInfo) {
+        _userInfo = [[HSPUserInfo alloc] init];
+    }
+    return _userInfo;
+}
+
+- (HSPAccount *)account
+{
+    if (!_account) {
+        _account = [HSPAccountTool account];
+    }
+    return _account;
+}
+
+- (HSPDeliveryAddressView *)addressView
+{
+    if (!_addressView) {
+        _addressView = [[[NSBundle mainBundle] loadNibNamed:@"HSPDeliveryAddressView" owner:nil options:nil] lastObject];
+        self.tableView.tableFooterView = _addressView;
+    }
+    return _addressView;
+}
+
+
+@end

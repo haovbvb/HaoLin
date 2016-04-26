@@ -1,0 +1,23 @@
+//
+//  MDLHomeView.h
+//  HAOLINAPP
+//
+//  Created by apple on 14-8-9.
+//  Copyright (c) 2014年 com.haolinshidai. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+
+
+@interface MDLHomeView : UIView
+{
+    UIImageView *imageview;
+    UIImageView *bgimage ;
+    UIImageView *redview;
+}
+
+@property (nonatomic ,retain) id target;
+@property (nonatomic,retain)  UIImageView *iv;
+
+@end

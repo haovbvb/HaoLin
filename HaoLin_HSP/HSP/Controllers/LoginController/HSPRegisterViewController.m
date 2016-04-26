@@ -1,0 +1,314 @@
+//
+//  HSPRegisterViewController.m
+//  HaoLin
+//
+//  Created by PING on 14-9-2.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "HSPRegisterViewController.h"
+
+@interface HSPRegisterViewController () <UITextFieldDelegate>
+{
+    NSTimer *myTimer;
+    int myTimerNum;
+    UILabel *timerLabel;
+}
+
+@property (nonatomic, assign) NSInteger genderNum;
+@property (nonatomic, assign) JZDCustomAlertView *alert;
+@property (nonatomic, copy) NSString *mobileCode;
+
+
+@end
+
+@implementation HSPRegisterViewController
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+    }
+    return self;
+}
+
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    _alert = [JZDCustomAlertView sharedInstace];
+    _registerScrollView.contentSize = self.view.size;
+    [_registerBtn setBackgroundColor:HSPBarBgColor];
+    [_registerBusinessBtn setBackgroundColor:HSPBarBgColor];
+    [_phoneCodeBtn setBackgroundColor:HSPBarBgColor];
+    self.title = @"注册";
+    NSDictionary *attris = @{NSFontAttributeName: [UIFont boldSystemFontOfSize:20], NSForegroundColorAttributeName:HSPFontColor};
+    [self.navigationController.navigationBar setTitleTextAttributes:attris];
+    
+    self.navigationItem.leftBarButtonItem = [UIBarButtonItem itemImage:@"HSP_back_nom" highlightedImage:@"HSP_back_down" target:self action:@selector(back)];
+    
+    timerLabel = [[UILabel alloc] initWithFrame:CGRectMake(176, 6, 145, 30)];
+    timerLabel.hidden = YES;
+    timerLabel.text = @"10秒重新获取";
+    timerLabel.textAlignment = NSTextAlignmentCenter;
+    timerLabel.textColor = [UIColor whiteColor];
+    [self.phoneCodeView addSubview:timerLabel];
+}
+
+- (void)back
+{
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+
+#pragma mark - UITextFieldDelegate
+- (BOOL)textFieldShouldBeginEditing:(UITextField *)textField
+{
+    _registerScrollView.contentSize=CGSizeMake(_registerScrollView.frame.size.width, _registerScrollView.frame.size.height+210);
+    if ([_passwordAgain isEqual:textField]) {
+        [UIView animateWithDuration:0.25f animations:^{
+            _registerScrollView.contentOffset = CGPointMake(0, 130);
+        }];
+    }
+    
+    if ([_password isEqual:textField]) {
+        [UIView animateWithDuration:0.25f animations:^{
+            _registerScrollView.contentOffset = CGPointMake(0, 130);
+        }];
+    }
+    return YES;
+}
+
+- (BOOL)textFieldShouldReturn:(UITextField *)textField
+{
+    [self.view endEditing:YES];
+    return YES;
+}
+
+- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView
+{
+    [self.view endEditing:YES];
+    
+}
+
+-(void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    self.navigationController.navigationBarHidden=NO;
+}
+
+- (IBAction)registerBtnClick:(UIButton *)sender {
+    
+    [self.view endEditing:YES];
+    
+    if (!_nickName.text.length){
+        [_nickName becomeFirstResponder];
+        return;
+    }
+    if (![_nickName.text isMatchedByRegex:@"^[\\u4E00-\\u9FA5\\uF900-\\uFA2D_\\w]+$"]) {
+        [_alert popAlert:@"昵称不允许含有特殊字符"];
+        [_nickName becomeFirstResponder];
+        return;
+    }
+    if (_nickName.text.length > 6) {
+        [_alert popAlert:@"昵称不可以太长哦"];
+        [_nickName becomeFirstResponder];
+        return;
+    }
+    
+    BOOL isMobileOrTelNum = [self isMobileOrTel:_phone.text];
+    if (!isMobileOrTelNum) {
+        [_alert popAlert:@"请输入正确的电话号码"];
+        [_phone becomeFirstResponder];
+        return;
+    }
+    
+    if (_password.text.length > 0) {
+        if (_password.text.length < 4 ) {
+            [_alert popAlert:@"密码至少4位哦"];
+            [_password becomeFirstResponder];
+            return;
+        }
+        if ([_password.text isMatchedByRegex:@"[\\da-zA-Z]*\\d+[a-zA-Z]+[\\da-zA-Z]*"]) {
+            [_alert popAlert:@"密码必须包含数字和字母"];
+            [_password becomeFirstResponder];
+            return;
+        }
+        if (![_passwordAgain.text isEqualToString:_password.text]) {
+            [_alert popAlert:@"两次输入密码不一样"];
+            [_passwordAgain becomeFirstResponder];
+            return;
+        }
+    }
+    
+//    if (![_mobileCode isEqualToString:_phoneCode.text]) {
+//        [_alert popAlert:@"手机验证码错误"];
+//        return;
+//    }
+    
+    [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+    
+    NSMutableDictionary *params = [NSMutableDictionary dictionary];
+    params[@"nickname"] = _nickName.text;
+    params[@"mobile"] = _phone.text;
+    params[@"password"] = _password.text;
+    params[@"gender"] = [NSString stringWithFormat:@"%d",self.genderNum];
+    params[@"mobilecode"] = _phoneCode.text;
+    
+    __weak JZDCustomAlertView *alert=[JZDCustomAlertView sharedInstace];
+    HSPHttpRequest *request = [HSPHttpRequest Instace];
+    [request connectionREquesturl:HSPRegisterUrl withPostDatas:params withDelegate:nil withBackBlock:^(id backDictionary) {
+        [MBProgressHUD hideHUDForView:self.view animated:YES];
+        if ([backDictionary isKindOfClass:[NSError class]]) {
+            [alert popAlert:@"注册失败"];
+            return;
+        }
+        if ([[backDictionary objectForKey:@"code"] isEqualToString:@"0"]) {
+
+            if (sender.tag == 0) {
+                [alert popAlert:@"注册成功"];
+                [self.navigationController popViewControllerAnimated:YES];
+            }else if(sender.tag == 1){
+                YYLog(@"商家注册");
+                ZYPRegWriteInformationVC *reg = [[ZYPRegWriteInformationVC alloc] initWithNibName:@"ZYPRegWriteInformationVC" bundle:nil];
+                reg.user_id = [backDictionary objectForKey:@"user_id"];
+                [self.navigationController pushViewController:reg animated:YES];
+            }
+        }else{
+            
+            [alert popAlert:[backDictionary objectForKey:@"message"]];
+            return;
+        }
+    }];
+    
+}
+
+//判断是否是正确的手机格式
+- (BOOL)isMobileOrTel:(NSString *)number
+{
+    //(^(\d{3,4}-)?\d{7,8})$|(13[0-9]{9}) 手机号与电话号同时验证的正则
+    // ^((13[0-9])|(15[^4,\\D])|(18[0,0-9]))\\d{8}$
+    // 1[3|5|7|8|][0-9]{9}
+    return [number isMatchedByRegex:@"^(1)[0-9]{10}$"];
+}
+
+- (IBAction)checkGender:(UIButton *)sender {
+    
+    sender.selected = !sender.isSelected;
+    if (sender == _maleBtn) {
+        _femaleBtn.selected = !_maleBtn.selected;
+    }else if(sender == _femaleBtn){
+        _maleBtn.selected = !_femaleBtn.selected;
+    }
+    
+    if (sender.selected == _maleBtn.selected) {
+        self.genderNum = 1;
+    }else{
+        self.genderNum = 2;
+    }
+}
+
+- (IBAction)agreeBtnClick:(UIButton *)sender {
+    sender.selected = !sender.isSelected;
+    if (!sender.selected) {
+        _registerBtn.enabled = NO;
+        _registerBusinessBtn.enabled = NO;
+        [_registerBtn setBackgroundColor:[UIColor lightGrayColor]];
+        [_registerBusinessBtn setBackgroundColor:[UIColor lightGrayColor]];
+        [_seviceRuleBtn setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
+    }else{
+        _registerBtn.enabled = YES;
+        _registerBusinessBtn.enabled = YES;
+        [_registerBtn setBackgroundColor:HSPBarBgColor];
+        [_registerBusinessBtn setBackgroundColor:HSPBarBgColor];
+        [_seviceRuleBtn setTitleColor:HSPBarBgColor forState:UIControlStateNormal];
+    }
+    
+}
+
+- (void)textFieldChanged
+{
+    [self.view endEditing:YES];
+    if (!_nickName.text.length || !_phone.text.length ) {
+        _registerBtn.enabled = NO;
+        _registerBusinessBtn.enabled = NO;
+        return;
+    }
+    
+    if (_password.text.length > 0) {
+        if (![_passwordAgain.text isEqualToString:_password.text]) {
+            JZDCustomAlertView *alert = [JZDCustomAlertView sharedInstace];
+            [alert popAlert:@"两次输入密码不一样"];
+            [_passwordAgain becomeFirstResponder];
+            return;
+        }
+    }
+}
+
+- (IBAction)phoneCodeBtnClick:(UIButton *)sender {
+    LogFunc
+    if (!_phone.text.length){
+        [_phone becomeFirstResponder];
+        return;
+    }
+    BOOL isMobileOrTelNum = [self isMobileOrTel:_phone.text];
+    if (!isMobileOrTelNum) {
+        [_alert popAlert:@"请输入正确的电话号码"];
+        [_phone becomeFirstResponder];
+        return;
+    }
+    
+//    [self startTime];
+    NSMutableDictionary *params = [NSMutableDictionary dictionary];
+    params[@"mobile"] = _phone.text;
+    params[@"sms_type"] = @"1";
+    
+    __weak JZDCustomAlertView *alert=[JZDCustomAlertView sharedInstace];
+    HSPHttpRequest *request = [HSPHttpRequest Instace];
+    [request connectionREquesturl:HSPMobileCodeUrl withPostDatas:params withDelegate:nil withBackBlock:^(id backDictionary) {
+        YYLog(@"back == %@",backDictionary)
+        if ([backDictionary isKindOfClass:[NSError class]]) {
+//            [alert popAlert:@"短信发送失败"];
+            return;
+        }
+        if (![[backDictionary objectForKey:@"code"] isEqualToString:@"0"]) {
+            [alert popAlert:[backDictionary objectForKey:@"message"]];
+            return;
+        }
+        if ([[backDictionary objectForKey:@"code"] isEqualToString:@"0"]) {
+            _mobileCode = [[backDictionary objectForKey:@"data"] objectForKey:@"mobilecode"];
+            [self startTime];
+        }
+    }];
+}
+
+- (void)startTime
+{
+    
+    myTimerNum = 60;
+    [_phoneCodeBtn setTitle:@"" forState:UIControlStateNormal];
+    myTimer = [NSTimer scheduledTimerWithTimeInterval:1 target:self selector:@selector(timerLoop) userInfo:nil repeats:YES];
+    _phoneCodeBtn.userInteractionEnabled = NO;
+    
+}
+
+- (void)timerLoop
+{
+    myTimerNum--;
+    timerLabel.hidden = NO;
+    timerLabel.text = [NSString stringWithFormat:@"%d秒重新获取",myTimerNum];
+    if (myTimerNum == 0) {
+        [myTimer invalidate];
+        timerLabel.hidden = YES;
+        [_phoneCodeBtn setTitle:@"获取验证码" forState:UIControlStateNormal];
+        _phoneCodeBtn.userInteractionEnabled = YES;
+    }
+    
+}
+
+- (IBAction)seviceRuleBtnClick:(UIButton *)sender {
+    HSPSeviceRuleViewController *rule = [[HSPSeviceRuleViewController alloc] initWithNibName:@"HSPSeviceRuleViewController" bundle:nil];
+    [self.navigationController pushViewController:rule animated:YES];
+}
+@end

@@ -1,0 +1,133 @@
+//
+//  HSPMessageCenterViewController.m
+//  HaoLin
+//
+//  Created by PING on 14-8-27.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "HSPMessageCenterViewController.h"
+
+@interface HSPMessageCenterViewController ()
+@property (weak, nonatomic) IBOutlet UISegmentedControl *navSegment;
+@property (nonatomic, strong) HSPHttpRequest *request;
+@property (nonatomic, strong) NSArray *msgArray;
+@property (nonatomic, assign) NSInteger page;
+
+@end
+
+@implementation HSPMessageCenterViewController
+
+- (void)viewDidLoad
+{
+    self.tableView.backgroundColor = HSPBgColor;
+    [super viewDidLoad];
+    _page = 1;
+    [self setupConfig];
+    
+    [self setupRefresh];
+    self.navigationItem.leftBarButtonItem = [UIBarButtonItem itemImage:@"HSP_back_nom" highlightedImage:@"HSP_back_down" target:self action:@selector(back)];
+}
+
+- (void)back
+{
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)setupConfig
+{
+    self.tableView.rowHeight = 100;
+    
+    self.navSegment.frame = CGRectMake(80.0f, 8.0f, 150.0f, 30.0f);
+    [self.navigationController.navigationBar addSubview:self.navSegment];
+    
+    self.navigationController.navigationBar.barTintColor = HSPBgColor;
+}
+
+/**
+ *  集成刷新控件
+ */
+- (void)setupRefresh
+{
+    [self.tableView addHeaderWithTarget:self action:@selector(headerRereshing)];
+    
+    // 自动刷新(一进入程序就下拉刷新)
+    [self.tableView headerBeginRefreshing];
+    
+    [self.tableView addFooterWithTarget:self action:@selector(footerRereshing)];
+}
+
+#pragma mark 开始进入刷新状态
+- (void)headerRereshing
+{
+    [self setupData:_page];
+    
+    [self.tableView headerEndRefreshing];
+}
+
+- (void)footerRereshing
+{
+    _page++;
+    [self setupData:_page];
+    [self.tableView footerEndRefreshing];
+}
+
+- (void)setupData:(NSInteger)pageIndex
+{
+    HSPAccount *account = [HSPAccountTool account];
+    NSString *url = [NSString stringWithFormat:messageListUrl,account.user_id,account.userTokenid,pageIndex];
+    [self.request connectionRequestUrl:url withJSON:^(id responeJson) {
+        if ([responeJson isKindOfClass:[NSError class]]) {
+            [self.tableView headerEndRefreshing];
+            return;
+        }
+        if ([[responeJson objectForKey:@"code"] isEqualToString:@"0"]) {
+            self.msgArray = [HSPMessage objectArrayWithKeyValuesArray:[responeJson objectForKey:@"data"]];
+            [self.tableView reloadData];
+        }else{
+            return;
+        }
+    }];
+}
+
+- (void)viewWillDisappear:(BOOL)animated
+{
+    [super viewWillDisappear:animated];
+    [self.navSegment removeFromSuperview];
+    self.navigationController.navigationBar.barTintColor = HSPBarBgColor;
+}
+
+#pragma mark - tabeViewDelegate
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return self.msgArray.count;
+}
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    static NSString *messageId = @"messageId";
+    HSPMessageCenterCell *cell = [tableView dequeueReusableCellWithIdentifier:messageId];
+    if (!cell) {
+        cell = [[[NSBundle mainBundle] loadNibNamed:@"HSPMessageCenterCell" owner:self options:nil] lastObject];
+    }
+    
+    [cell setMessage:self.msgArray[indexPath.row]];
+    return cell;
+    
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    
+}
+
+
+#pragma mark - 懒加载
+- (HSPHttpRequest *)request
+{
+    if (!_request) {
+        _request = [HSPHttpRequest Instace];
+    }
+    return _request;
+}
+
+@end

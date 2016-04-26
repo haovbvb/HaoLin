@@ -1,0 +1,16 @@
+//
+//  MDLgoodscellView.h
+//  HaoLin
+//
+//  Created by apple on 14-9-15.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface MDLgoodscellView : UIView
+@property (weak, nonatomic) IBOutlet UILabel *goodsname;
+@property (weak, nonatomic) IBOutlet UILabel *goodspic;
+@property (weak, nonatomic) IBOutlet UILabel *goodsnumber;
+
+@end

@@ -1,0 +1,55 @@
+//
+//  JZDPushSingl.m
+//  HaoLin
+//
+//  Created by Zidon on 14-9-16.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "JZDPushSingl.h"
+static JZDPushSingl *singl=nil;
+@implementation JZDPushSingl
+-(void)dealloc
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
++(id)sharedInstance
+{
+    static dispatch_once_t t;
+    dispatch_once(&t, ^{singl=[[JZDPushSingl alloc] init];});
+    return singl;
+}
+
+-(id)init
+{
+    if (self==[super init]) {
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(pushDic:) name:NotificationOfSendToBusiness object:nil];
+        ZYPObjectManger *manger=[ZYPObjectManger shareInstance];
+        _userIdStr=manger.loginInObject.user_id;
+        _token_idStr=manger.loginInObject.tokenid;
+    }
+    return self;
+}
+
+-(void)pushDic:(NSNotification *)not
+{
+    id obj=not.object;
+//    NSString *pustStr=@"HanDanResult";
+    NSDictionary *dic=@{@"user_id": _userIdStr,@"tokenid":_token_idStr,@"talk_id":[not.userInfo objectForKey:@""],@"goods_info":[not.userInfo objectForKey:@"goods_info"]};
+    if ([obj isEqualToString:@"handan"]) {
+        [request connectionREquesturl:CommitHanDan withPostDatas:dic withDelegate:nil withBackBlock:^(id backDictionary, NSError *error) {
+            YYLog(@"%@",backDictionary);
+        }];
+    }
+    NSDictionary *dict=@{@"user_id": _userIdStr,@"tokenid":_token_idStr,@"talk_id":[not.userInfo objectForKey:@""]};
+    NSString *talk_id=[not.userInfo objectForKey:@"talk_id"];
+    if (talk_id) {
+        request =[JZDModuleHttpRequest sharedInstace];
+        [request connectionREquesturl:PushSingl withPostDatas:dict withDelegate:nil withBackBlock:^(id backDictionary, NSError *error) {
+            
+        }];
+    }
+}
+
+@end

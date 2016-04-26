@@ -1,0 +1,287 @@
+//
+//  JZDPubTransferViewController.m
+//  HaoLin
+//
+//  Created by Zidon on 14-9-10.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "JZDPubTransferViewController.h"
+
+@interface JZDPubTransferViewController ()<UIImagePickerControllerDelegate,UINavigationControllerDelegate,UIActionSheetDelegate,UITextViewDelegate>
+{
+    int temp;
+    int ory;
+    int height;
+    BOOL publish;
+    NSMutableArray *imageArray;
+    NSMutableArray *buttonArray;
+    NSMutableArray *mutable;
+    JZDModuleHttpRequest *request;
+}
+@property (nonatomic,copy) NSString *cateGrayIdString;
+@end
+
+@implementation JZDPubTransferViewController
+-(void)dealloc
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+        self.edgesForExtendedLayout=NO;
+    }
+    return self;
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    temp=0;
+    publish=NO;
+    ory=_addImgBtn.frame.origin.y;
+    self.navigationController.navigationBar.barTintColor=[UIColor orangeColor];
+    imageArray=[[NSMutableArray alloc] init];
+    buttonArray=[[NSMutableArray alloc] init];
+    mutable=[[NSMutableArray alloc] init];
+    request =[JZDModuleHttpRequest sharedInstace];
+    [buttonArray addObject:_addImgBtn];
+    self.title=@"求购";
+    [self noticeTheKeyBoard];
+    [self uiconfig];
+}
+
+-(void)uiconfig
+{
+    self.navigationController.navigationBar.barTintColor=[UIColor orangeColor];
+    [self.navigationItem setLeftItemWithImage:[UIImage imageNamed:@"HSP_back_nom"] selectedImage:[UIImage imageNamed:@"HSP_back_down"] target:self action:@selector(back)];
+    _buyDescribe.layer.masksToBounds=YES;
+    _buyDescribe.layer.cornerRadius=5;
+    _bottomScrollView.contentSize=_bottomView.frame.size;
+    [_bottomScrollView addSubview:_bottomView];
+    [self.bottomScrollView addGestureRecognizer:_backTheKeyBoard];
+}
+
+-(void)noticeTheKeyBoard
+{
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyWillShow:) name:UIKeyboardWillShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyWillHide) name:UIKeyboardWillHideNotification object:nil];
+}
+
+- (IBAction)resignTheKeyBoard:(UITapGestureRecognizer *)sender {
+    for(id f in self.bottomView.subviews){
+        if ([f isKindOfClass:[UITextField class]]||[f isKindOfClass:[UITextView class]]) {
+            [f resignFirstResponder];
+        }
+    }
+}
+
+-(void)keyWillShow:(NSNotification *)not
+{
+    self.bottomScrollView.contentSize=CGSizeMake(CGRectGetWidth(self.view.frame), CGRectGetHeight(self.bottomView.frame)+216);
+    NSValue *keyBoardValue=[[not userInfo] objectForKey:UIKeyboardFrameBeginUserInfoKey];
+    CGRect keyBoardRect=[keyBoardValue CGRectValue];
+    height=keyBoardRect.size.height;
+}
+
+-(void)keyWillHide
+{
+    self.bottomScrollView.contentSize=CGSizeMake(CGRectGetWidth(self.view.frame), CGRectGetHeight(self.bottomView.frame));
+}
+
+-(void)back
+{
+    if (!publish) {
+        UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:@"您还没有发布" delegate:self cancelButtonTitle:@"放弃" otherButtonTitles:@"继续", nil];
+        [alert show];
+        return;
+    }
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+-(void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if (buttonIndex==0) {
+        [self.navigationController popViewControllerAnimated:YES];
+    }
+}
+
+-(void)popActionSheet
+{
+    UIActionSheet *sheet=[[UIActionSheet alloc] initWithTitle:@"图片来源" delegate:self cancelButtonTitle:@"取消" destructiveButtonTitle:nil otherButtonTitles:@"相册",@"拍照", nil];
+    [sheet showInView:self.view];
+}
+
+-(void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if (buttonIndex==0) {
+        //从相册选择
+        if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypePhotoLibrary]) {
+            [self getPhotoWithSourceType];
+        }
+    }else{
+        //拍照获得
+        if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
+            [self cameraGetPhoto];
+        }
+    }
+}
+
+-(void)getPhotoWithSourceType
+{
+    UIImagePickerController *pic=[[UIImagePickerController alloc] init];
+    [pic setSourceType:UIImagePickerControllerSourceTypePhotoLibrary];
+    pic.delegate=self;
+    [self presentViewController:pic animated:YES completion:^{
+        
+    }];
+}
+
+-(void)cameraGetPhoto
+{
+    UIImagePickerController *ipc=[[UIImagePickerController alloc] init];
+    //图片来源
+    ipc.sourceType=UIImagePickerControllerSourceTypeCamera;
+    ipc.delegate=self;
+    [self presentViewController:ipc animated:YES completion:^{
+        
+    }];
+}
+
+-(void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
+{
+    temp++;
+    UIImage *image=[info objectForKey:@"UIImagePickerControllerOriginalImage"];
+    UIImage *imgUpload=[image imageWithImageSimple:image scaledToSize:CGSizeMake(320, 480)];
+    [imageArray addObject:imgUpload];
+    image=[image thumbnailWithImageWithoutScale:image size:CGSizeMake(60, 60)];
+    [self setButtonImage:image];
+    if (picker.sourceType==UIImagePickerControllerSourceTypeCamera) {
+        //将拍的照片保存到相册
+        if (picker.sourceType == UIImagePickerControllerCameraCaptureModeVideo) {
+            [NSThread detachNewThreadSelector: @selector(saveImage:) toTarget:self withObject:image];
+        }
+        [picker dismissViewControllerAnimated:YES completion:^{
+            
+        }];
+    }else{
+        [picker dismissViewControllerAnimated:YES completion:^{
+            
+        }];
+    }
+}
+
+-(void)saveImage:(UIImage *)image
+{
+    UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil);
+}
+
+-(void)setButtonImage:(UIImage *)img
+{
+    [_addImgBtn removeFromSuperview];
+    UIButton *btn=[UIButton buttonWithType:UIButtonTypeCustom];
+    btn.frame=CGRectMake(10+60*temp+5, ory, 60, 60);
+    [btn setBackgroundImage:img forState:UIControlStateNormal];
+    [btn addTarget:self action:@selector(deleteBtn:) forControlEvents:UIControlEventTouchUpInside];
+    [buttonArray insertObject:btn atIndex:0];
+    if (buttonArray.count==4) {
+        _addImgBtn.hidden=YES;
+    }
+    for(int j=0;j<buttonArray.count;j++){
+        UIButton *b=buttonArray[j];
+        b.frame=CGRectMake(10+60*j+j*5, ory, 60, 60);
+        [_bottomView addSubview:b];
+    }
+}
+
+-(void)deleteBtn:(UIButton *)btn
+{
+    [btn removeFromSuperview];
+    for(int j=0;j<buttonArray.count;j++){
+        UIButton *b=buttonArray[j];
+        if ([b isEqual:btn]) {
+            [buttonArray removeObjectAtIndex:j];
+        }
+    }
+    _addImgBtn.hidden=NO;
+    for(int j=0;j<buttonArray.count;j++){
+        UIButton *b=buttonArray[j];
+        b.frame=CGRectMake(10+60*j+5*j, ory, 60, 60);
+    }
+}
+
+#pragma mark --textViewDelegate--
+
+-(void)textViewDidChange:(UITextView *)textView
+{
+    _nubTextLable.text=[NSString stringWithFormat:@"%d/100",textView.text.length];
+    if (height==216) {
+        if (textView.text.length==100) {
+            JZDCustomAlertView *alert=[JZDCustomAlertView sharedInstace];
+            [alert popAlert:@"不能超过100个文字"];
+            return;
+        }
+    }
+}
+
+- (void)textViewDidEndEditing:(UITextView *)textView
+{
+    if (height>216) {
+        if (textView.text.length>=100) {
+            JZDCustomAlertView *alert=[JZDCustomAlertView sharedInstace];
+            [alert popAlert:@"不能超过100个文字"];
+            return;
+        }
+    }
+}
+
+- (IBAction)addImgBtnClick:(UIButton *)sender {
+    [self popActionSheet];
+}
+
+- (IBAction)commit:(UIButton *)sender {
+    JZDCustomAlertView *alert=[JZDCustomAlertView sharedInstace];
+    if (_buyTheme.text.length==0||_contactPerson.text.length==0||_buyPhoneNum.text.length==0) {
+        [alert popAlert:@"带星号为必填项"];
+        return;
+    }
+    if (_buyDescribe.text.length>=100) {
+        [alert popAlert:@"描述内容不能超过100个字"];
+        return;
+    }
+    if (_contactPerson.text.length<2) {
+        [alert popAlert:@"联系人不能少于两个字"];
+    }
+    BOOL isPhoneOrTelNum=[self isMobileOrTel:_buyPhoneNum.text];
+    if (!isPhoneOrTelNum) {
+        [alert popAlert:@"不是正确的号码格式"];
+        return;
+    }
+    MQLBMKMapManage *coord=[MQLBMKMapManage instance];
+    CLLocation *loaction=[coord currentLocation];
+    HSPAccount *user=[HSPAccountTool account];
+    NSString *latitudeString=[NSString stringWithFormat:@"%f",loaction.coordinate.latitude];
+    NSString *longitudeString=[NSString stringWithFormat:@"%f",loaction.coordinate.longitude];
+    NSDictionary *dic=@{@"type":[NSString stringWithFormat:@"%d",2],@"title":_buyTheme.text,@"price":_buyPrice.text,@"des":_buyDescribe.text,@"phone":_buyPhoneNum.text,@"contacts":_contactPerson.text,@"weidu":latitudeString,@"jindu":longitudeString,@"tokenid":user.userTokenid,@"user_id":user.userTokenid};
+//    [request connectionUpLoadImage:imageArray withVoiceData:nil withPardic:dic withUrl:publishSecGoods];
+    [request connectionUpLoadImage:imageArray withVoiceData:nil withPardic:dic withUrl:publishSecGoods withBlock:^(NSDictionary *dic, NSError *error) {
+        if (!error) {
+            JZDCustomAlertView *alert=[JZDCustomAlertView sharedInstace];
+            [alert popAlert:@"上传成功"];
+        }
+    }];
+}
+
+- (BOOL)isMobileOrTel:(NSString *)number
+{
+    //(^(\d{3,4}-)?\d{7,8})$|(13[0-9]{9}) 手机号与电话号同时验证的正则
+    return [number isMatchedByRegex:@"^(\\d{3,4}-)?\\d{7,8})$|(13[0-9]{9}"];
+    
+}
+
+@end

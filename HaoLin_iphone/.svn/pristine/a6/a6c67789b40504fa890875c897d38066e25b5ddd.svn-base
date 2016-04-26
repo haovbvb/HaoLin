@@ -1,0 +1,21 @@
+//
+//  MDLServiceXZViewController.h
+//  HaoLin
+//
+//  Created by apple on 14-8-26.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface MDLServiceXZViewController : UIViewController<UITableViewDelegate,UITableViewDataSource>
+
+
+@property (weak, nonatomic) IBOutlet UITableView *mytableview;
+@property (weak, nonatomic) IBOutlet UIButton *quanbubutton;     //服务类型Button
+
+@property (weak, nonatomic) IBOutlet UIView *leixingview;
+
+@property (weak, nonatomic) IBOutlet UITableView *leixingtableview;
+
+@end

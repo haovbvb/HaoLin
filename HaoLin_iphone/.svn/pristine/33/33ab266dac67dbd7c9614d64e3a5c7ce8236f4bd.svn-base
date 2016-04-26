@@ -1,0 +1,72 @@
+//
+//  HSPForgetPasswordController.m
+//  HaoLin
+//
+//  Created by PING on 14-9-3.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "HSPForgetPasswordController.h"
+
+@interface HSPForgetPasswordController ()
+
+@end
+
+@implementation HSPForgetPasswordController
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+    }
+    return self;
+}
+
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    self.title = @"修改密码";
+    self.navigationItem.leftBarButtonItem = [UIBarButtonItem itemImage:@"HSP_back_nom" highlightedImage:@"HSP_back_down" target:self action:@selector(back)];
+}
+
+- (void)back
+{
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+- (IBAction)changePasswordBtnClick:(UIButton *)sender {
+    
+    if (!_newsPassword.text.length) return;
+    
+    [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+    HSPAccount *account = [HSPAccountTool account];
+    NSMutableDictionary *params = [NSMutableDictionary dictionary];
+    params[@"user_id"] = account.user_id;
+    params[@"tokenid"] = account.userTokenid;
+    params[@"newpassword"] = _newsPassword.text;
+    __weak JZDCustomAlertView *alert = [JZDCustomAlertView sharedInstace];
+    HSPHttpRequest *request = [HSPHttpRequest Instace];
+    [request connectionREquesturl:changePasswordUrl withPostDatas:params withDelegate:nil withBackBlock:^(id backDictionary) {
+        [MBProgressHUD hideHUDForView:self.view animated:YES];
+        if ([backDictionary isKindOfClass:[NSError class]]) {
+            [alert popAlert:@"修改失败"];
+            return;
+        }
+        if ([[backDictionary objectForKey:@"code"] isEqualToString:@"0"]) {
+            [alert popAlert:@"修改成功"];
+            [self.navigationController popViewControllerAnimated:NO];
+        }else{
+            [alert popAlert:@"修改失败"];
+            return;
+        }
+    }];
+}
+@end

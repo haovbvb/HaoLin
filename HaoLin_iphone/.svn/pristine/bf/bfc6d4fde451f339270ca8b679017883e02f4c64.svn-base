@@ -1,0 +1,123 @@
+//
+//  MQLSendAddressCellInSendHanDanView.m
+//  HaoLin
+//
+//  Created by MQL on 14-8-25.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "MQLSendAddressCellInSendHanDanView.h"
+
+@interface MQLSendAddressCellInSendHanDanView ()<UITextViewDelegate>
+
+@property (nonatomic, weak) IBOutlet UITextView *addressTextView;
+
+/**
+ *  自定义初始化
+ */
+-(void)customInitialization;
+
+/**
+ *  设置内容垂直居中
+ */
+-(void)setTextViewChuiZhiJuZhong;
+
+
+@end
+
+@implementation MQLSendAddressCellInSendHanDanView
+-(void)dealloc
+{
+
+}
+
+- (void)awakeFromNib
+{
+    // 自定义初始化
+    [self customInitialization];
+    
+}
+
+-(void)setPersonalHanDanDataManage:(MQLPersonalHanDanDataManage *)personalHanDanDataManage
+{
+    _personalHanDanDataManage = personalHanDanDataManage;
+    
+    self.addressTextView.text = personalHanDanDataManage.sendAddress;
+    [self setTextViewChuiZhiJuZhong];
+}
+
+#pragma mark -- MQLSendAddressCellInSendHanDanView函数扩展
+
+/**
+ *  自定义初始化
+ */
+-(void)customInitialization
+{
+    self.addressTextView.layer.borderWidth = 1;
+    self.addressTextView.layer.borderColor = [[UIColor orangeColor]CGColor];
+}
+
+/**
+ *  让addressTextView失去键盘响应
+ */
+-(void)resignAddressTextViewFirstResponder
+{
+    if (self.addressTextView.isFirstResponder) {
+        
+        [self.addressTextView resignFirstResponder];
+    }
+}
+
+#pragma mark -- UITextViewDelegate
+
+- (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text
+{
+    if ([text isEqualToString:@"\n"]) {
+        
+        return NO;
+        
+    }
+    
+    return YES;
+}
+
+
+- (void)textViewDidChange:(UITextView *)textView
+{
+    self.personalHanDanDataManage.sendAddress = self.addressTextView.text;
+    [self setTextViewChuiZhiJuZhong];
+}
+
+/**
+ *  设置内容垂直居中
+ */
+-(void)setTextViewChuiZhiJuZhong
+{
+     float fPadding = 16.0; // 8.0px x 2
+     CGSize constraint = CGSizeMake(self.addressTextView.contentSize.width - fPadding, CGFLOAT_MAX);
+     CGSize size = [self boundingRectWithSize:constraint withFont:self.addressTextView.font withText:self.addressTextView.text];
+    
+    CGFloat contentHeight = size.height + fPadding;
+    CGFloat topCorrect = self.addressTextView.bounds.size.height - contentHeight;
+    topCorrect = (topCorrect <0.0 ?0.0 : topCorrect);
+    self.addressTextView.contentOffset = (CGPoint){.x =0, .y = -topCorrect/2};
+    
+}
+
+- (CGSize)boundingRectWithSize:(CGSize)size withFont:(UIFont*)font withText:(NSString*)text
+{
+    NSDictionary *attribute = @{NSFontAttributeName:font};
+    
+    CGSize retSize = [text boundingRectWithSize:size
+                                        options:
+                      NSStringDrawingTruncatesLastVisibleLine |
+                      NSStringDrawingUsesLineFragmentOrigin |
+                      NSStringDrawingUsesFontLeading
+                                     attributes:attribute
+                                        context:nil].size;
+    
+    return retSize;
+}
+
+
+@end

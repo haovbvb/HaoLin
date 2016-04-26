@@ -1,0 +1,179 @@
+//
+//  ZYPShopAddressVC.m
+//  HaoLin
+//
+//  Created by mac on 14-9-12.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "ZYPShopAddressVC.h"
+
+@interface ZYPShopAddressVC ()<BMKGeoCodeSearchDelegate>
+{
+    BMKGeoCodeSearch *_search;
+
+}@end
+
+@implementation ZYPShopAddressVC
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+    }
+    return self;
+}
+- (IBAction)over:(id)sender
+{
+        if ([self isEmptyOrNull:self.addressTextView.text] == YES)
+    {
+        if (self.DManage.pushBusinessScope.coordinate.latitude != 0 && self.DManage.pushBusinessScope.coordinate.longitude != 0)
+        {
+            [self prama:@"shop_address" realNss:self.addressTextView.text axis:@"axis" axisSource:[NSString stringWithFormat:@"%f,%f",self.DManage.pushBusinessScope.coordinate.longitude, self.DManage.pushBusinessScope.coordinate.latitude]];
+        }else
+        {
+            [self searchMap];
+        }
+    }else
+    {
+        [self alertWithMessage:@"商家地址不能为空"];
+    }
+}
+/**
+ *  判断商家地址是否为空，或者全是空格
+ *
+ */
+-(BOOL)isEmptyOrNull:(NSString *) str {
+    
+    if (str) {
+        // 空对象
+        return YES;
+    } else {
+        
+     NSString *trimedString = [str stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+        if ([trimedString length] == 0) {
+            // 空字符串
+            return NO;
+            
+        } else {
+            // is neither empty nor null
+            return YES;
+        }
+    }
+}
+//  获取经纬度(没有查看地图的情况下)
+- (void)searchMap
+{
+    //  通过地址搜索位置获取经纬度
+    _search = [[BMKGeoCodeSearch alloc] init];
+    _search.delegate = self;
+    BMKGeoCodeSearchOption *option = [[BMKGeoCodeSearchOption alloc] init];
+    option.address = self.addressTextView.text;
+    BOOL flag = [_search geoCode:option];
+    
+    if (flag)
+    {
+        NSLog(@"成功");
+    }else
+    {
+        [self alertWithMessage:@"获取位置信息失败，请重新获取"];
+    }
+}
+#pragma mark - 代理方法
+- (void)onGetGeoCodeResult:(BMKGeoCodeSearch *)searcher result:(BMKGeoCodeResult *)result errorCode:(BMKSearchErrorCode)error
+{
+    if (error == BMK_SEARCH_NO_ERROR)
+    {
+        if (result.location.latitude == 0 && result.location.longitude == 0)
+        {
+            [self alertWithMessage:@"获取位置信息失败，请重新获取"];
+            return;
+        }else
+        {
+            [self prama:@"shop_address" realNss:self.addressTextView.text axis:@"axis" axisSource:[NSString stringWithFormat:@"%f,%f",result.location.longitude,result.location.latitude]];
+        }
+    }
+}
+
+- (IBAction)back:(id)sender
+{
+    [self.navigationController popViewControllerAnimated:YES];
+}
+- (IBAction)mapIn:(id)sender
+{
+    ZYPMapViewController *mapVC = [[ZYPMapViewController alloc] initWithNibName:@"ZYPMapViewController" bundle:nil];
+    mapVC.DataManage = self.DManage;
+    [self.navigationController pushViewController:mapVC animated:YES];
+}
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    
+    if (IS_IPHONE_5) {
+        self.view.frame = CGRectMake(0, 0, 320, 568);
+    }else
+    {
+        self.view.frame = CGRectMake(0, 0, 320, 480);
+    }
+    self.titleLabel.backgroundColor = ZYPBGColor;
+
+    // Do any additional setup after loading the view from its nib.
+    self.addressTextView.text = self.addressTEXT;
+    [self.addressTextView becomeFirstResponder];
+}
+- (void)prama:(NSString *)str realNss:(NSString *)source axis:(NSString *)str1 axisSource:(NSString *)axisSource
+{
+    /**
+     *  显示加载状态
+     */
+    [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+    __weak ZYPShopAddressVC *addressVC = self;
+    HSPAccount *accout = [HSPAccountTool account];
+
+    ZYPNetWorkGetSourceManger *manger = [[ZYPNetWorkGetSourceManger alloc] init];
+    NSString *urlString = [NSString stringWithFormat:@"%@user_id=%@&%@=%@&%@=%@",changeBusinessInfor,accout.user_id,str,source,str1,axisSource];
+    NSLog(@"%@",urlString);
+    [manger connectWithUrlStr:urlString completion:^(id respondObject)
+     {
+         if ([respondObject isKindOfClass:[NSDictionary class]])
+         {
+             NSDictionary *dic = respondObject;
+             if ([[dic objectForKey:@"code"] isEqualToString:@"0"]) {
+                 /**
+                  *  隐藏加载状态
+                  */
+                 [MBProgressHUD hideAllHUDsForView:self.view animated:YES];
+                 [addressVC alertWithMessage:@"修改成功"];
+             }else
+             {
+                 /**
+                  *  隐藏加载状态
+                  */
+                 [MBProgressHUD hideAllHUDsForView:self.view animated:YES];
+                 [addressVC alertWithMessage:[dic objectForKey:@"message"]];
+             }
+         }else
+         {
+             /**
+              *  隐藏加载状态
+              */
+             [MBProgressHUD hideAllHUDsForView:self.view animated:YES];
+             [self alertWithMessage:@"信息上传失败"];
+         }
+    }];
+}
+
+//  自定义alert
+- (void)alertWithMessage:(NSString *)mesage
+{
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:mesage message:nil delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+    [alert show];
+}
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+@end

@@ -1,0 +1,21 @@
+//
+//  MDLXZtwoView.h
+//  HaoLin
+//
+//  Created by apple on 14-8-20.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface MDLXZtwoView : UIView<UITableViewDelegate,UITableViewDataSource>
+
+@property (weak, nonatomic) IBOutlet UIButton *teolestitm;   //返回按钮
+
+@property (weak, nonatomic) IBOutlet UILabel *titleLable;    //导航栏标题
+
+@property (retain, nonatomic) MDLWuPinleiXingViewController *wupinleixingvc;
+@property (nonatomic ,retain) id target;
+@property (nonatomic ,retain) UITableView *FLtableview;
+
+@end

@@ -1,0 +1,141 @@
+//
+//  MDLLiebiaoViewController.m
+//  HaoLin
+//
+//  Created by apple on 14-9-13.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "MDLLiebiaoViewController.h"
+
+
+@interface MDLLiebiaoViewController ()<UITableViewDataSource,UITableViewDelegate>
+{
+    AVAudioPlayer * player;
+}
+@end
+
+@implementation MDLLiebiaoViewController
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+        /**
+         *  隐藏tablebar的方法
+         */
+//        self.hidesBottomBarWhenPushed=YES;
+        [[NSNotificationCenter defaultCenter]  addObserver:self
+                                                  selector:@selector (MerNotification:)
+                                                      name:@"MerNot"
+                                                    object:nil];
+    }
+    return self;
+}
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    
+//        //得到文件路径
+//        NSString* path = [[NSBundle mainBundle] pathForResource:@"xiguan" ofType:@"mp3"];
+//        //本地路径 -> URL
+//        NSURL* url = [NSURL fileURLWithPath:path];
+//        //只支持本地文件，不支持在线播放
+//        player = [[AVAudioPlayer alloc] initWithContentsOfURL:url error:nil];
+//        //准备播放
+//        [player prepareToPlay];
+//        [player play];
+    
+    self.nvbarview.backgroundColor=MDLBGColor;
+    self.view.backgroundColor     =BGColor;
+    [self.backbtn setBackgroundImage:[UIImage imageNamed:@"MDLfanhui@2x"] forState:UIControlStateNormal];
+    _mytableView.delegate  =self;
+    _mytableView.dataSource=self;
+    _mytableView.backgroundColor=BGColor;
+    [self.mytableView setFrame:CGRectMake(0, _nvbarview.size.height,KDeviceWidth, KDeviceHeight-60)];
+
+    
+//    if (_dicBlock) {
+//        YYLog(@"****%@",_dicBlock());
+//    }
+
+}
+-(void)MerNotification:(NSNotification *)notification
+{
+    id dic=[notification object];
+    self.processingarry=[dic objectForKey:@"lisarry"];
+    NSLog(@"%@",self.processingarry);
+    NSLog(@"444444444:%@",dic);
+    [_mytableView reloadData];
+}
+
+- (IBAction)lestback:(id)sender {
+    self.navigationController.tabBarController.tabBar.hidden=NO;
+    [self.navigationController popToRootViewControllerAnimated:YES];
+}
+
+
+#pragma mark - UITableViewDelegate
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    
+    return 1;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    
+    return [_processingarry count];
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    //     MDLinformationTableViewCell *cell = [self tableView:_informationtableView cellForRowAtIndexPath:indexPath] ;
+    //    MDLinformationTableViewCell *cell;
+    //    return cell.frame.size.height;
+    return 140;
+}
+//绘制单元格
+-(UITableViewCell *)tableView:(UITableView *)tableView1 cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    
+    static NSString *Identifier = @"MDLinformationTableViewCell";
+    
+    MDLinformationTableViewCell *cell = (MDLinformationTableViewCell *)[_mytableView dequeueReusableCellWithIdentifier:Identifier];
+    
+    if (cell == nil)
+    {
+        NSArray *nib = [[NSBundle mainBundle] loadNibNamed:@"MDLinformationTableViewCell" owner:self options:nil];
+        cell = [nib objectAtIndex:0];
+    }
+    cell.selectionStyle=UITableViewCellAccessoryNone;
+    
+    cell.contentLale.text=[[_processingarry objectAtIndex:indexPath.row]objectForKey:@"call_infos"];
+    cell.addressLable.text=[[_processingarry objectAtIndex:indexPath.row]objectForKey:@"delivery_address"];
+    cell.surchargeLable.text=[NSString stringWithFormat:@"%@元",[[_processingarry objectAtIndex:indexPath.row] objectForKey:@"server_price"]];
+
+    return cell;
+}
+- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return YES;
+}
+
+- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    if (editingStyle == UITableViewCellEditingStyleDelete) {
+        [_processingarry removeObjectAtIndex:indexPath.row];
+        [_mytableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationFade];
+    }else if (editingStyle == UITableViewCellEditingStyleInsert) {
+    }
+}
+
+
+- (void)didReceiveMemoryWarning
+{
+//    self.navigationController.tabBarController.tabBar.hidden=YES;
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+@end

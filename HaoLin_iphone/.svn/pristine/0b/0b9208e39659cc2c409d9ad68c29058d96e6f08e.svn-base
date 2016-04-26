@@ -1,0 +1,40 @@
+//
+//  MDLdetailsTableviewcell.h
+//  HLAPP
+//
+//  Created by apple on 14-8-6.
+//  Copyright (c) 2014年 com.haolinshidai. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface MDLdetailsTableviewcell : UITableViewCell
+
+@property (nonatomic ,retain) NSMutableArray *DataList;
+
+@property (nonatomic, retain) UIImageView * typeimgae; //类型图像
+@property (nonatomic, retain) UILabel * typeLabel;     //订单类型
+@property (nonatomic, retain) UILabel * nameLabel;     //物品名称1
+@property (nonatomic, retain) UILabel * onenameLabel;  //物品名称2
+@property (nonatomic, retain) UILabel * twonameLabel;  //物品名称3
+@property (nonatomic, retain) UILabel * ThreenameLabel;//物品名称4
+@property (nonatomic, retain) UILabel * fournameLabel; //物品名称5
+@property (nonatomic, retain) UILabel * timerLabel;    //时间
+@property (nonatomic, retain) UILabel * Label;         //配送费
+@property (nonatomic, retain) UILabel * priceLabel;    //价格1
+@property (nonatomic, retain) UILabel * onepriceLabel; //价格2
+@property (nonatomic, retain) UILabel * twopriceLabel; //价格3
+@property (nonatomic, retain) UILabel * ThreepriceLabel;//价格4
+@property (nonatomic, retain) UILabel * fourpriceLabel;//价格5
+@property (nonatomic, retain) UILabel * numberLable;   //数量
+@property (nonatomic, retain) UILabel * PSpriceLabel;  //配送价格
+@property (nonatomic, retain) UILabel * totalLabel;    //总价格
+@property (nonatomic, retain) UILabel * stateLable;    //订单状态
+@property (nonatomic, retain) UIImageView * stateimage;//订单状况
+@property (nonatomic, retain) UIButton * Yuyinbutton;  //语音
+@property (nonatomic, retain) UIButton  * xcontentButton;
+
+
+//-(void)showCell;
+
+@end

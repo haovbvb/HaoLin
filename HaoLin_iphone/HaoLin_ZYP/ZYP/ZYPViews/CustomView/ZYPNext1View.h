@@ -1,0 +1,28 @@
+//
+//  ZYPNext1View.h
+//  HaoLin
+//
+//  Created by mac on 14-9-18.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@class ZYPEntityOrderView;
+@class ZYPLoadSoundView;
+@interface ZYPNext1View : UIView
+@property (weak, nonatomic) IBOutlet UILabel *peiSongFeiL;
+@property (weak, nonatomic) IBOutlet UIButton *soundBtn;
+@property (weak, nonatomic) IBOutlet UILabel *totalMoneyL;
+@property (weak, nonatomic) IBOutlet UILabel *stateLabel;
+
+@property (weak, nonatomic) IBOutlet UIButton *stateBtn;
+@property (nonatomic, strong)NSString *urlString;
+
+@property (nonatomic, strong)ZYPEntityOrderView *orderView
+;
+@property (nonatomic, strong)NSString *orderID;
+
+@property (nonatomic, strong)ZYPLoadSoundView *loadSoundView;
+
+@end

@@ -1,0 +1,738 @@
+//
+//  MDLMercHantView.m
+//  HAOLINAPP
+//
+//  Created by apple on 14-8-10.
+//  Copyright (c) 2014年 com.haolinshidai. All rights reserved.
+//  商家 - 首页View
+/*
+
+ 014-08-29 17:39:12.374 HaoLin[49260:60b] 获取到的数据为：{
+ "call_infos" = "\U60f3\U8981\U4e00\U76d2\U4e2d\U534e\U9999\U70df";      //喊单文字信息
+ "call_type" = 2;                                                        //喊单类型12
+ "cat_id" = 3;                                        //分类ID
+ "delivery_address" = "\U5317\U4eac\U5e02\U6d77\U6dc0\U533a\U96c5\U7f8e\U79d1\U6280\U56ed"; 
+ //配送地址
+ mobile = 15910216409;                                //用户手机号
+ "server_price" = 5;                                  //服务费
+ status = 1;                                          //
+ "talk_id" = 41409304695;
+ "talk_type" = 1;                                     //喊单类型1
+ "user_axis" = "116.324446,40.043968";                //经纬度
+ "user_id" = 4;                                       //
+ "user_name" = robin12545;                            //用户昵称
+ }
+
+ 
+*/
+#import "MDLMercHantView.h"
+#import <AVFoundation/AVFoundation.h>
+
+@interface MDLMercHantView () {
+    
+    MDLSuccessfulView         *succes;
+    MDLFailureView            *failure;
+    MDLSinglesView            *singlesview;
+    MDLDengluyeViewController *dengluvc;
+    MDLNetworkservice         *service;
+    ZYPObjectManger           *zypobjectmanger;
+    MDLbasicdataobj           *basicdataobj;
+    MDLleidaview              *leidaview;
+    MDQiangdanView            *Qdview;
+    UIView                    *yinyingview;
+    NSMutableArray            *Miarry ;
+    NSMutableArray            *submitarry;
+    MDLLiebiaoViewController  *liebiaoVC;
+    MDLAudioFile              *audifile;
+    AVAudioPlayer *player;
+    
+}
+@property (nonatomic,strong) NSMutableArray *lisarry;
+@property (nonatomic,copy)   NSString       *filepath;
+@property (nonatomic,strong) NSMutableArray *merchdataarry;
+
+@end
+
+@implementation MDLMercHantView
+
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        
+        }
+    return self;
+}
+-(void)stal
+{
+    [self.lestButton setBackgroundImage:[UIImage imageNamed:@"MDLshangjia2@2x"] forState:(UIControlStateNormal)];
+    [self.rightButton setBackgroundImage:[UIImage imageNamed:@"MDLshangjiazhongxin@2x"] forState:(UIControlStateNormal)];
+    self.backgroundColor=BGColor;
+    self.navgaionbarview.backgroundColor=MDLBGColor;
+    
+}
+-(void)awakeFromNib
+{
+//    //创建音乐文件路径
+//    NSString *musicFilePath = [[NSBundle mainBundle] pathForResource:@"xiguan" ofType:@"mp3"];
+//    
+//    //判断文件是否存在
+//    if ([[NSFileManager defaultManager] fileExistsAtPath:musicFilePath])
+//    {
+//        NSURL *musicURL = [NSURL fileURLWithPath:musicFilePath];
+//        NSError *myError = nil;
+//        //创建播放器
+//        myBackMusic = [[AVAudioPlayer alloc] initWithContentsOfURL:musicURL error:&myError];
+//        if (myBackMusic == nil)
+//        {
+//            NSLog(@"error === %@",[myError description]);
+//        }
+//        [myBackMusic setVolume:1];   //设置音量大小
+//        myBackMusic.numberOfLoops = -1;//设置音乐播放次数  -1为一直循环
+//        [myBackMusic prepareToPlay];
+//    }
+    
+//    //得到文件路径
+//    NSString* path = [[NSBundle mainBundle] pathForResource:@"xiguan" ofType:@"mp3"];
+//    //本地路径 -> URL
+//    NSURL* url = [NSURL fileURLWithPath:path];
+//    //只支持本地文件，不支持在线播放
+//    player = [[AVAudioPlayer alloc] initWithContentsOfURL:url error:nil];
+//    //准备播放
+//    [player prepareToPlay];
+//    [player play];
+    
+    liebiaoVC      =[[MDLLiebiaoViewController alloc] initWithNibName:@"MDLLiebiaoViewController" bundle:nil];
+    [self stal];
+
+    audifile       =[[MDLAudioFile alloc]init];
+    self.backgroundColor=[UIColor whiteColor];
+    //请求网络单例
+    service        =[MDLNetworkservice shareservice];
+    //登陆参数单例
+    zypobjectmanger=[ZYPObjectManger shareInstance];
+    //参数相关单例
+    basicdataobj   =[MDLbasicdataobj sharebasicdataobj];
+    
+    submitarry     =[[NSMutableArray alloc] initWithCapacity:0];
+    _lisarry       =[[NSMutableArray alloc]initWithCapacity:0];
+    //获取的订单数据
+    _merchdataarry=[[NSMutableArray alloc]initWithCapacity:0];
+
+    Miarry     =[[NSMutableArray alloc]initWithObjects:@"1",@"2",@"3",@"4",@"5",@"6",@"7",@"8",@"9", nil];
+    //通知
+    [self pushNotificationCenter];
+    
+    //****雷达视图/****初始化视图*****
+    [self initwithviews];
+    
+    [self bringSubviewToFront:Qdview];
+    [self bringSubviewToFront:self.navgaionbarview];
+    [self bringSubviewToFront:succes];
+    [self bringSubviewToFront:failure];
+    [self moduleview];
+    
+    /**
+     *  KVO -- 监听数据源数组
+     */
+    [MDLMercHantView addObserver:self forKeyPath:@"_merchdataarry" options:NSKeyValueObservingOptionNew|NSKeyValueObservingOptionOld context:NULL];
+}
+
+/**
+ *  KVO回调函数
+ *  @param change  列表数据原值
+ *  @param context
+ */
+
+-(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{
+    NSMutableArray * arry=[change objectForKey:@"_merchdataarry"];
+    NSLog(@"%@",arry);
+    
+    /**
+     * 调用系统提示音！
+     */
+    
+    NSString *path = [[NSBundle mainBundle] pathForResource:@"xiguan" ofType:@"mp3"];
+    //组装并播放音效
+    SystemSoundID soundID;
+    NSURL *filePath = [NSURL fileURLWithPath:path isDirectory:NO];
+    
+    AudioServicesCreateSystemSoundID((__bridge CFURLRef)filePath, &soundID);
+    AudioServicesPlaySystemSound(1007);
+    
+    /**
+     *  刷新首页表示图
+     */
+    [_informationtableView reloadData];
+    
+//    if([keyPath isEqualToString:@"price"])
+//    {
+//        myLabel.text = [stockForKVO valueForKey:@"price"];
+//    }
+}
+
+/**
+ *  首页雷达
+ */
+
+-(void)drawRect:(CGRect)rect
+{
+    leidaview=[[MDLleidaview alloc]initWithFrame:CGRectMake(0, NVBARHeight, KDeviceWidth, 120)];
+    
+    leidaview.backgroundColor=BGColor;
+    [self addSubview:leidaview];
+    [self sendSubviewToBack:leidaview];
+//    [leidaview.avbutton addTarget:self action:@selector(btn) forControlEvents:UIControlEventTouchUpInside];
+    
+}
+
+-(void)didMoveToWindow
+{
+    [leidaview removeFromSuperview];
+    [self setNeedsDisplay];
+}
+
+#pragma mark ----通知----
+
+-(void)pushNotificationCenter
+{
+    //要提交的商品数据通知
+    [[NSNotificationCenter defaultCenter]  addObserver:self
+                                              selector:@selector (mytest:)
+                                                  name:@"LBviewtext"
+                                                object:nil];
+    //请求返回数据
+    [[NSNotificationCenter defaultCenter]  addObserver:self
+                                              selector:@selector (Notificationmessage:)
+                                                  name:@"message"
+                                                object:nil];
+    
+    //push到选择界面
+    [[NSNotificationCenter defaultCenter]  addObserver:self
+                                              selector:@selector (pushxzVC)
+                                                  name:@"pushSZVC"
+                                                object:nil];
+    
+    [[NSNotificationCenter defaultCenter]  addObserver:self
+                                              selector:@selector (AccessData:) name:@"AccessData"
+                                                object:nil];
+
+    
+    //push到地图页面
+    [[NSNotificationCenter defaultCenter]  addObserver:self
+                                              selector:@selector (pushMAPVC)
+                                                  name:@"pushMapVC"
+                                                object:nil];
+
+}
+
+- (void) mytest:(NSNotification*) notification
+{
+    id obj = [notification object];//获取到传递的对象
+    NSLog(@"*********%@",obj);
+    NSMutableArray *textarry=[notification object];
+    NSMutableArray *dataarry=[[NSMutableArray alloc]init];
+    float sum=0.0;
+    for (int i = 0; i <textarry.count ; i ++) {
+        MDLgoodsdata *goods = [textarry objectAtIndex:i];
+        NSDictionary *dic =[NSDictionary dictionaryWithObjectsAndKeys:goods.goodsid,@"goods_id",goods.goodsprice,@"goods_price",goods.goodsnum,@"goods_num", nil];
+        if (goods.goodsnum==nil) {
+            goods.goodsnum=@"1";
+        }if (goods.goodsprice) {
+            NSLog(@"没有价格的商品你也敢要！");
+        }
+        float  A =[goods.goodsprice floatValue];
+        float  B =[goods.goodsnum floatValue];
+        float  C = A*B;
+        sum+=C;
+        [dataarry addObject:dic];
+        NSLog(@"选定后要提交的数据%@",dataarry);
+        //        NSArray *array = [NSArray arrayWithObjects:goods.goodsprice,goods.goodsid,goods.goodsnum, nil];
+        //        [submitarry addObject:arry];
+    }
+    Qdview.TotalPicLable.text=[NSString stringWithFormat:@"%.2f元",sum];
+    [submitarry addObject:dataarry];
+    NSLog(@"要提交的数据%@",submitarry);
+}
+
+//登陆时的模块视图
+-(void)moduleview
+{
+    dengluvc=[[MDLDengluyeViewController alloc]init];
+//    homview.hidden=YES;
+    [self addSubview:dengluvc.view];
+    [dengluvc.denglubtn addTarget:self action:@selector(dengluba) forControlEvents:UIControlEventTouchUpInside];
+}
+
+#pragma mark -- 多线程定时器
+
+-(void)mulstzhread
+{
+//    [NSTimer scheduledTimerWithTimeInterval:10 target:self selector:@selector(timerAchtion) userInfo:nil repeats:YES];
+    [[NSRunLoop currentRunLoop]run];
+}
+
+-(void)timerAchtion
+{
+    basicdataobj.talkid=@"";
+    MDLMercHantView *wseld=self;
+    NSString * DLUSERID =zypobjectmanger.loginInObject.user_id;
+    NSString * DLTOKENID=zypobjectmanger.loginInObject.tokenid;
+    NSString * DLTALKID=basicdataobj.talkid;
+    
+    [service ConnectToobtain:DLUSERID TOKENID:DLTOKENID talkid:DLTALKID withJSON:^(id responseObject){
+    [wseld addData:responseObject];
+        
+    }];
+}
+
+-(void)addData:(id)responseObject
+{
+//    NSMutableDictionary *dic =responseObject;
+//    NSLog(@"%@",[dic objectForKey:@"message"]);
+/*
+        for (NSMutableDictionary *dic in responseObject)
+        {
+            if ([responseObject objectForKey:@"code"]==0) {
+            NSLog(@"%@",[dic objectForKey:@"message"]);
+            MDLQiangdanliebiao *qiangdan=[[MDLQiangdanliebiao alloc]init];
+            qiangdan.callinfos=[dic objectForKey:@"call_infos"];                       //喊单文字信息
+            qiangdan.serverprice=[dic objectForKey:@"server_price"];                     //服务费
+            qiangdan.deliveryaddress=[dic objectForKey:@"delivery_address"]; //配送地址
+            qiangdan.type=[dic objectForKey:@"talk_type"];         //喊单类型
+            qiangdan.audio=[dic objectForKey:@"audio"];                            //语音地址
+            basicdataobj.catid=[dic objectForKey:@"cat_id"];       //公用分类ID
+            basicdataobj.useraxis=[dic objectForKey:@"user_axis"]; //客户坐标
+            }else{
+           
+        }
+    }
+ */
+}
+
+#pragma mark   创建view视图
+
+//商家首页雷达界面
+-(void)showview
+{
+      //多线程开启计时器
+//    [self performSelectorInBackground:@selector(mulstzhread) withObject:nil];
+}
+//初始化抢单页面
+-(void)singview
+{
+//    singlesview=[[[NSBundle mainBundle]loadNibNamed:@"MDLSinglesView" owner:self options:nil]lastObject];
+//    if (DEVICE_IS_IPHONE5) {
+//    singlesview.frame=CGRectMake(0, -300,320, 200);
+//        }else{
+//    singlesview.frame=CGRectMake(0, -300,320, 200);
+//    }
+//    singlesview.backgroundColor=[UIColor redColor];
+//    [self addSubview:singlesview];
+    
+    yinyingview=[[UIView alloc]initWithFrame:CGRectMake(0, 65, 320, KDeviceHeight)];
+    yinyingview.backgroundColor=[UIColor blackColor];
+    yinyingview.alpha=0.6;
+    [self addSubview:yinyingview];
+    yinyingview.hidden=YES;
+    
+    //手势
+//    UITapGestureRecognizer *sing = [[UITapGestureRecognizer alloc] initWithTarget:self
+//        action:@selector(yinyingview)];
+//    [yinyingview addGestureRecognizer:sing];
+
+    
+    //抢单视图初始化
+    Qdview =[[[NSBundle mainBundle]loadNibNamed:@"MDQiangdanView" owner:self options:nil]lastObject];
+    Qdview.frame=CGRectMake(0,-320, KDeviceWidth,Qdview.frame.size.height);
+    [Qdview.quxiaobtn addTarget:self action:@selector(quxiao) forControlEvents:UIControlEventTouchUpInside];
+    [Qdview.JixuQiangdanButton addTarget:self action:@selector(LijiQiangDan:) forControlEvents:UIControlEventTouchUpInside];
+    [Qdview.YuyinButton addTarget:self action:@selector(yinpinbtn:) forControlEvents:UIControlEventTouchUpInside];
+    Qdview.backgroundColor=[UIColor whiteColor];
+    [self addSubview:Qdview];
+    
+}
+-(void)reloadtableview
+{
+    [_informationtableView reloadData];
+}
+
+//商家抢单界面
+-(void)initwithviews
+{
+    
+    self.informationtableView=[[UITableView alloc]init];
+    _informationtableView.BackgroundColor=[UIColor clearColor];
+    
+    if (DEVICE_IS_IPHONE5) {
+        self.informationtableView.frame=CGRectMake(0,NVBARHeight+120, KDeviceWidth,KDeviceHeight-230);
+    }else{
+        self.informationtableView.frame=CGRectMake(0, NVBARHeight+120, KDeviceWidth,KDeviceHeight-230);
+    }
+    
+    _informationtableView.delegate   = self;
+    _informationtableView.dataSource = self;
+    
+    [self addSubview:_informationtableView];
+    [self singview];
+}
+
+#pragma mark - UITableViewDelegate
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    
+    return 1;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    
+    return [Miarry count];
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    //     MDLinformationTableViewCell *cell = [self tableView:_informationtableView cellForRowAtIndexPath:indexPath] ;
+    //    MDLinformationTableViewCell *cell;
+    //    return cell.frame.size.height;
+    return 120;
+}
+//绘制单元格
+-(UITableViewCell *)tableView:(UITableView *)tableView1 cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    
+    static NSString *simpleTableIdentifier = @"MDLinformationTableViewCell";
+    
+    MDLinformationTableViewCell *cell = (MDLinformationTableViewCell *)[_informationtableView dequeueReusableCellWithIdentifier:simpleTableIdentifier];
+    if (cell == nil)
+    {
+        cell = [[[NSBundle mainBundle] loadNibNamed:@"MDLinformationTableViewCell" owner:self options:nil]lastObject];
+    }
+//    for (UIView *view in cell.contentView.subviews) {
+//        [view removeFromSuperview];
+//    }
+//    cell.selectionStyle=UITableViewCellSelectionStyleNone;
+    cell.contentView.backgroundColor=[UIColor clearColor];
+    UIView *view=[[UIView alloc]initWithFrame:cell.contentView.frame];
+    view.backgroundColor=[UIColor clearColor];
+    [view.layer setMasksToBounds:YES];
+    [view.layer setCornerRadius:1.0];
+    view.layer.borderWidth = 1;
+    view.layer.borderColor = [UIColor redColor].CGColor;
+    cell.selectedBackgroundView=view;
+    
+    if ([Miarry objectAtIndex:indexPath.row]==nil) {
+
+    }else{
+        
+        cell.surchargeLable.text=[Miarry objectAtIndex:indexPath.row];
+        [cell.voicebutton addTarget:self action:@selector(audiobtn:) forControlEvents:UIControlEventTouchUpInside];
+        cell.voicebutton.tag=indexPath.row;
+    }
+    
+//    cell.timelable.text=[_QDarry objectAtIndex:indexPath.row];
+//    [cell.stopbutton addTarget:self action:@selector(deletecell:) forControlEvents:UIControlEventTouchUpInside];
+//    cell.stopbutton.tag     =indexPath.row;                        //秒数
+    /*
+     cell.contentLale.text   =[liebiao.callinfos objectAtIndex:indexPath.row];                              //配送内容
+     cell.addressLable.text  =[liebiao.deliveryaddress objectAtIndex:indexPath.row];                              //配送地址
+     cell.surchargeLable.text=[liebiao.serverprice objectAtIndex:indexPath.row];                              //配送费
+     */
+    return cell;
+}
+- (void)tableView:(UITableView *)sender didSelectRowAtIndexPath:(NSIndexPath *)path
+{
+//    [_informationtableView deselectRowAtIndexPath:path animated:NO];
+    //取到cell的内容
+    MDLinformationTableViewCell *cell=(MDLinformationTableViewCell *)[_informationtableView cellForRowAtIndexPath:path];
+    
+    NSInteger row=[path row];
+    Qdview.DistributionMoneyLable.text=cell.surchargeLable.text;
+    Qdview.JixuQiangdanButton.tag=row;
+
+    BOOL T=YES;
+    if (T==YES) {
+        yinyingview.hidden=NO;
+    }
+    //开始动画
+    [UIView beginAnimations:@"testanimation" context:nil];
+    [UIView setAnimationDuration:0.5];
+    //动画的代理
+    [UIView setAnimationDelegate:self];
+    //动画的响应事件,使视图自动回到原来的位置
+    //   [UIView setAnimationDidStopSelector:@selector(animationstop:)];
+    [UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
+    //获得视图的位置
+    CGRect frames = Qdview.frame;
+    frames.origin.y = self.size.height/2-Qdview.size.height/2+NVBARHeight/2-20;
+    Qdview.frame = frames;
+    [UIView commitAnimations];
+    
+}
+- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return YES;
+}
+
+- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    if (editingStyle == UITableViewCellEditingStyleDelete) {
+        [Miarry removeObjectAtIndex:indexPath.row];
+        [_informationtableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationFade];
+    }else if (editingStyle == UITableViewCellEditingStyleInsert) {
+  }
+}
+
+#pragma mark  ----点击事件----
+
+/**
+ *  音频文件的播放
+ *
+ *  @param btn 播放音频
+ */
+
+-(void)audiobtn:(UIButton *)btn
+{
+    NSInteger index=btn.tag;
+    self.filepath=nil;
+    if (self.filepath ==nil) {
+        JZDCustomAlertView *alert=[JZDCustomAlertView sharedInstace];
+        [alert popAlert:@"没有声音信息"];
+    }else{
+    if(btn.selected) {
+        btn.selected=YES;
+        [audifile PlayFile:self.filepath];
+    }else{
+        btn.selected=NO;
+        [audifile stopFile:self.filepath];
+        }
+    }
+}
+
+/**
+ *  抢单界面
+ *
+ *  @param sender 立即抢单点击方法
+ */
+- (void)LijiQiangDan:(UIButton *)sender {
+    
+    if ([submitarry count]>0) {
+        //        NSString *Talkid =[NSString stringWithFormat:@"%@",nil];
+        //        NSDictionary *dic= @{@"talk_id": Talkid,@"goods_info":submitarry};
+        //        [[NSNotificationCenter defaultCenter]postNotificationName:NotificationOfSendToBusiness object:dic];
+        NSInteger  Mtag =sender.tag;
+//        [_lisarry addObject:[Miarry objectAtIndex:sender.tag]];
+        if ([_lisarry containsObject:[Miarry objectAtIndex:sender.tag]]) {
+//            [_lisarry removeObject:[Miarry objectAtIndex:sender.tag]];
+            NSLog(@"重复添加");
+        }else{
+            [_lisarry addObject:[Miarry objectAtIndex:sender.tag]];
+        }
+        NSString * MStag=[NSString stringWithFormat:@"%d",Mtag];
+        NSDictionary * Mdic =@{@"tag":MStag,@"lisarry":_lisarry};
+        NSLog(@"_lisarry:%@",_lisarry);
+
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"MerNot" object:Mdic];
+        liebiaoVC.dicBlock=^NSDictionary *(void){
+            return Mdic;
+        };
+//        [Miarry removeObjectAtIndex:tag1];
+//        Qdview.timerLable.text=[NSString stringWithFormat:@"%d",tag1];
+//        Qdview.timerLable.text=[Miarry objectAtIndex:tag1++];
+        
+//        [self.informationtableView reloadData];
+//
+//        CATransition *transition = [CATransition animation];
+//        transition.duration = 2.0f;
+//        transition.type = kCATransitionPush;
+//        transition.subtype = kCATransitionFromRight;
+//        [Qdview exchangeSubviewAtIndex:1 withSubviewAtIndex:0];
+//        [Qdview.layer addAnimation:transition forKey:@"animation"];
+        
+        [UIView beginAnimations:nil context:nil];
+        [UIView setAnimationCurve:UIViewAnimationCurveEaseIn];
+        [UIView setAnimationDuration:1];
+        CGRect frames = Qdview.frame;
+        frames.origin.y = -330;
+        Qdview.frame = frames;
+        [UIView commitAnimations];
+        yinyingview.hidden=YES;
+        
+        NSLog(@"抢单提交");
+    }else{
+        
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"您还没有选择商品，无法提交！" message:nil delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+        [alert show];
+    }
+}
+
+-(void)quxiao
+{
+    [UIView beginAnimations:nil context:nil];
+    [UIView setAnimationCurve:UIViewAnimationCurveEaseIn];
+    [UIView setAnimationDuration:1];
+    CGRect frames = Qdview.frame;
+    frames.origin.y = -320;
+    Qdview.frame = frames;
+    [UIView commitAnimations];
+    yinyingview.hidden=YES;
+    
+}
+
+//登陆
+-(void)dengluba
+{
+    dengluvc.view.hidden=YES;
+    ZYPLoginViewController *loginViewC = [[ZYPLoginViewController alloc] initWithNibName:@"ZYPLoginViewController" bundle:nil];
+    UINavigationController *na = [[UINavigationController alloc] initWithRootViewController:loginViewC];
+    loginViewC.MQLBusinessViewController = self.MQLBusinessViewController;
+    [self.MQLBusinessViewController presentViewController:na animated:YES completion:nil];
+}
+
+//左边itm 事件
+- (IBAction)pushixzVC:(id)sender {
+    
+//    ZYOHomeViewController *homeView1 = [[ZYOHomeViewController alloc] initWithNibName:@"ZYOHomeViewController" bundle:nil];
+//    UINavigationController *na = [[UINavigationController alloc] initWithRootViewController:homeView1];
+//    homeView1.MQLBusinessViewController = self.MQLBusinessViewController;
+//    homeView1.modalTransitionStyle = UIModalTransitionStyleFlipHorizontal;
+    
+    MDLWuPinleiXingViewController *xzwupinvc=[[MDLWuPinleiXingViewController alloc]init];
+
+//    [self.MQLBusinessViewController.navigationController pushViewController:xzwupinvc animated:YES];
+    [self.MQLBusinessViewController.navigationController presentViewController:xzwupinvc animated:YES completion:nil];
+    
+}
+//右边itm 事件
+- (IBAction)pushixsVC:(id)sender {
+    
+    self.MQLBusinessViewController.navigationController.tabBarController.tabBar.hidden=YES;
+    [self.MQLBusinessViewController.navigationController pushViewController:liebiaoVC animated:YES];
+}
+
+//抢单成功界面动画
+- (IBAction)SuccessfulAnimation:(id)sender {
+    
+    if (!succes) {
+        succes =[[[NSBundle mainBundle]loadNibNamed:@"MDLSuccessfulView" owner:self options:nil]lastObject];
+        succes.backgroundColor=BGColor;
+        [succes.jixuqiangdanbutton addTarget:self action:@selector(animationstop) forControlEvents:UIControlEventTouchUpInside];
+    }
+    [self addSubview:succes];
+    //开始动画
+    [UIView beginAnimations:@"testanimation" context:nil];
+    [UIView setAnimationDuration:0.5];
+    //动画的代理
+    [UIView setAnimationDelegate:self];
+    //动画的响应事件,使视图自动回到原来的位置
+    
+//   [UIView setAnimationDidStopSelector:@selector(animationstop:)];
+    [UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
+    //获得视图的位置
+    CGRect frames = succes.frame;
+    frames.origin.y = 20;
+    succes.frame = frames;
+    [UIView commitAnimations];
+}
+
+//抢单成功界面回原位
+-(void)animationstop{
+    
+    [UIView beginAnimations:nil context:nil];
+    [UIView setAnimationCurve:UIViewAnimationCurveEaseIn];
+    [UIView setAnimationDuration:1];
+    CGRect frames = succes.frame;
+    frames.origin.y = -340;
+    succes.frame = frames;
+    [UIView commitAnimations];
+}
+
+//抢单失败界面动画
+- (IBAction)FailureAnimation:(id)sender {
+    
+    if (!failure) {
+        failure =[[[NSBundle mainBundle]loadNibNamed:@"MDLFailureView" owner:self options:nil]lastObject];
+//        failure.frame=CGRectMake(0, -320, 320, 320);
+        [failure.JXqiangdanButton addTarget:self action:@selector(failureAnimationstop) forControlEvents:UIControlEventTouchUpInside];
+    }
+    [self addSubview:failure];
+    
+    //开始动画
+    [UIView beginAnimations:@"testanimation" context:nil];
+    [UIView setAnimationDuration:0.5];
+    //动画的代理
+    [UIView setAnimationDelegate:self];
+    //动画的响应事件,使视图自动回到原来的位置
+    
+//    [UIView setAnimationDidStopSelector:@selector(failureAnimationstop)];
+    [UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
+    //获得视图的位置
+    CGRect frames = failure.frame;
+    //将坐标移到右边160处
+    frames.origin.y = 20;
+    failure.frame = frames;
+    [UIView commitAnimations];
+}
+
+//抢单失败回到原位动画
+-(void)failureAnimationstop
+{
+    [UIView beginAnimations:nil context:nil];
+    [UIView setAnimationCurve:UIViewAnimationCurveEaseIn];
+    [UIView setAnimationDuration:1];
+    CGRect frames = failure.frame;
+    frames.origin.y = -340;
+    failure.frame = frames;
+    [UIView commitAnimations];
+}
+
+#pragma mark - NotificationCenter -
+/**
+ *  获取订单
+ *
+ *  @param Not 订单详情参数
+ */
+- (void)AccessData:(NSNotification *)Not
+{
+    
+    
+}
+/**
+ *  提交订单回执
+ *
+ *  @param Notification 返回的参数
+ */
+-(void)Notificationmessage:(NSNotification *)Notification
+{
+    id obj=[Notification object];
+    
+    NSLog(@"%@",obj);
+}
+
+//跳转到地图页
+-(void)pushMAPVC
+{
+    MDLMapViewController *mapvc =[[MDLMapViewController alloc]init];
+    self.MQLBusinessViewController
+    .tabBarController.tabBar.hidden=YES;
+    [self.MQLBusinessViewController.navigationController pushViewController:mapvc animated:YES];
+}
+
+//跳转到选择物品界面
+-(void)pushxzVC
+{
+    MDLJingyingViewController *JYVC =[[MDLJingyingViewController alloc]init];
+    self.MQLBusinessViewController.tabBarController.tabBar.hidden=YES;
+    [self.MQLBusinessViewController.navigationController pushViewController:JYVC animated:YES];
+}
+
+////选择物品服务页面
+//-(void)pushzhuyeVC
+//{
+//    MDLXuanzeViewController *xuanzeVC =[[MDLXuanzeViewController alloc]init];
+//
+////    MDLServiceXZViewController *rviceVC=[[MDLServiceXZViewController alloc]init];
+//    
+//    [self.MQLBusinessViewController.navigationController pushViewController:xuanzeVC animated:YES];
+//}
+@end

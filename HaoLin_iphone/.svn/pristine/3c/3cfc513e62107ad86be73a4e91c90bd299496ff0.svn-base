@@ -1,0 +1,103 @@
+//
+//  MQLPartyViewController.m
+//  HaoLin
+//
+//  Created by mac on 14-8-7.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "MQLPartyViewController.h"
+
+@interface MQLPartyViewController ()
+
+@property (nonatomic, weak) IBOutlet UIView *adjustView;    //适配视图（0，-20，0，69），因为app start form ios7, 所以该引用备用
+
+
+/**
+ *  自定义初始化
+ */
+-(void)customInitialization;
+
+/**
+ *  添加我的视图
+ */
+-(void)addMyView;
+
+
+
+@end
+
+@implementation MQLPartyViewController
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+    }
+    return self;
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    
+    //自定义初始化
+    [self customInitialization];
+    
+    
+}
+
+-(void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    
+    //添加我的视图
+    [self addMyView];
+    
+}
+
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+#pragma mark -- MQLPartyViewController函数扩展
+/**
+ *  自定义初始化
+ */
+-(void)customInitialization
+{
+    self.view.backgroundColor = BGColor;
+}
+
+/**
+ *  添加我的视图
+ */
+-(void)addMyView
+{
+    MQLAppDelegate *appDelegate = (MQLAppDelegate*)[UIApplication sharedApplication].delegate;
+    int lastTabBarItemIndex = appDelegate.rootViewController.lastTabBarItemIndex;
+    
+    switch (lastTabBarItemIndex) {
+        case 0://从个人切过来的
+        {
+            //添加你的代码
+        }
+            break;
+        case 1://从商家切过来的
+        {
+            //添加你的代码
+        }
+            break;
+            
+        default:
+            break;
+    }
+    
+    
+}
+
+@end

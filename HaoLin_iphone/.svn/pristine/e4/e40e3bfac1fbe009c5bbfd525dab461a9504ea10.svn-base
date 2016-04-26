@@ -1,0 +1,33 @@
+//
+//  MDLinformationTableViewCell.h
+//  HAOLINAPP
+//
+//  Created by apple on 14-8-11.
+//  Copyright (c) 2014年 com.haolinshidai. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface MDLinformationTableViewCell : UITableViewCell
+
+/**
+ * timelable       :时间Lable
+ * stopbutton      :关闭按钮
+ * contentLale     :配送内容
+ * addressLable    :配送地址
+ * surchargeLable  :配送费
+ * voicebutton;    :语音
+ */
+
+@property (weak, nonatomic) IBOutlet UILabel  *timelable;
+@property (weak, nonatomic) IBOutlet UIButton *stopbutton;
+@property (weak, nonatomic) IBOutlet UILabel  *contentLale;
+@property (weak, nonatomic) IBOutlet UILabel  *addressLable;
+@property (weak, nonatomic) IBOutlet UILabel  *surchargeLable;
+@property (weak, nonatomic) IBOutlet UIButton *voicebutton;
+
+-(void)setIntroductionText:(NSString*)text;
+
+
+@property (weak, nonatomic) IBOutlet UILabel *celerLable;    //隐藏的Lable
+@end

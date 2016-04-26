@@ -1,0 +1,76 @@
+//
+//  MDLWuPinTableViewCell.m
+//  HaoLin
+//
+//  Created by apple on 14-8-15.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "MDLWuPinTableViewCell.h"
+
+
+@implementation MDLWuPinTableViewCell
+
+- (void)awakeFromNib
+{
+//    [self.XuanzhongButton addTarget:self action:@selector(danxuan) forControlEvents:UIControlEventTouchUpInside];
+//    [self.ZuoButton addTarget:self action:@selector(jianshaobutton) forControlEvents:UIControlEventTouchUpInside];
+//    [self.YouButton addTarget:self action:@selector(zengjiabutton) forControlEvents:UIControlEventTouchUpInside];
+    
+//    _numlablearry=[[NSMutableArray alloc]init];
+    
+//    self.numberLable.text=@"1";
+//    col =YES;
+    
+        _cellview=[[[NSBundle mainBundle]loadNibNamed:@"MDLCellView" owner:self options:nil]lastObject];
+    
+        [self.contentView addSubview:_cellview];
+
+
+}
+
+//- (void)setSelected:(BOOL)selected animated:(BOOL)animated
+//{
+//    [super setSelected:selected animated:animated];
+//}
+//
+//-(void)danxuan
+//{
+//    
+//    if (col ==NO) {
+//        [self.XuanzhongButton setBackgroundImage:[UIImage imageNamed:@"MDLuncheck2@2x"] forState:UIControlStateNormal];
+//        [self.SLbeijingimageview setImage:[UIImage imageNamed:@"MDLshuliangchangtai@2x"]];
+//        col=YES;
+//    }else if (col==YES)
+//    {
+//         [self.XuanzhongButton setBackgroundImage:[UIImage imageNamed:@"MDLxuanzhong@2x"] forState:UIControlStateNormal];
+//        [self.SLbeijingimageview setImage:[UIImage imageNamed:@"DMLshuliang@2x"]];
+//        col=NO;
+//    }
+//   
+//}
+
+////数量增加
+//-(void)jianshaobutton:(NSNotificationCenter *)notificeation
+//{
+//    
+//    
+//    if (number<=0) {
+//        number=1;
+//    }else{
+//        self.numberLable.text=[NSString stringWithFormat:@"%d",number++];
+//
+//    }
+//    [numlablearry addObject:self.numberLable.text];
+//    NSLog(@"%@",numlablearry);
+//}
+////数量减少
+//-(void)zengjiabutton
+//{
+//    if (number<=0) {
+//        number=1;
+//    }else{
+//        self.numberLable.text=[NSString stringWithFormat:@"%d",number--];
+//    }
+//    }
+@end

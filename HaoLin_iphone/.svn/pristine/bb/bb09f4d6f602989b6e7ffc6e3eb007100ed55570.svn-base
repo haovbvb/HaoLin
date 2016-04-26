@@ -1,0 +1,245 @@
+//
+//  MDLLiebiaoViewController.m
+//  HaoLin
+//
+//  Created by apple on 14-9-13.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "MDLLiebiaoViewController.h"
+
+
+@interface MDLLiebiaoViewController ()<UITableViewDataSource,UITableViewDelegate>
+{
+    AVAudioPlayer             * player;
+    NSString                  * file;
+    NSString                  * Bpath;
+    NSBlockOperation          * operation1;
+}
+@end
+
+@implementation MDLLiebiaoViewController
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+        /**
+         *  隐藏tablebar的方法
+         */
+        //        self.hidesBottomBarWhenPushed=YES;
+        [[NSNotificationCenter defaultCenter]  addObserver:self
+                                                  selector:@selector (MerNotification:)
+                                                      name:@"MerNot"
+                                                    object:nil];
+    }
+    return self;
+}
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    
+    //        //得到文件路径
+    //        NSString* path = [[NSBundle mainBundle] pathForResource:@"xiguan" ofType:@"mp3"];
+    //        //本地路径 -> URL
+    //        NSURL* url = [NSURL fileURLWithPath:path];
+    //        //只支持本地文件，不支持在线播放
+    //        player = [[AVAudioPlayer alloc] initWithContentsOfURL:url error:nil];
+    //        //准备播放
+    //        [player prepareToPlay];
+    //        [player play];
+    
+    self.nvbarview.backgroundColor=MDLBGColor;
+    self.view.backgroundColor     =BGColor;
+    [self.backbtn setBackgroundImage:[UIImage imageNamed:@"MDLfanhui@2x"] forState:UIControlStateNormal];
+    _mytableView.delegate  =self;
+    _mytableView.dataSource=self;
+    _mytableView.backgroundColor=BGColor;
+    [self.mytableView setFrame:CGRectMake(0, _nvbarview.size.height,KDeviceWidth, KDeviceHeight-60)];
+    
+    
+    //    if (_dicBlock) {
+    //        YYLog(@"****%@",_dicBlock());
+    //    }
+    
+}
+-(void)MerNotification:(NSNotification *)notification
+{
+    id dic=[notification object];
+    self.processingarry=[dic objectForKey:@"lisarry"];
+    [_mytableView reloadData];
+}
+
+- (IBAction)lestback:(id)sender {
+    self.navigationController.tabBarController.tabBar.hidden=NO;
+    [self.navigationController popToRootViewControllerAnimated:YES];
+}
+
+
+#pragma mark - UITableViewDelegate
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    
+    return 1;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    
+    return [_processingarry count];
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    //     MDLinformationTableViewCell *cell = [self tableView:_informationtableView cellForRowAtIndexPath:indexPath] ;
+    //    MDLinformationTableViewCell *cell;
+    //    return cell.frame.size.height;
+    CGFloat contentLaleheight=[self heightOfLabelString:[[_processingarry objectAtIndex:indexPath.row]objectForKey:@"call_infos"]];
+    CGFloat addressLaleheight=[self heightOfLabelString:[[_processingarry objectAtIndex:indexPath.row]objectForKey:@"delivery_address"]];
+    if (contentLaleheight == 0 ) {
+        contentLaleheight = 30;
+        return 30+addressLaleheight+84;
+    }else
+        return contentLaleheight+addressLaleheight+84;
+
+}
+//绘制单元格
+-(UITableViewCell *)tableView:(UITableView *)tableView1 cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    
+    static NSString *Identifier = @"MDLinformationTableViewCell";
+    
+    MDLinformationTableViewCell *cell = (MDLinformationTableViewCell *)[_mytableView dequeueReusableCellWithIdentifier:Identifier];
+    
+    if (cell == nil)
+    {
+        NSArray *nib = [[NSBundle mainBundle] loadNibNamed:@"MDLinformationTableViewCell" owner:self options:nil];
+        cell = [nib objectAtIndex:0];
+    }
+    cell.selectionStyle=UITableViewCellAccessoryNone;
+    
+    CGFloat contentLaleheight=[self heightOfLabelString:[[_processingarry objectAtIndex:indexPath.row]objectForKey:@"call_infos"]];
+    CGFloat addressLaleheight=[self heightOfLabelString:[[_processingarry objectAtIndex:indexPath.row]objectForKey:@"delivery_address"]];
+    if ([[[_processingarry objectAtIndex:indexPath.row]objectForKey:@"call_type"]isEqualToString:@"1"]) {
+        cell.voicebutton.enabled=YES;
+        cell.contentLale.frame=CGRectMake(82, 36, 228,30);
+        cell.contentLale.text=@"无文字内容,请点语音喇叭";
+        cell.contentLale.textColor=[UIColor redColor];
+        cell.addressLable.frame=CGRectMake(82,40 + 30, 230, addressLaleheight);
+        cell.addsLable.frame=CGRectMake(8, 30+38, 230, 30);
+        cell.peisongpicLable.frame=CGRectMake(8,30+ addressLaleheight +40 + 4, 66, 31);
+        cell.surchargeLable.frame=CGRectMake(74,30+ addressLaleheight +40 + 4, 66, 31);
+        cell.bianxianimage.frame=CGRectMake(0,30+ addressLaleheight + 32 + 34+4+4, KDeviceWidth, 10);
+        
+    }else{
+        
+        cell.contentLale.textColor=[UIColor blackColor];
+        cell.contentLale.text=[[_processingarry objectAtIndex:indexPath.row]objectForKey:@"call_infos"];
+        cell.voicebutton.enabled=NO;
+        cell.contentLale.frame=CGRectMake(82, 36, 228,contentLaleheight);
+        cell.addressLable.frame=CGRectMake(82,40 + contentLaleheight, 230, addressLaleheight);
+        cell.addsLable.frame=CGRectMake(8, contentLaleheight+38, 230, 30);
+        cell.peisongpicLable.frame=CGRectMake(8,contentLaleheight+ addressLaleheight +40 + 4, 66, 31);
+        cell.surchargeLable.frame=CGRectMake(74,contentLaleheight+ addressLaleheight +40 + 4, 66, 31);
+        cell.bianxianimage.frame=CGRectMake(0,contentLaleheight+ addressLaleheight + 32 + 34+4+4, KDeviceWidth, 10);
+    }
+
+    cell.addressLable.text=[[_processingarry objectAtIndex:indexPath.row]objectForKey:@"delivery_address"];
+    cell.surchargeLable.text=[NSString stringWithFormat:@"%@元",[[_processingarry objectAtIndex:indexPath.row] objectForKey:@"server_price"]];
+    [cell.voicebutton addTarget:self action:@selector(audio:) forControlEvents:UIControlEventTouchUpInside];
+    cell.voicebutton.tag=indexPath.row;
+    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+    [formatter setDateStyle:NSDateFormatterMediumStyle];
+    [formatter setDateFormat:@"YYYY-MM-dd hh:mm:ss"];
+    //订单创建时间
+    NSDate *timedate = [NSDate dateWithTimeIntervalSince1970:[[[_processingarry objectAtIndex:indexPath.row]objectForKey:@"createtime"] intValue]];
+    cell.timelable.text=[formatter stringFromDate:timedate];
+    return cell;
+}
+- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return YES;
+}
+
+- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    if (editingStyle == UITableViewCellEditingStyleDelete) {
+        [_processingarry removeObjectAtIndex:indexPath.row];
+        [_mytableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationFade];
+    }else if (editingStyle == UITableViewCellEditingStyleInsert) {
+    }
+}
+- (CGFloat)heightOfLabelString:(NSString *)text
+{
+    NSDictionary *attribute = [NSDictionary dictionaryWithObjectsAndKeys:[UIFont systemFontOfSize:15],NSFontAttributeName, nil];
+    CGSize LBsize = [text boundingRectWithSize:CGSizeMake(228, 0) options:  NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading  attributes:attribute context:nil].size;
+    return LBsize.height;
+}
+
+-(void)audio:(UIButton *)btn
+{
+    NSInteger index=btn.tag;
+    if ([_processingarry count] > 0) {
+    file=[[_processingarry objectAtIndex:index]objectForKey:@"audio"];
+    //    self.filepath=nil;
+    
+    if (file ==nil)
+    {
+        JZDCustomAlertView *alert=[JZDCustomAlertView sharedInstace];
+        [alert popAlert:@"没有声音信息"];
+    }else
+    {
+            NSBlockOperation *operation = [NSBlockOperation blockOperationWithBlock:^{
+                [self load:[NSURL URLWithString:file]];
+            }];
+            [operation start];
+            operation1 = [NSBlockOperation blockOperationWithBlock:^{
+                [player play];
+            }];
+    }
+    }else{
+        
+    }
+}
+- (void)load:(NSURL *)url
+{
+    NSURLRequest *request = [NSURLRequest requestWithURL:url];
+    NSURLSession *session = [NSURLSession sharedSession];
+ 
+    NSURLSessionDownloadTask *downSession = [session downloadTaskWithRequest:request completionHandler:^(NSURL *location, NSURLResponse *response, NSError *error)
+        {
+            if (!error) {
+                
+                NSString *path = NSTemporaryDirectory();
+                NSString *pathString = [path stringByAppendingString:response.suggestedFilename];
+                NSURL *newFileLocation =[NSURL fileURLWithPath:pathString];
+                [[NSFileManager defaultManager] copyItemAtURL:location toURL:newFileLocation error:nil];
+                [self getChangeFormat:pathString];
+            }
+        }];
+    [downSession resume];
+}
+- (void)getChangeFormat:(NSString *)path
+{
+    if ([path hasSuffix:@".amr"])
+    {
+        Bpath = [path stringByReplacingOccurrencesOfString:@".amr" withString:@".wav"];
+        [MQLAudioManage encodeToWav:Bpath fromAmr:path];
+        NSLog(@"%@",[NSData dataWithContentsOfFile:Bpath]);
+        [[AVAudioSession sharedInstance] setCategory: AVAudioSessionCategoryPlayback error: nil];
+        [[AVAudioSession sharedInstance] setActive: YES error: nil];
+        NSURL*url = [NSURL fileURLWithPath:Bpath];
+        player = [[AVAudioPlayer alloc] initWithContentsOfURL:url  error:nil];
+        [operation1 start];
+    }
+}
+
+
+- (void)didReceiveMemoryWarning
+{
+    //    self.navigationController.tabBarController.tabBar.hidden=YES;
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+@end

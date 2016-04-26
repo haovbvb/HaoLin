@@ -1,0 +1,215 @@
+//
+//  JZDPublishBBSViewController.m
+//  HaoLin
+//
+//  Created by 姜泽东 on 14-8-18.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "JZDPublishBBSViewController.h"
+
+@interface JZDPublishBBSViewController ()<UIActionSheetDelegate,UIImagePickerControllerDelegate,UINavigationControllerDelegate>
+{
+    NSMutableArray *imageArray;
+    NSMutableArray *buttonArray;
+    MQLAudioManage *audioManage;
+    int i;
+    int ory;
+}
+
+@property (nonatomic, copy) NSString *wavFilePath;
+@property (nonatomic, copy) NSString *filePath;
+@property (nonatomic, copy) NSString *amrFilePath;
+@end
+
+@implementation JZDPublishBBSViewController
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+    }
+    return self;
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    i=0;
+    audioManage=[MQLAudioManage instance];
+    ory=_addImage.frame.origin.y;
+    imageArray=[[NSMutableArray alloc] init];
+    buttonArray=[[NSMutableArray alloc] init];
+    [buttonArray addObject:_addImage];
+    _speakVoice.buttonImageRect=CGRectMake(160, 2, 30, 30);
+    _speakVoice.buttonTitleRect=CGRectMake(10, 2, 100, 30);
+    [self.navigationController.navigationBar setTitleTextAttributes:[NSDictionary dictionaryWithObjectsAndKeys:
+                                             [UIColor whiteColor], NSForegroundColorAttributeName,nil]];
+    self.title=@"发布帖子";
+    [self.navigationItem setLeftItemWithImage:[UIImage imageNamed:@"HSP_back_nom"] selectedImage:[UIImage imageNamed:@"HSP_back_down"] target:self action:@selector(back)];
+}
+
+-(void)back
+{
+    [self dismissViewControllerAnimated:YES completion:^{
+        
+    }];
+}
+
+-(void)popActionSheet
+{
+    UIActionSheet *sheet=[[UIActionSheet alloc] initWithTitle:@"图片来源" delegate:self cancelButtonTitle:@"取消" destructiveButtonTitle:nil otherButtonTitles:@"相册",@"拍照", nil];
+    [sheet showInView:self.view];
+}
+
+-(void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if (buttonIndex==0) {
+        //从相册选择
+        if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypePhotoLibrary]) {
+            [self getPhotoWithSourceType];
+        }
+    }else{
+        //拍照获得
+        if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
+            [self cameraGetPhoto];
+        }
+    }
+}
+
+-(void)getPhotoWithSourceType
+{
+    UIImagePickerController *pic=[[UIImagePickerController alloc] init];
+    [pic setSourceType:UIImagePickerControllerSourceTypePhotoLibrary];
+    pic.delegate=self;
+    [self presentViewController:pic animated:YES completion:^{
+        
+    }];
+}
+
+-(void)cameraGetPhoto
+{
+    UIImagePickerController *ipc=[[UIImagePickerController alloc] init];
+    //图片来源
+    ipc.sourceType=UIImagePickerControllerSourceTypeCamera;
+    ipc.delegate=self;
+    [self presentViewController:ipc animated:YES completion:^{
+        
+    }];
+}
+
+-(void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
+{
+    i++;
+    UIImage *image=[info objectForKey:@"UIImagePickerControllerOriginalImage"];
+    UIImage *imgUpload=[image imageWithImageSimple:image scaledToSize:CGSizeMake(320, 180)];
+    [imageArray addObject:imgUpload];
+    image=[image thumbnailWithImageWithoutScale:image size:CGSizeMake(60, 60)];
+    [self setButtonImage:image];
+    if (picker.sourceType==UIImagePickerControllerSourceTypeCamera) {
+        //将拍的照片保存到相册
+        if (picker.sourceType == UIImagePickerControllerCameraCaptureModeVideo) {
+            [NSThread detachNewThreadSelector: @selector(saveImage:) toTarget:self withObject:image];
+        }
+        [picker dismissViewControllerAnimated:YES completion:^{
+            
+        }];
+    }else{
+        [picker dismissViewControllerAnimated:YES completion:^{
+            
+        }];
+    }
+}
+
+-(void)saveImage:(UIImage *)image
+{
+    UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil);
+}
+
+-(void)setButtonImage:(UIImage *)img
+{
+    [_addImage removeFromSuperview];
+    UIButton *btn=[UIButton buttonWithType:UIButtonTypeCustom];
+    btn.frame=CGRectMake(66+60*i+5, ory, 60, 60);
+    [btn setBackgroundImage:img forState:UIControlStateNormal];
+    [btn addTarget:self action:@selector(deleteBtn:) forControlEvents:UIControlEventTouchUpInside];
+    [buttonArray insertObject:btn atIndex:0];
+    if (buttonArray.count==4) {
+        [buttonArray  removeLastObject];
+    }
+    for(int j=0;j<buttonArray.count;j++){
+        UIButton *b=buttonArray[j];
+        b.frame=CGRectMake(66+60*j+j*5, ory, 60, 60);
+        [self.view addSubview:b];
+    }
+}
+
+-(void)deleteBtn:(UIButton *)btn
+{
+    for(int j=0;j<buttonArray.count;j++){
+        UIButton *b=buttonArray[j];
+        if ([b isEqual:btn]) {
+            [buttonArray removeObjectAtIndex:j];
+            if (!buttonArray.count) {
+                _addImage=[UIButton buttonWithType:UIButtonTypeCustom];
+                _addImage.frame=CGRectMake(66, ory, 60, 60);
+                [_addImage setBackgroundImage:[UIImage imageNamed:@"JZD_add"] forState:UIControlStateNormal];
+                [_addImage addTarget:self action:@selector(uploadImageOne:) forControlEvents:UIControlEventTouchUpInside];
+                [self.view addSubview:_addImage];
+                [buttonArray addObject:_addImage];
+            }
+        }
+    }
+    [btn removeFromSuperview];
+    for(int j=0;j<buttonArray.count;j++){
+        UIButton *b=buttonArray[j];
+        b.frame=CGRectMake(106+60*j+5*j, ory, 60, 60);
+    }
+}
+
+- (IBAction)commitBBs:(UIButton *)sender {
+    JZDModuleHttpRequest *request=[JZDModuleHttpRequest sharedInstace];
+    HSPAccount *user=[HSPAccountTool account];
+    NSDictionary *dic=@{@"user_id": user.user_id,@"content":_describeBBs.text,@"title":_titleBBs.text,@"code":@"0",@"tokenid":user.userTokenid};
+//    NSString *voicePath = [[audioManage getAudioFileNamePath] stringByAppendingPathComponent:@"voice.amr"];
+    NSData *data = [NSData dataWithContentsOfFile:self.filePath];
+//    [request connectionUpLoadImage:imageArray withVoiceData:data withPardic:dic withUrl:PublishBBs];
+    [request connectionUpLoadImage:imageArray withVoiceData:data withPardic:dic withUrl:PublishBBs withBlock:^(NSDictionary *dic, NSError *error) {
+        if (!error) {
+            JZDCustomAlertView *alert=[JZDCustomAlertView sharedInstace];
+            [alert popAlert:@"上传成功"];
+        }
+    }];
+}
+
+- (IBAction)addImage:(UIButton *)sender {
+    [self popActionSheet];
+}
+
+- (IBAction)recordOut:(JZDCheckButton *)sender {
+     [audioManage stopRecord];
+}
+
+- (IBAction)recordDown:(JZDCheckButton *)sender {
+    self.filePath = NSTemporaryDirectory();
+    self.wavFilePath = [self.filePath stringByAppendingPathComponent:@"voice.wav"];
+    
+    [audioManage startRecordFromView:sender withWavFilePath:self.wavFilePath];;
+}
+
+- (IBAction)recordUpInside:(JZDCheckButton *)sender {
+    [audioManage stopRecord];
+    
+    self.amrFilePath = [self.filePath stringByAppendingPathComponent:@"voice.amr"];
+    
+    [audioManage encodeToAmr:self.amrFilePath FromWav:self.wavFilePath];
+}
+
+-(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    [self.view endEditing:YES];
+}
+
+@end

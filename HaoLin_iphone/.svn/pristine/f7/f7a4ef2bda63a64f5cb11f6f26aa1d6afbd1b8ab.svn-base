@@ -1,0 +1,82 @@
+//
+//  ZYPMapViewController.m
+//  HaoLin
+//
+//  Created by mac on 14-8-27.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "ZYPMapViewController.h"
+
+@interface ZYPMapViewController ()
+@property (nonatomic, strong) MQLRequiredBusinessLocationView *requiredBusinessLocationView;
+@property (nonatomic, weak) IBOutlet UIView *adjustView;    //适配视图（0，-20，0，20），因为app start form ios7, 所以该引用备用
+/**
+ *  自定义初始化
+ */
+-(void)customInitialization;
+
+/**
+ *  添加RequiredBusinessLocationView
+ */
+-(void)addRequiredBusinessLocationView;
+
+@end
+
+@implementation ZYPMapViewController
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+    }
+    return self;
+}
+
+-(void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    [self.requiredBusinessLocationView viewWillAppear];
+}
+
+-(void)viewWillDisappear:(BOOL)animated
+{
+    [super viewWillDisappear:animated];
+    [self.requiredBusinessLocationView viewWillDisappear];
+    
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    [self customInitialization];
+    [self addRequiredBusinessLocationView];
+}
+
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+/**
+ *  自定义初始化
+ */
+-(void)customInitialization
+{
+    self.view.backgroundColor = BGColor;
+    
+}
+
+/**
+ *  添加RequiredBusinessLocationView
+ */
+-(void)addRequiredBusinessLocationView
+{
+    self.requiredBusinessLocationView = [[[NSBundle mainBundle]loadNibNamed:@"MQLRequiredBusinessLocationView" owner:self options:nil]lastObject];
+    self.requiredBusinessLocationView.ownerViewController = self;
+    self.requiredBusinessLocationView.frame = self.adjustView.bounds;
+    [self.adjustView addSubview:self.requiredBusinessLocationView];
+}
+
+@end

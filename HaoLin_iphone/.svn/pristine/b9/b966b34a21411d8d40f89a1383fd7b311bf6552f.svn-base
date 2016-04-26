@@ -1,0 +1,34 @@
+//
+//  HSPHelpCenterViewController.m
+//  HaoLin
+//
+//  Created by PING on 14-10-15.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "HSPHelpCenterViewController.h"
+
+@interface HSPHelpCenterViewController ()
+@property (weak, nonatomic) IBOutlet UIWebView *webView;
+
+@end
+
+@implementation HSPHelpCenterViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    self.title = @"帮助中心";
+    NSURL *url = [[NSBundle mainBundle] URLForResource:@"Help.html" withExtension:nil];
+    [self.webView loadRequest:[NSURLRequest requestWithURL:url]];
+}
+- (IBAction)back:(UIButton *)sender {
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+
+@end

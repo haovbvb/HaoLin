@@ -1,0 +1,29 @@
+//
+//  JZDDistance.m
+//  HaoLin
+//
+//  Created by 姜泽东 on 14-8-22.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "JZDDistance.h"
+
+@implementation JZDDistance
+
+- (CLLocationDistance) getCLLocationDistance:(CLLocationCoordinate2D)coordinateA TheTowCoordinate:(CLLocationCoordinate2D )coordinateB
+{
+    CLLocationDistance dis;
+    dis = (double)BMKMetersBetweenMapPoints(BMKMapPointForCoordinate(coordinateA), BMKMapPointForCoordinate(coordinateB)) ;
+    return dis;
+}
+
+-(double)jingdu:(NSString *)jdStr withWeidu:(NSString *)wdStr
+{
+    MQLBMKMapManage *mana=[MQLBMKMapManage instance];
+    CLLocation *loc=[mana currentLocation];
+    CLLocationCoordinate2D coodinate=CLLocationCoordinate2DMake([wdStr floatValue], [jdStr floatValue]);
+    return [self getCLLocationDistance:coodinate TheTowCoordinate:loc.coordinate];
+}
+
+
+@end

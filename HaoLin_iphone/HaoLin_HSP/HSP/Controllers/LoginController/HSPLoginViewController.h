@@ -1,0 +1,29 @@
+//
+//  HSPLoginViewController.h
+//  HaoLin
+//
+//  Created by PING on 14-8-28.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface HSPLoginViewController : UIViewController
+
+@property (weak, nonatomic) IBOutlet UITextField *phoneNumber;
+@property (weak, nonatomic) IBOutlet UITextField *password;
+@property (weak, nonatomic) IBOutlet UIButton *loginBtn;
+
+- (IBAction)loginBtnClick:(id)sender;
+- (IBAction)registerBtnClick:(id)sender;
+
+@property (nonatomic, copy) NSString *phone;
+@property (nonatomic, copy) NSString *pwd;
+- (IBAction)forgetPassword:(UIButton *)sender;
+@property (weak, nonatomic) IBOutlet UIView *navBgView;
+- (IBAction)backBtnClick:(UIButton *)sender;
+@property (weak, nonatomic) IBOutlet UIView *phoneView;
+@property (weak, nonatomic) IBOutlet UIView *passwordView;
+
+
+@end

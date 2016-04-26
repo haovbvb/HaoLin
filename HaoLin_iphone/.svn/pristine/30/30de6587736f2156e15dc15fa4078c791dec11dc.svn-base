@@ -1,0 +1,95 @@
+//
+//  HSPEditViewController.m
+//  HaoLin
+//
+//  Created by PING on 14-8-29.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "HSPEditViewController.h"
+
+@interface HSPEditViewController ()
+
+@property (nonatomic, strong) HSPHttpRequest *request;
+@property (nonatomic, weak) UITextView *textView;
+
+
+@end
+
+@implementation HSPEditViewController
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        
+    }
+    return self;
+}
+
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    YYLog(@"text==%@,,%@",_submitTextId,_submitText);
+    
+    UIBarButtonItem *rightItem = [[UIBarButtonItem alloc] initWithTitle:@"完成" style:UIBarButtonItemStyleDone target:self action:@selector(submit)];
+    self.navigationItem.rightBarButtonItem = rightItem;
+    
+    UITextView *textView = [[UITextView alloc] initWithFrame:CGRectMake(0, 100, 320, 100)];
+    textView.text = _submitText;
+    textView.font = [UIFont systemFontOfSize:16];
+    textView.contentInset=UIEdgeInsetsMake(-70, 0, 0, 0);
+    [self.view addSubview:textView];
+    self.textView = textView;
+}
+
+- (void)submit
+{
+    HSPAccount *account = [HSPAccountTool account];
+    
+    NSMutableDictionary *params = [NSMutableDictionary dictionary];
+    params[@"user_id"] = account.user_id;
+    params[@"tokenid"] = account.userTokenid;
+    if ([_submitTextId isEqualToString:@"nickname"]) {
+        params[@"nickname"] = self.textView.text;
+    }else if ([_submitTextId isEqualToString:@"qq_number"]) {
+        params[@"qq_number"] = self.textView.text;
+    }else if ([_submitTextId isEqualToString:@"email"]) {
+        params[@"email"] = self.textView.text;
+    }else if ([_submitTextId isEqualToString:@"phone"]) {
+        params[@"phone"] = self.textView.text;
+    }else if ([_submitTextId isEqualToString:@"user_desc"]) {
+        params[@"user_desc"] = self.textView.text;
+    }else if ([_submitTextId isEqualToString:@"delivery_address"]) {
+        params[@"delivery_address"] = self.textView.text;
+    }
+    
+    
+    [self.request connectionREquesturl:changeUserInfoUrl withPostDatas:params withDelegate:nil withBackBlock:^(id backDictionary) {
+        
+        NSString *str = [NSString stringWithFormat:@"%@",[backDictionary objectForKey:@"message"]];
+        
+        YYLog(@"backDictionary==%@",[str stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding]);
+        
+        if ([[backDictionary objectForKey:@"code"] isEqualToString:@"0"]) {
+            JZDCustomAlertView *alert=[JZDCustomAlertView sharedInstace];
+            [alert popAlert:@"修改成功"];
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                [self.navigationController popViewControllerAnimated:YES];
+            });
+            
+        }
+    }];
+}
+
+#pragma mark - 懒加载
+- (HSPHttpRequest *)request
+{
+    if (!_request) {
+        _request = [HSPHttpRequest Instace];
+    }
+    return _request;
+}
+
+@end

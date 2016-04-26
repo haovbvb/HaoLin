@@ -1,0 +1,14 @@
+//
+//  ZYPOrderDetailVC.h
+//  HaoLin
+//
+//  Created by mac on 14-9-5.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+@class ZYPorderObject;
+@interface ZYPOrderDetailVC : UIViewController<UITableViewDataSource,UITableViewDelegate>
+@property (weak, nonatomic) IBOutlet UITableView *tableView;
+@property (nonatomic, strong)ZYPorderObject *orderObject;
+@end

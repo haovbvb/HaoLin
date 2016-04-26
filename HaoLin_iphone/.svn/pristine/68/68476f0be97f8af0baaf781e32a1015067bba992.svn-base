@@ -1,0 +1,178 @@
+//
+//  ZYPNext1View.m
+//  HaoLin
+//
+//  Created by mac on 14-9-18.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "ZYPNext1View.h"
+
+
+
+@interface ZYPNext1View ()
+{
+    NSBlockOperation *operation1;
+    NSString *wavpath;
+    AVAudioPlayer *audioPlay;
+    NSBlockOperation *operation;
+    NSBlockOperation *operation2;
+}
+@property (nonatomic, assign)BOOL makeSureOneLoadIdentifier;
+@end
+@implementation ZYPNext1View
+
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        // Initialization code
+    }
+    return self;
+}
+- (void)awakeFromNib
+{
+    self.makeSureOneLoadIdentifier = YES;
+}
+//  播放音频
+- (IBAction)playSound:(id)sender
+{
+     Reachability * rp = [Reachability reachabilityWithHostName:@"www.apple.com"];
+    if (rp.currentReachabilityStatus == NotReachable)
+    {
+        [self alertWithMessage:@"无网络"];
+    }else{
+    
+        if ([self.urlString hasSuffix:@".amr"])
+        {
+            if (self.makeSureOneLoadIdentifier == YES) {
+                operation2 = [NSBlockOperation blockOperationWithBlock:^{
+                    self.makeSureOneLoadIdentifier = NO ;
+                    [self load:[NSURL URLWithString:self.urlString]];
+                }];
+                [operation2 start];
+            }
+        }else
+        {
+            [self alertWithMessage:@"没有声音"];
+        }
+    }
+   
+}
+
+/**
+ *  下载音频文件
+ *
+ *  @param url 下载url
+ */
+- (void)load:(NSURL *)url
+{
+    NSURLRequest *request = [NSURLRequest requestWithURL:url];
+    NSURLSession *session = [NSURLSession sharedSession];
+    /**
+     *  下载音频临时文件
+     */
+    __weak ZYPNext1View *view = self;
+    NSURLSessionDownloadTask *downSession = [session downloadTaskWithRequest:request completionHandler:^(NSURL *location, NSURLResponse *response, NSError *error)
+                                             
+                                             {
+                                                 if (error == nil) {
+                                                     /**
+                                                      *  将临时文件存储到本地
+                                                      */
+                                                     NSString *path = NSTemporaryDirectory();
+                                                     NSString *pathString = [path stringByAppendingString:response.suggestedFilename];
+                                                     NSURL *newFileLocation =[NSURL fileURLWithPath:pathString];
+                                                     [[NSFileManager defaultManager] copyItemAtURL:location toURL:newFileLocation error:nil];
+                                                     
+                                                     [view getChangeFormat:pathString];
+                                                 }else
+                                                 {
+                                                     [view alertWithMessage:@"音频加载失败"];
+                                                     return ;
+                                                 }
+                                             }];
+    [downSession resume];
+}
+/**
+ *  转换格式后播放本地文件
+ */
+- (void)getChangeFormat:(NSString *)path
+{
+    /**
+     *  本地文件存在，就从本地读取
+     */
+    if ([path hasSuffix:@".amr"])
+    {
+        /**
+         *  将amr文件转化成wav格式
+         */
+        wavpath = [path stringByReplacingOccurrencesOfString:@".amr" withString:@".wav"];
+        [MQLAudioManage encodeToWav:wavpath fromAmr:path];
+        NSLog(@"%@",[NSData dataWithContentsOfFile:wavpath]);
+        /**
+         *  播放本地音频
+         */
+        [[AVAudioSession sharedInstance] setCategory: AVAudioSessionCategoryPlayback error: nil];
+        [[AVAudioSession sharedInstance] setActive: YES error: nil];
+        NSURL*url = [NSURL fileURLWithPath:wavpath];
+        audioPlay = [[AVAudioPlayer alloc] initWithContentsOfURL:url  error:nil];
+        operation1 = [NSBlockOperation blockOperationWithBlock:^{
+            self.makeSureOneLoadIdentifier = YES;
+            [audioPlay play];
+            
+        }];
+        [operation1 start];
+    }
+}
+
+//  确认发货
+- (IBAction)makeSureGo:(id)sender
+{
+    [MBProgressHUD showHUDAddedTo:self.orderView animated:YES];
+    ZYPNetWorkGetSourceManger *manger = [[ZYPNetWorkGetSourceManger alloc] init];
+    HSPAccount *account = [HSPAccountTool account];
+    NSString *urlString = [NSString stringWithFormat:@"%@user_id=%@&tokenid=%@&order_id=%@&status=4",changeDingDanState,account.user_id,account.userTokenid,self.orderID];
+    __weak ZYPNext1View *detailVc = self;
+    [manger connectWithUrlStr:urlString completion:^(id respondObject)
+     {
+         [MBProgressHUD hideAllHUDsForView:detailVc.orderView animated:YES];
+         if ([respondObject isKindOfClass:[NSDictionary class]]) {
+             NSDictionary *dic = respondObject;
+             if ([[dic objectForKey:@"code"] intValue] == 0)
+             {
+                 [detailVc alertWithMessage:[dic objectForKey:@"message"]];
+                 /**
+                  *  更新btn状态
+                  */
+                 self.stateBtn.titleLabel.textColor = [UIColor whiteColor];
+                 self.stateBtn.backgroundColor = [UIColor grayColor];
+                 [self.stateBtn setTitle:@"已发货" forState:UIControlStateNormal];
+                 self.stateBtn.enabled = NO;
+             }else
+             {
+                 [detailVc alertWithMessage:[dic objectForKey:@"message"]];
+             }
+         }else
+         {
+             [detailVc alertWithMessage:@"发货失败，请重试"];
+         }
+     }];
+}
+- (void)alertWithMessage:(NSString *)mesage
+{
+    
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:mesage message:nil delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+    [alert show];
+}
+
+/*
+ // Only override drawRect: if you perform custom drawing.
+ // An empty implementation adversely affects performance during animation.
+ - (void)drawRect:(CGRect)rect
+ {
+ // Drawing code
+ }
+ */
+
+@end

@@ -1,0 +1,21 @@
+//
+//  ZYPOrderDetailVC.h
+//  HaoLin
+//
+//  Created by mac on 14-9-5.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+@class ZYPorderObject;
+@class ZYPUserObject;
+@class ZYPOrderDetailObject;
+
+@interface ZYPOrderDetailVC : UIViewController
+
+@property (nonatomic, strong)ZYPUserObject * userObject;
+@property (nonatomic, strong)ZYPOrderDetailObject *orderDetailObject;
+@property (nonatomic, strong)ZYPorderObject *orderObject;
+
+- (void)makeSureFaHuo;
+@end

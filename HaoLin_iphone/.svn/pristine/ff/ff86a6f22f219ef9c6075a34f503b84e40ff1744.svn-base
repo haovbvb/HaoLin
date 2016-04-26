@@ -1,0 +1,43 @@
+//
+//  HSPMessageCenterCell.m
+//  HaoLin
+//
+//  Created by PING on 14-8-27.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "HSPMessageCenterCell.h"
+
+@implementation HSPMessageCenterCell
+@synthesize message = _message;
+
+- (void)awakeFromNib
+{
+    self.backgroundColor = HSPBgColor;
+}
+
+- (HSPMessage *)message
+{
+    return _message;
+}
+
+- (void)setMessage:(HSPMessage *)message
+{
+    _message = message;
+    _messageContent.text = message.message_desc;
+    
+    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+    formatter.dateFormat = @"yyyy/MM/dd hh:mm";
+    NSString *createdTime = [formatter stringFromDate:[NSDate dateWithTimeIntervalSince1970:[message.createtime doubleValue]]];
+    _createdTime.text = createdTime;
+    
+    NSString *str = [NSString stringWithFormat:@"%@",message.isread];
+    
+    if ([str isEqualToString:@"1"]) {
+        _redDot.hidden = YES;
+    }else{
+        _redDot.hidden = NO;
+    }
+}
+
+@end

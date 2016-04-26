@@ -1,0 +1,58 @@
+//
+//  HSPConponCell.m
+//  HaoLin
+//
+//  Created by PING on 14-8-26.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "HSPConponCell.h"
+#define noUsedColor [UIColor lightGrayColor]
+
+@implementation HSPConponCell
+@synthesize conpon = _conpon;
+- (void)awakeFromNib
+{
+    // Initialization code
+}
+
+- (HSPConpon *)conpon
+{
+    return _conpon;
+}
+
+- (void)setConpon:(HSPConpon *)conpon
+{
+    _conpon = conpon;
+    _conponPrice.text = conpon.coupon_price;
+    _conponCode.text = conpon.coupon_code;
+    
+    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+    formatter.dateFormat = @"yyyy/MM/dd";
+    NSString *beginTime = [formatter stringFromDate:[NSDate dateWithTimeIntervalSince1970:[conpon.begintime doubleValue]]];
+    NSString *endTime = [formatter stringFromDate:[NSDate dateWithTimeIntervalSince1970:[conpon.endtime doubleValue]]];
+    
+    _LimitedTime.text = [NSString stringWithFormat:@"%@至%@",beginTime,endTime];
+    
+    if ([conpon.status isEqualToString:@"2"]) {
+        _status.text = @"有效";
+        
+    }else{
+        _status.text = @"无效";
+        _status.textColor = noUsedColor;
+        _conponPrice.textColor = noUsedColor;
+        _conponCode.textColor = noUsedColor;
+        _LimitedTime.textColor = noUsedColor;
+        _limitedTimeTitle.textColor = noUsedColor;
+        _conponCodeTitle.textColor = noUsedColor;
+        _conponPriceTitle.textColor = noUsedColor;
+
+    }
+    
+    
+}
+
+
+
+
+@end

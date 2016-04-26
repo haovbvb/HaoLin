@@ -1,0 +1,24 @@
+//
+//  ZYPCommitCashVC.h
+//  HaoLin
+//
+//  Created by mac on 14-8-26.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface ZYPCommitCashVC : UIViewController<UITextFieldDelegate,UIScrollViewDelegate>
+@property (weak, nonatomic) IBOutlet UIButton *commitBtn;//  提交信息按钮
+@property (weak, nonatomic) IBOutlet UILabel *openAccountLabel;//  开户银行
+@property (weak, nonatomic) IBOutlet UITextField *accountNumberText;//  账户卡号
+@property (weak, nonatomic) IBOutlet UITextField *accountNameText;//  开户人姓名
+@property (weak, nonatomic) IBOutlet UITextField *idText;//  身份证号
+@property (weak, nonatomic) IBOutlet UITextField *cashText;// 现金额度
+
+@property (weak, nonatomic) IBOutlet UIScrollView *scrollView;//  滑动scrollView
+@property (weak, nonatomic) IBOutlet UILabel *bankLabel;//  所选银行名字
+
+@property (weak, nonatomic) IBOutlet UILabel *titleLabel;
+
+@end

@@ -1,0 +1,25 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "a425e086-b125-6748-8770-74c77044466d++3639",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+    "a425e086-b125-6748-8770-74c77044466d++3639" : {
+
+    }
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "a425e086-b125-6748-8770-74c77044466d++3639" : 0
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "9A5E08E6-8B5F-4DBB-9529-509A0898FE2B",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "a425e086-b125-6748-8770-74c77044466d++3639" : "HaoLin_iphone"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "HaoLin",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "HaoLin_HSP\/HaoLin\/HaoLin.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/xiaoping.ma@svnserver.rndchina.com:8443\/svn\/shequapp",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Subversion",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "a425e086-b125-6748-8770-74c77044466d++3639"
+    }
+  ]
+}

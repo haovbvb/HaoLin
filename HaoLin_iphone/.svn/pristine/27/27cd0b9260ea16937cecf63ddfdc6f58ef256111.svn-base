@@ -1,0 +1,66 @@
+//
+//  HSPOrder.h
+//  HaoLin
+//
+//  Created by PING on 14-9-4.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+@class HSPOrderUserInfo;
+
+@interface HSPOrder : NSObject
+
+
+/**
+ *  order_id	订单id
+ order_sn	订单编号
+ order_type	订单类型（1.实物类订单，2.服务类订单）
+ user_id	用户（下单人）id
+ merchant_id	商家id
+ should_price	应支付总金额
+ real_price	实际支付总金额
+ server_price	服务费
+ pay_type	支付类型（1:在线支付，2:货到付款，3：其他支付（代金券））
+ coupons	代金券使用（0：未使用代金券，>0：表示使用代金券并显示使用的代金券具体数额）
+ order_desc	订单文字描述
+ order_audio	订单音频描述
+ status	订单状态（0：订单取消，1.已确认，2.未支付，3.已支付，4.已发货，5.已完成，6.已评价）申明：当状态为3，4时表示商家已经发货，用户这时候不能做取消订单操作
+ createtime	订单创建时间
+ changetime	状态更新时间
+ 订单关联商品参数说明
+ 
+ 参数	说明
+ goods_id	商品id
+ goods_name	商品名称
+ goods_number	商品数量
+ goods_price	商品单价
+ */
+
+@property (nonatomic, copy) NSString *order_id;
+@property (nonatomic, copy) NSString *order_sn;
+@property (nonatomic, copy) NSString *order_type;
+@property (nonatomic, copy) NSString *user_id;
+@property (nonatomic, copy) NSString *merchant_id;
+@property (nonatomic, copy) NSString *should_price;
+@property (nonatomic, copy) NSString *real_price;
+@property (nonatomic, copy) NSString *server_price;
+@property (nonatomic, copy) NSString *pay_type;
+@property (nonatomic, copy) NSString *coupons;
+@property (nonatomic, copy) NSString *order_desc;
+@property (nonatomic, copy) NSString *order_audio;
+@property (nonatomic, copy) NSString *status;
+@property (nonatomic, copy) NSString *createtime;
+@property (nonatomic, copy) NSString *changetime;
+
+@property (nonatomic, strong) NSMutableArray *goodsM;
+
+@property (nonatomic, assign) CGFloat cellH;
+
+@property (nonatomic, assign) HSPOrderUserInfo *userinfo;
+
+- (NSString *)orderStatusStr:(NSString *)string;
+- (NSString *)orderTime:(NSString *)createtime dateFromat:(NSString *)format;
+- (NSString *)orderPayType:(NSString *)payType;
+
+@end

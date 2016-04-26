@@ -1,0 +1,19 @@
+//
+//  MDLXSDView.h
+//  HAOLINAPP
+//
+//  Created by apple on 14-8-14.
+//  Copyright (c) 2014年 com.haolinshidai. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface MDLXSDView : UIView<UIScrollViewDelegate>
+{
+    
+}
+@property(nonatomic, retain) UIView * navBarView;             //自定义NavigationBar的视图
+@property(nonatomic, retain) UISegmentedControl * segMent;
+@property(nonatomic, retain) UIScrollView * scrollView;       //可以左右滑动，放两个collectionView
+@property(nonatomic, assign) NSInteger segMentIndex;          //标记分选栏
+@end

@@ -1,0 +1,322 @@
+//
+//  MQLRequiredBusinessLocationView.m
+//  HaoLin
+//
+//  Created by MQL on 14-8-27.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "MQLRequiredBusinessLocationView.h"
+
+@interface MQLRequiredBusinessLocationView ()<BMKMapViewDelegate, BMKGeoCodeSearchDelegate, UITextFieldDelegate>
+
+@property (nonatomic, strong) BMKMapView* mapView;
+@property (nonatomic, strong) BMKPointAnnotation *pointAnnotation;
+@property (nonatomic, strong) BMKAnnotationView *annotationView;
+@property BOOL isAnnotationDraged;
+
+@property (nonatomic, strong) BMKGeoCodeSearch *geoCodeSearch;
+
+@property (nonatomic, weak) IBOutlet UIView *navigationView;
+@property (nonatomic, weak) IBOutlet UIButton *backBtn;
+@property (nonatomic, weak) IBOutlet UITextField *searchTF;
+@property (nonatomic, weak) IBOutlet UIButton *searchBtn;
+
+-(IBAction)backBtnClicked:(id)sender;
+-(IBAction)searchBtnClicked:(id)sender;
+
+
+/**
+ *  自定义初始化
+ */
+-(void)customInitialization;
+
+/**
+ *  添加标注
+ */
+-(void)addPointAnnotation;
+
+/**
+ *  删除标注
+ */
+-(void)delPointAnnotation;
+
+/**
+ *  正向地理编码：地址-->坐标
+ */
+-(void)geocode;
+
+/**
+ *  显示alert
+ *
+ *  @param title
+ *  @param msg
+ *  @param tag
+ */
+-(void)showAlertWithTitle:(NSString*)title msg:(NSString*)msg tag:(NSInteger)tag;
+
+/**
+ *  添加tap手势
+ */
+-(void)addTapGesture;
+
+
+@end
+
+@implementation MQLRequiredBusinessLocationView
+
+-(void)dealloc
+{
+    
+}
+
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        // Initialization code
+    }
+    return self;
+}
+
+-(void)awakeFromNib
+{
+    //自定义初始化
+    [self customInitialization];
+    
+    //添加tap手势
+    [self addTapGesture];
+    
+}
+
+-(void)setOwnerViewController:(UIViewController *)ownerViewController
+{
+    _ownerViewController = ownerViewController;
+    
+}
+
+-(void)setPersonalHanDanDataManage:(MQLPersonalHanDanDataManage *)personalHanDanDataManage
+{
+    _personalHanDanDataManage = personalHanDanDataManage;
+    
+    
+}
+
+/**
+ *  视图将要显示
+ */
+-(void)viewWillAppear
+{
+    [_mapView viewWillAppear];
+    _mapView.delegate = self; // 此处记得不用的时候需要置nil，否则影响内存的释放
+    _geoCodeSearch.delegate = self;
+}
+
+/**
+ *  视图将要消失
+ */
+-(void)viewWillDisappear
+{
+    [_mapView viewWillDisappear];
+    _mapView.delegate = nil; // 不用时，置nil
+    _geoCodeSearch.delegate = nil;
+}
+
+
+
+#pragma mark --MQLRequiredBusinessLocationView函数扩展
+
+-(IBAction)backBtnClicked:(id)sender
+{
+    CLLocationCoordinate2D coordinate = self.annotationView.annotation.coordinate;
+
+    if (self.isAnnotationDraged) {
+        
+        self.personalHanDanDataManage.pushBusinessScope = [[CLLocation alloc]initWithLatitude:coordinate.latitude longitude:coordinate.longitude];
+    }
+    
+    [self.ownerViewController.navigationController popViewControllerAnimated:YES];
+}
+
+-(IBAction)searchBtnClicked:(id)sender
+{
+    if (self.searchTF.text.length == 0) {
+        
+        [self showAlertWithTitle:@"提示" msg:@"请输入您的详细地址" tag:-1];
+    }else{
+        
+        if (self.searchTF.isFirstResponder) {
+            
+            [self.searchTF resignFirstResponder];
+        }
+        
+        [self geocode];
+    }
+    
+}
+
+/**
+ *  自定义初始化
+ */
+-(void)customInitialization
+{
+    [self.backBtn setImage:[UIImage imageNamed:@"MQLBackNormalBtnInRequiredBusinessLocationView"] forState:UIControlStateNormal];
+    [self.backBtn setImage:[UIImage imageNamed:@"MQLBackSelectedBtnInRequiredBusinessLocationView"] forState:UIControlStateHighlighted];
+    
+    [self.searchBtn setBackgroundImage:[UIImage imageNamed:@"MQLSearchNormalBtnInRequiredBusinessLocationView"] forState:UIControlStateNormal];
+    [self.searchBtn setBackgroundImage:[UIImage imageNamed:@"MQLSearchSelectedBtnInRequiredBusinessLocationView"] forState:UIControlStateHighlighted];
+    
+    self.mapView = [[BMKMapView alloc]initWithFrame:self.bounds];
+    self.mapView.delegate = self;
+    [self.mapView setZoomLevel:11];//设置地图缩放级别
+    [self insertSubview:self.mapView belowSubview:self.navigationView];
+    
+    //添加标注
+    [self addPointAnnotation];
+    
+    self.geoCodeSearch = [[BMKGeoCodeSearch alloc]init];
+    
+}
+
+/**
+ *  添加标注
+ */
+-(void)addPointAnnotation
+{
+    self.pointAnnotation = [[BMKPointAnnotation alloc]init];
+    self.pointAnnotation.coordinate = [[MQLBMKMapManage instance]currentLocation].coordinate;
+    [self.mapView addAnnotation:self.pointAnnotation];
+}
+
+/**
+ *  删除标注
+ */
+-(void)delPointAnnotation
+{
+    [self.mapView removeAnnotation:self.pointAnnotation];
+    self.pointAnnotation = nil;
+    self.annotationView = nil;
+}
+
+/**
+ *  正向地理编码：地址-->坐标
+ */
+-(void)geocode
+{
+    BMKGeoCodeSearchOption *geocodeSearchOption = [[BMKGeoCodeSearchOption alloc]init];
+    geocodeSearchOption.address = self.searchTF.text;
+    BOOL flag = [self.geoCodeSearch geoCode:geocodeSearchOption];
+
+    if(flag)
+    {
+        NSLog(@"geo正向地理编码发送成功");
+        [MBProgressHUD showHUDAddedTo:self animated:YES];
+    }
+    else
+    {
+        NSLog(@"geo正向地理编码发送失败");
+    }
+}
+
+/**
+ *  显示alert
+ *
+ *  @param title
+ *  @param msg
+ *  @param tag
+ */
+-(void)showAlertWithTitle:(NSString*)title msg:(NSString*)msg tag:(NSInteger)tag
+{
+    UIAlertView *alert = [[UIAlertView alloc]initWithTitle:title message:msg delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+    [alert show];
+}
+
+/**
+ *  添加tap手势
+ */
+-(void)addTapGesture
+{
+    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(onTap:)];
+    [self addGestureRecognizer:tap];
+}
+
+-(void)onTap:(UITapGestureRecognizer*)tap
+{
+    if (self.searchTF.isFirstResponder) {
+        
+        [self.searchTF resignFirstResponder];
+    }
+}
+
+#pragma mark -- BMKMapViewDelegate
+/**
+ *根据anntation生成对应的View
+ *@param mapView 地图View
+ *@param annotation 指定的标注
+ *@return 生成的标注View
+ */
+- (BMKAnnotationView *)mapView:(BMKMapView *)mapView viewForAnnotation:(id <BMKAnnotation>)annotation
+{
+    NSString *AnnotationViewID = @"renameMark";
+    if (self.annotationView == nil) {
+        self.annotationView = [[BMKPinAnnotationView alloc] initWithAnnotation:annotation reuseIdentifier:AnnotationViewID];
+        // 设置颜色
+		((BMKPinAnnotationView*)self.annotationView).pinColor = BMKPinAnnotationColorPurple;
+        // 从天上掉下效果
+		((BMKPinAnnotationView*)self.annotationView).animatesDrop = YES;
+        // 设置可拖拽
+		((BMKPinAnnotationView*)self.annotationView).draggable = YES;
+    }
+    return self.annotationView;
+    
+}
+
+/**
+ *拖动annotation view时，若view的状态发生变化，会调用此函数。ios3.2以后支持
+ *@param mapView 地图View
+ *@param view annotation view
+ *@param newState 新状态
+ *@param oldState 旧状态
+ */
+- (void)mapView:(BMKMapView *)mapView annotationView:(BMKAnnotationView *)view didChangeDragState:(BMKAnnotationViewDragState)newState
+   fromOldState:(BMKAnnotationViewDragState)oldState
+{
+    NSLog(@"%lf, %lf", view.annotation.coordinate.latitude, view.annotation.coordinate.longitude);
+    self.isAnnotationDraged = YES;
+}
+
+#pragma mark --BMKGeoCodeSearchDelegate
+/**
+ *返回地址信息搜索结果
+ *@param searcher 搜索对象
+ *@param result 搜索结BMKGeoCodeSearch果
+ *@param error 错误号，@see BMKSearchErrorCode
+ */
+- (void)onGetGeoCodeResult:(BMKGeoCodeSearch *)searcher result:(BMKGeoCodeResult *)result errorCode:(BMKSearchErrorCode)error
+{
+    
+    [self delPointAnnotation];
+    
+	if (error == 0) {
+		self.pointAnnotation = [[BMKPointAnnotation alloc]init];
+		self.pointAnnotation.coordinate = result.location;
+		[self.mapView addAnnotation:self.pointAnnotation];
+        self.mapView.centerCoordinate = result.location;
+        
+        //搜索相当于移动大头针
+        self.isAnnotationDraged = YES;
+	}
+    
+    [MBProgressHUD hideHUDForView:self animated:YES];
+}
+
+#pragma mark -- UITextFieldDelegate
+
+- (BOOL)textFieldShouldReturn:(UITextField *)textField
+{
+    [self searchBtnClicked:self.searchBtn];
+    
+    return YES;
+}
+
+@end

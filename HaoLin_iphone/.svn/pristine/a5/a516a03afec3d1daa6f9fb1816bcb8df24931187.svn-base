@@ -1,0 +1,39 @@
+//
+//  MDQiangdanView.h
+//  HAOLINAPP
+//
+//  Created by apple on 14-8-13.
+//  Copyright (c) 2014年 com.haolinshidai. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@class MDQiangdanView;
+@protocol pushmapDelegate <NSObject>
+-(void)pushimap:(MDQiangdanView *)mdqview;
+
+@end
+
+@interface MDQiangdanView : UIView <UITextViewDelegate>
+
+@property (nonatomic,assign)id<pushmapDelegate>delegate;
+
+
+@property (weak, nonatomic) IBOutlet UIButton *xuanzebutton;         //选择物品
+@property (nonatomic, weak) UIView *view ;
+
+@property (weak, nonatomic) IBOutlet UITextView *SRTextField;       //输入框
+@property (weak, nonatomic) IBOutlet UILabel *timerLable;            //30S 时间
+@property (weak, nonatomic) IBOutlet UILabel *QiangdanZTLable;       //抢单状态
+@property (weak, nonatomic) IBOutlet UIButton *StopButton;           //取消抢单
+@property (weak, nonatomic) IBOutlet UILabel *NeirongLable;          //订单内容
+@property (weak, nonatomic) IBOutlet UILabel *AddressLable;          //配送地址
+@property (weak, nonatomic) IBOutlet UIButton *YuyinButton;          //语音Button
+@property (weak, nonatomic) IBOutlet UIButton *MapButton;            //地图按钮
+@property (weak, nonatomic) IBOutlet UILabel *DistributionMoneyLable;//配送费
+@property (weak, nonatomic) IBOutlet UIButton *JixuQiangdanButton;   //抢单按钮
+@property (weak, nonatomic) IBOutlet UILabel *xuanzeneirong;        //选择后的商品名称
+@property (weak, nonatomic) IBOutlet UIButton *quxiaobtn;            //取消
+
+
+@end

@@ -1,0 +1,159 @@
+//
+//  JZDPetsBBSViewController.m
+//  HaoLin
+//
+//  Created by 姜泽东 on 14-8-11.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "JZDPetsBBSViewController.h"
+
+@interface JZDPetsBBSViewController ()<UITableViewDataSource,UITableViewDelegate>
+{
+    JZDModuleHttpRequest *request;
+    NSMutableArray *_dataArray;
+    NSMutableArray *_posts_id_Array;
+    __block int page;
+}
+@end
+
+@implementation JZDPetsBBSViewController
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+        self.automaticallyAdjustsScrollViewInsets=NO;
+    }
+    return self;
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    page=1;
+    _posts_id_Array=[[NSMutableArray alloc] init];
+    _dataArray=[[NSMutableArray alloc] init];
+    [self uiconfig];
+    [_bbsTableView reloadData];
+}
+
+-(void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    
+    [self sendrequest];
+}
+
+-(void)uiconfig
+{
+    [_bbsTableView addHeaderWithTarget:self action:@selector(headerRereshing)];
+    //自动刷新(一进入程序就下拉刷新)
+    [_bbsTableView headerBeginRefreshing];
+    // 2.上拉加载更多(进入刷新状态就会调用self的footerRereshing)
+    [_bbsTableView addFooterWithTarget:self action:@selector(footerRereshing)];
+}
+
+-(void)sendrequest
+{
+    request =[JZDModuleHttpRequest sharedInstace];
+}
+
+-(void)headerRereshing
+{
+    __weak JZDPetsBBSViewController *wself=self;
+    [request connectionRequestUrl:[NSString stringWithFormat:BBS,1] withJSON:^(id responeJson) {
+        [_dataArray removeAllObjects];
+        [wself addData:responeJson];
+    }];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        // 刷新表格
+        [_bbsTableView reloadData];
+        // (最好在刷新表格后调用)调用endRefreshing可以结束刷新状态
+        [_bbsTableView headerEndRefreshing];
+    });
+}
+
+-(void)footerRereshing
+{
+    page++;
+    __weak JZDPetsBBSViewController *wself=self;
+    [request connectionRequestUrl:[NSString stringWithFormat:BBS,page] withJSON:^(id responeJson) {
+        [wself addData:responeJson];
+    }];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        // 刷新表格
+        [_bbsTableView reloadData];
+        // (最好在刷新表格后调用)调用endRefreshing可以结束刷新状态
+        [_bbsTableView footerEndRefreshing];
+    });
+}
+
+-(void)addData:(id)responeJson
+{
+    if (![responeJson isKindOfClass:[NSError class]]) {
+        if ([[responeJson objectForKey:@"code"] isEqualToString:@"0"]&&[(NSArray *)[responeJson objectForKey:@"data"] count]) {
+            for(NSDictionary *dic in [responeJson objectForKey:@"data"]){
+                [_posts_id_Array addObject:[dic objectForKey:@"posts_id"]];
+                JZDItem *item=[[JZDItem alloc] init];
+                __weak JZDItem *myItem=item;
+                [request getImageUrl:[dic objectForKey:@"headurl"] withImage:^(UIImage *img) {
+                    [_bbsTableView reloadData];
+                    myItem.headImage=img;
+                }];
+                item.nickName=[dic objectForKey:@"nickname"];
+                item.timeForStart=[dic objectForKey:@"addtime"];
+                item.describeString=[dic objectForKey:@"posts_description"];
+                [_dataArray addObject:item];
+            }
+            [_bbsTableView reloadData];
+        }
+    }
+}
+
+-(void)evaluata
+{
+    JZDBBsEvaluateViewController *evalutae=[[JZDBBsEvaluateViewController alloc] initWithNibName:@"JZDBBsEvaluateViewController" bundle:nil];
+    UINavigationController *nav=[[UINavigationController alloc] initWithRootViewController:evalutae];
+    [self presentViewController:nav animated:YES completion:^{
+        
+    }];
+}
+
+-(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return _dataArray.count;
+}
+
+-(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return 123;
+}
+
+-(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    static NSString *cellId=@"cell";
+    JZDBBsIntroTableViewCell *cell=[tableView dequeueReusableCellWithIdentifier:cellId];
+    if (cell==nil) {
+        cell=[[[NSBundle mainBundle] loadNibNamed:@"JZDBBsIntroTableViewCell" owner:self options:nil] lastObject];
+    }
+    [cell setItem:[_dataArray objectAtIndex:indexPath.row]];
+    return cell;
+}
+
+-(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    JZDBBsEvaluateViewController *evaluate=[[JZDBBsEvaluateViewController alloc] initWithNibName:@"JZDBBsEvaluateViewController" bundle:nil];
+    evaluate.posts_id=[_posts_id_Array objectAtIndex:indexPath.row];
+    evaluate.senctionItem=[_dataArray objectAtIndex:indexPath.row];
+    JZDNavgationViewController *nav=[[JZDNavgationViewController alloc] initWithNavigationBarClass:[JZDNavgationBar class] toolbarClass:nil];
+    nav.viewControllers=@[evaluate];
+    [self presentViewController:nav animated:YES completion:^{
+        
+    }];
+}
+
+@end

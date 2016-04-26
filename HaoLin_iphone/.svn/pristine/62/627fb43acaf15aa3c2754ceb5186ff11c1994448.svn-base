@@ -1,0 +1,109 @@
+//
+//  HSPRegisterViewController.m
+//  HaoLin
+//
+//  Created by PING on 14-9-2.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "HSPRegisterViewController.h"
+
+@interface HSPRegisterViewController () <UITextFieldDelegate>
+
+@property (nonatomic, assign) NSInteger genderNum;
+
+@end
+
+@implementation HSPRegisterViewController
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+    }
+    return self;
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    _registerScrollView.contentSize = self.view.size;
+    self.title = @"注册";
+    [self.navigationController.navigationBar setTitleTextAttributes:[NSDictionary dictionaryWithObjectsAndKeys:HSPFontColor,NSForegroundColorAttributeName, nil]];
+    
+    self.navigationItem.leftBarButtonItem = [UIBarButtonItem itemImage:@"HSP_back_nom" highlightedImage:@"HSP_back_down" target:self action:@selector(back)];
+}
+
+- (void)back
+{
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
+
+
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+#pragma mark - UITextFieldDelegate
+- (BOOL)textFieldShouldBeginEditing:(UITextField *)textField
+{
+    if ([_passwordAgain isEqual:textField]) {
+        _registerScrollView.contentSize=CGSizeMake(_registerScrollView.frame.size.width, _registerScrollView.frame.size.height+210);
+        [UIView animateWithDuration:0.25f animations:^{
+            _registerScrollView.contentOffset = CGPointMake(0, 150);
+        }];
+    }
+    return YES;
+}
+
+
+- (IBAction)registerBtnClick:(UIButton *)sender {
+    if (sender.tag == 0) {
+        NSMutableDictionary *params = [NSMutableDictionary dictionary];
+        params[@"nickname"] = _nickName.text;
+        params[@"mobile"] = _phone.text;
+        params[@"password"] = _password.text;
+        params[@"gender"] = [NSString stringWithFormat:@"%d",self.genderNum];
+        
+        HSPHttpRequest *request = [HSPHttpRequest Instace];
+        [request connectionREquesturl:HSPRegisterUrl withPostDatas:params withDelegate:nil withBackBlock:^(id backDictionary) {
+            if ([[backDictionary objectForKey:@"code"] isEqualToString:@"0"]) {
+                JZDCustomAlertView *alert=[JZDCustomAlertView sharedInstace];
+                [alert popAlert:@"注册成功"];
+                
+                [self dismissViewControllerAnimated:YES completion:nil];
+            }
+        }];
+    }else if(sender.tag == 1){
+        YYLog(@"商家注册");
+    }
+    
+
+
+}
+
+
+- (IBAction)checkGender:(UIButton *)sender {
+    
+    sender.selected = !sender.isSelected;
+    if (sender == _maleBtn) {
+        _femaleBtn.selected = !_maleBtn.selected;
+    }else if(sender == _femaleBtn){
+        _maleBtn.selected = !_femaleBtn.selected;
+    }
+    
+    if (sender.selected == _maleBtn.selected) {
+        self.genderNum = 1;
+    }else{
+        self.genderNum = 2;
+    }
+}
+
+- (IBAction)agreeBtnClick:(UIButton *)sender {
+    sender.selected = !sender.isSelected;
+    
+}
+@end

@@ -1,0 +1,90 @@
+//
+//  JZDBBsEvaluteViewController.m
+//  HaoLin
+//
+//  Created by 姜泽东 on 14-8-20.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "JZDBBsEvaluteViewController.h"
+
+@interface JZDBBsEvaluteViewController ()<UITextViewDelegate>
+
+@end
+
+@implementation JZDBBsEvaluteViewController
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+    }
+    return self;
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    self.title=@"用户评价";
+    [self.navigationController.navigationBar setTitleTextAttributes:[NSDictionary dictionaryWithObjectsAndKeys:
+                                                                     [UIColor whiteColor], NSForegroundColorAttributeName,nil]];
+    [self.navigationItem setLeftItemWithImage:[UIImage imageNamed:@"HSP_back_nom"] selectedImage:[UIImage imageNamed:@"HSP_back_down"] target:self action:@selector(back)];
+    _evaluteContent.layer.masksToBounds=YES;
+    _evaluteContent.layer.cornerRadius=5;
+    _evaluteContent.contentInset=UIEdgeInsetsMake(-65, 0, 0, 0);
+}
+
+-(void)back
+{
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+-(BOOL)textViewShouldBeginEditing:(UITextView *)textView
+{
+    _infoLable.hidden=YES;
+    return YES;
+}
+
+-(void)textViewDidChange:(UITextView *)textView
+{
+    if (textView.text.length==0) {
+        _infoLable.hidden=NO;
+    }else{
+        _infoLable.hidden=YES;
+    }
+}
+
+-(BOOL)textViewShouldEndEditing:(UITextView *)textView
+{
+    if (textView.text.length==0) {
+        _infoLable.hidden=NO;
+    }
+    return YES;
+}
+
+-(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    [self.view endEditing:YES];
+}
+
+- (IBAction)evaluate:(UIButton *)sender {
+    JZDModuleHttpRequest *request=[JZDModuleHttpRequest sharedInstace];
+    JZDCustomAlertView *alert=[JZDCustomAlertView sharedInstace];
+    HSPAccount *user=[HSPAccountTool account];
+    NSDictionary *dic=@{@"user_id": user.user_id,@"posts_id":_posts_id,@"content":_evaluteContent.text,@"tokenid":user.userTokenid};
+    [request connectionREquesturl:EvaluateBBS withPostDatas:dic withDelegate:nil withBackBlock:^(id backDictionary) {
+        YYLog(@"%@",backDictionary);
+        if ([[backDictionary objectForKey:@"code"] isEqualToString:@"1133"]) {
+            [alert popAlert:@"登录用户才能评论"];
+        }else if([[backDictionary objectForKey:@"code"] isEqualToString:@"0"]){
+            [self.navigationController popViewControllerAnimated:YES];
+            [alert popAlert:@"评论成功"];
+        }else{
+            [alert popAlert:[backDictionary objectForKey:@"message"]];
+        }
+    }];
+}
+
+@end

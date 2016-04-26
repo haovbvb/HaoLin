@@ -1,0 +1,145 @@
+//
+//  HSPAboutHaoLinController.m
+//  HaoLin
+//
+//  Created by PING on 14-8-24.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "HSPAboutHaoLinController.h"
+
+@interface HSPAboutHaoLinController ()
+
+@end
+
+@implementation HSPAboutHaoLinController
+
+- (void)setDataFileName:(NSString *)dataFileName
+{
+    _dataFileName = dataFileName;
+    
+    self.dataList = [HSPProfileGroup groupsWithName:dataFileName];
+}
+
+- (instancetype)init
+{
+    return [super initWithStyle:UITableViewStyleGrouped];
+}
+
+- (id)initWithStyle:(UITableViewStyle)style
+{
+    return [super initWithStyle:UITableViewStyleGrouped];
+}
+
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    self.dataFileName = @"AboutHaoLin.plist";
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    [self setupConfig];
+    
+    HSPAboutHaoLinTopView *topView = [[[NSBundle mainBundle] loadNibNamed:@"HSPAboutHaoLinTopView" owner:nil options:nil] lastObject];
+    self.tableView.tableHeaderView = topView;
+}
+
+- (void)setupConfig
+{
+    self.title = @"关于好邻";
+    [self.navigationController.navigationBar setTitleTextAttributes:[NSDictionary dictionaryWithObjectsAndKeys:HSPFontColor, NSForegroundColorAttributeName, nil]];
+    self.view.backgroundColor = HSPBgColor;
+    
+}
+
+#pragma mark - Table view data source
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+{
+    return self.dataList.count;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    NSArray *items = [self.dataList[section] items];
+    return items.count;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
+{
+    return 5;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section
+{
+    return 5;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    static NSString *ID = @"ProfileCell";
+    HSPProfileCell *cell = [tableView dequeueReusableCellWithIdentifier:ID];
+    if (!cell) {
+        cell = [[HSPProfileCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:ID];
+    }
+    
+    // 取出indexPath(section,row)对应设置条目
+    HSPProfileGroup *group = self.dataList[indexPath.section];
+    HSPProfileItem *item = group.items[indexPath.row];
+    
+    cell.item = item;
+    
+    return cell;
+}
+
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    HSPProfileGroup *group = self.dataList[indexPath.section];
+    HSPProfileItem *item = group.items[indexPath.row];
+    
+    // 检查是否PUSH新的视图控制器
+    if (item.destClassName) {
+        Class class = NSClassFromString(item.destClassName);
+        UIViewController *vc = [[class alloc] init];
+        
+        [self.navigationController pushViewController:vc animated:YES];
+    }
+    
+    if (item.callFunction) {
+        SEL func = NSSelectorFromString(item.callFunction);
+        [self performSelector:func];
+    }
+}
+
+/**
+ *  检查版本更新
+ */
+- (void)checkUpdate
+{
+    NSURL *url = [NSURL URLWithString:@"http://baidu.com/"];
+    NSDictionary *versionDict = [NSDictionary dictionaryWithContentsOfURL:url];
+    
+    NSNumber *version = versionDict[@"version"];
+    NSString *desc = versionDict[@"desc"];
+    
+    // 取出当前应用 程序的版本
+    NSDictionary *infoDict = [NSBundle mainBundle].infoDictionary;
+    NSNumber *currentNumber = infoDict[@"CFBundleVersion"];
+    
+    NSString *msg = nil;
+    // 如果比服务器的版本号小
+    if (currentNumber.floatValue < version.floatValue) {
+        msg = desc;
+    } else {
+        msg = @"已经是最新版本";
+    }
+    
+    // 检查升级版本
+    UIAlertView *alerView = [[UIAlertView alloc] initWithTitle:@"提示" message:msg delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+    
+    [alerView show];
+}
+
+@end

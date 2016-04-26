@@ -1,0 +1,35 @@
+//
+//  JZDNavgationViewController.m
+//  HaoLin
+//
+//  Created by 姜泽东 on 14-8-29.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "JZDNavgationViewController.h"
+
+@interface JZDNavgationViewController ()
+
+@end
+
+@implementation JZDNavgationViewController
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+    }
+    return self;
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    self.navigationBar.barTintColor=[UIColor colorWithRed:255/255.0f green:75/255.0f blue:0 alpha:1];
+    [self.navigationBar setTitleTextAttributes:[NSDictionary dictionaryWithObjectsAndKeys:
+                                                                     [UIColor whiteColor], NSForegroundColorAttributeName,nil]];
+}
+
+@end

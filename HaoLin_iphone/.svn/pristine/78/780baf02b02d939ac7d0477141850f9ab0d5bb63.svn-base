@@ -1,0 +1,19 @@
+//
+//  HSPOrderWaitingReceiveController.h
+//  HaoLin
+//
+//  Created by PING on 14-9-11.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface HSPOrderWaitingReceiveController : UIViewController
+
+@property (nonatomic, assign) int orderId;
+@property (weak, nonatomic) IBOutlet UIScrollView *scrollView;
+
+@property (weak, nonatomic) IBOutlet UIView *navBgView;
+- (IBAction)backBtnClick:(UIButton *)sender;
+
+@end

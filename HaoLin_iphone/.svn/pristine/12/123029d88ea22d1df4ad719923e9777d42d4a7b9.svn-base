@@ -1,0 +1,22 @@
+//
+//  ZYOHomeViewController.h
+//  HaoLin
+//
+//  Created by mac on 14-8-22.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@class MQLPartyViewController;
+@interface ZYOHomeViewController : UIViewController<UITableViewDelegate,UITableViewDataSource>
+@property (weak, nonatomic) IBOutlet UITableView *tableView;
+@property (weak, nonatomic) IBOutlet UIImageView *imageView;
+@property (weak, nonatomic) IBOutlet UILabel *label;
+@property (weak, nonatomic) IBOutlet UIButton *loginBtn;
+@property (weak, nonatomic) IBOutlet UILabel *lineLabel;
+@property (nonatomic, strong)MQLPartyViewController *partVC;
+
+@property (nonatomic, strong)UIViewController *MQLBusinessViewController;
+- (void)logoutInfo;
+@end

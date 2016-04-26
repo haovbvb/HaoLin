@@ -1,0 +1,254 @@
+//
+//  MQLBMKMapManage.m
+//  HaoLin
+//
+//  Created by mac on 14-8-13.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "MQLBMKMapManage.h"
+
+static MQLBMKMapManage *BMKMapManage = nil;
+
+@interface MQLBMKMapManage ()<BMKGeneralDelegate, CLLocationManagerDelegate>
+
+@property (nonatomic, strong) BMKMapManager *mapManager;
+@property (nonatomic, strong) CLLocationManager *locationManager;
+
+@property (nonatomic) CLLocationDegrees latitude;
+@property (nonatomic) CLLocationDegrees longitude;
+
+
+/**
+ *  注册通知
+ UIApplicationWillEnterForegroundNotification
+ UIApplicationDidEnterBackgroundNotification
+ */
+-(void)registerNotifications;
+
+/**
+ *  显示提示
+ *
+ *  @param title
+ *  @param msg
+ *  @param tag
+ */
+-(void)showAlertViewWithTitle:(NSString*)title msg:(NSString*)msg tag:(int)tag;
+
+/**
+ *  启动定位
+ */
+-(void)startLocationWithNote:(BOOL) note;
+
+/**
+ *  停止定位
+ */
+-(void)stopLocation;
+
+
+@end
+
+@implementation MQLBMKMapManage
+
+-(void)dealloc
+{
+    [[NSNotificationCenter defaultCenter]removeObserver:self];
+}
+
+-(id)init
+{
+    self = [super init];
+    if (self) {
+        
+        self.mapManager = [[BMKMapManager alloc]init];
+        [self.mapManager start:@"uTW6zYBVKAeac21py1Xp1aVV" generalDelegate:self];
+        
+        self.locationManager = [[CLLocationManager alloc]init];
+        self.locationManager.delegate = self;
+        
+        self.latitude = [[[NSUserDefaults standardUserDefaults] objectForKey:@"latitude"]doubleValue];
+        self.longitude = [[[NSUserDefaults standardUserDefaults] objectForKey:@"longitude"]doubleValue];
+        
+        //启动定位
+        [self startLocationWithNote:YES];
+        
+        //注册通知
+        [self registerNotifications];
+        
+        
+    }
+    return self;
+}
+
+/**
+ *  获取单实例
+ *
+ *  @return
+ */
++(MQLBMKMapManage*)instance
+{
+    if (BMKMapManage == nil) {
+        BMKMapManage = [[MQLBMKMapManage alloc]init];
+    }
+    
+    return BMKMapManage;
+}
+
+/**
+ *  释放单实例
+ */
++(void)freeInstance
+{
+    BMKMapManage = nil;
+}
+
+/**
+ *  返回当前地理位置
+ *
+ *  @return
+ */
+-(CLLocation*)currentLocation
+{
+    return [[CLLocation alloc]initWithLatitude:self.latitude longitude:self.longitude];
+}
+
+#pragma mark -- MQLBMKMapManage函数扩展
+
+/**
+ *  注册通知
+ UIApplicationWillEnterForegroundNotification
+ UIApplicationDidEnterBackgroundNotification
+ */
+-(void)registerNotifications
+{
+    [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(onReceiveUIApplicationWillEnterForegroundNotification:) name:UIApplicationWillEnterForegroundNotification object:nil];
+    
+    [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(onReceiveUIApplicationDidEnterBackgroundNotification:) name:UIApplicationDidEnterBackgroundNotification object:nil];
+    
+}
+
+-(void)onReceiveUIApplicationWillEnterForegroundNotification:(NSNotification*)notification
+{
+    [self startLocationWithNote:NO];
+}
+
+-(void)onReceiveUIApplicationDidEnterBackgroundNotification:(NSNotification*)notification
+{
+    [self stopLocation];
+}
+
+/**
+ *  显示提示
+ *
+ *  @param title
+ *  @param msg
+ *  @param tag
+ */
+-(void)showAlertViewWithTitle:(NSString*)title msg:(NSString*)msg tag:(int)tag
+{
+    UIAlertView *alert = [[UIAlertView alloc]initWithTitle:title message:msg delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+    [alert show];
+}
+
+/**
+ *  启动定位
+ */
+-(void)startLocationWithNote:(BOOL) note
+{
+    //判断系统的定位服务是否开启
+    if ([CLLocationManager locationServicesEnabled])
+    {
+        if (IS_IOS8) {
+            
+            [self.locationManager performSelector:@selector(requestWhenInUseAuthorization)];
+        }
+        
+        [self.locationManager startUpdatingLocation];
+        
+    }else
+    {
+        if (note) {
+            
+            [self showAlertViewWithTitle:@"提示" msg:@"请到设置-隐私-定位服务中打开定位服务。" tag:-1];
+        }
+    }
+}
+
+/**
+ *  停止定位
+ */
+-(void)stopLocation
+{
+    [self.locationManager stopUpdatingLocation];
+}
+
+#pragma mark -- BMKGeneralDelegate
+/**
+ *返回网络错误
+ *@param iError 错误号
+ */
+- (void)onGetNetworkState:(int)iError
+{
+    if (0 == iError) {
+        NSLog(@"联网成功");
+    }
+    else{
+        NSLog(@"onGetNetworkState %d",iError);
+    }
+    
+}
+
+/**
+ *返回授权验证错误
+ *@param iError 错误号 : BMKErrorPermissionCheckFailure 验证失败
+ */
+- (void)onGetPermissionState:(int)iError
+{
+    if (0 == iError) {
+        NSLog(@"授权成功");
+    }
+    else {
+        NSLog(@"onGetPermissionState %d",iError);
+    }
+}
+
+#pragma mark -- CLLocationManagerDelegate
+/*
+ *  locationManager:didUpdateLocations:
+ *
+ *  Discussion:
+ *    Invoked when new locations are available.  Required for delivery of
+ *    deferred locations.  If implemented, updates will
+ *    not be delivered to locationManager:didUpdateToLocation:fromLocation:
+ *
+ *    locations is an array of CLLocation objects in chronological order.
+ */
+- (void)locationManager:(CLLocationManager *)manager
+	 didUpdateLocations:(NSArray *)locations
+{
+    CLLocation *location = [locations lastObject];
+    self.latitude = location.coordinate.latitude;
+    self.longitude = location.coordinate.longitude;
+    
+    [[NSUserDefaults standardUserDefaults]setObject:[NSNumber numberWithDouble:self.latitude] forKey:@"latitude"];
+    [[NSUserDefaults standardUserDefaults]setObject:[NSNumber numberWithDouble:self.longitude] forKey:@"longitude"];
+    [[NSUserDefaults standardUserDefaults]synchronize];
+}
+
+/*
+ *  locationManager:didFailWithError:
+ *
+ *  Discussion:
+ *    Invoked when an error has occurred. Error types are defined in "CLError.h".
+ */
+- (void)locationManager:(CLLocationManager *)manager
+       didFailWithError:(NSError *)error
+{
+    if (error.code == kCLErrorDenied) {
+        
+        [self showAlertViewWithTitle:@"提示" msg:@"请到设置-隐私-定位服务中程序使用定位服务。" tag:-1];
+    }
+}
+
+
+@end

@@ -1,0 +1,156 @@
+//
+//  ZYPAudioPlayManger.m
+//  HaoLin
+//
+//  Created by mac on 14-9-22.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "ZYPAudioPlayManger.h"
+
+
+
+@interface ZYPAudioPlayManger ()<AVAudioPlayerDelegate>
+{
+    AVAudioPlayer *audioPlay;
+}
+/**
+ *  私有方法，缓存音频文件
+ */
+- (NSString *)getCatchesPath:(NSURL *)url;
+
+
+/**
+ *  下载音频文件
+ *
+ *  @param url 下载url
+ */
+- (void)load:(NSURL *)url;
+
+
+/**
+ *  转换格式后播放本地文件
+ */
+- (void)getChangeFormat:(NSString *)path;
+
+
+@end
+@implementation ZYPAudioPlayManger
+/**
+ *  播放声音
+ */
+- (void)playAudioWithUrlString:(id)audioUrlString
+{
+    NSURL *url = nil;
+    if ([audioUrlString isKindOfClass:[NSURL class]])
+    {
+        url = audioUrlString;
+    }else if ([audioUrlString isKindOfClass:[NSString class]])
+    {
+        NSString *urlString = [audioUrlString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+        url = [NSURL URLWithString:urlString];
+    }
+    NSString *path = [self getCatchesPath:url];
+    NSFileManager *fileManger = [NSFileManager defaultManager];
+    if ([fileManger fileExistsAtPath:path])
+    {
+        [self getChangeFormat:path];
+    }else
+    {
+        [self load:url];
+    }
+}
+/**
+ *  获取temp临时目录
+ */
+- (NSString *)getCatchesPath:(NSURL *)url
+{
+    NSString *path = NSTemporaryDirectory();
+    NSString *pathName = [path stringByAppendingPathComponent:[url absoluteString]];
+    return pathName;
+}
+/**
+ *  下载音频文件
+ *
+ *  @param url 下载url
+ */
+
+- (void)load:(NSURL *)url
+{
+    NSURLRequest *request = [NSURLRequest requestWithURL:url];
+    __weak ZYPAudioPlayManger *playManger = self;
+    NSURLSession *session = [NSURLSession sharedSession];
+    /**
+     *  下载音频临时文件
+     */
+    NSURLSessionDownloadTask *downSession = [session downloadTaskWithRequest:request completionHandler:^(NSURL *location, NSURLResponse *response, NSError *error)
+        {
+            /**
+             *  将临时文件存储到本地
+             */
+        NSString *path = NSTemporaryDirectory();
+        NSURL *documentsDirectoryURL = [NSURL fileURLWithPath:path];
+        NSURL *newFileLocation =[documentsDirectoryURL URLByAppendingPathComponent:response.suggestedFilename];
+        [[NSFileManager defaultManager] copyItemAtURL:location toURL:newFileLocation error:nil];
+            /**
+             *  播放文件
+             */
+            __strong ZYPAudioPlayManger *manger = playManger;
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                [manger getChangeFormat:[newFileLocation absoluteString]];
+            });
+    }];
+    [downSession resume];
+}
+/**
+ *  转换格式后播放本地文件
+ */
+- (void)getChangeFormat:(NSString *)path
+{
+    /**
+     *  本地文件存在，就从本地读取
+     */
+    if ([path hasSuffix:@".amr"])
+    {
+        /**
+         *  将amr文件转化成wav格式
+         */
+        NSString *wavpath = [path stringByReplacingOccurrencesOfString:@".amr" withString:@".wav"];
+        [MQLAudioManage encodeToWav:wavpath fromAmr:path];
+        /**
+         *  播放本地音频
+         */
+        audioPlay = [[AVAudioPlayer alloc] initWithContentsOfURL:[NSURL fileURLWithPath:wavpath] error:nil];
+        audioPlay.delegate = self;
+        [audioPlay prepareToPlay];
+        [audioPlay play];
+    }
+}
+
+/**
+ *  停止播放
+ */
+- (void)stop
+{
+    [audioPlay stop];
+}
+
+/**
+ *  播放音频代理方法
+ */
+- (void)audioPlayerDidFinishPlaying:(AVAudioPlayer *)player successfully:(BOOL)flag
+{
+    /**
+     *  播放完毕，将播放器置为空，代理置为空
+     */
+    audioPlay = nil;
+    audioPlay.delegate = nil;
+}
+- (void)audioPlayerDecodeErrorDidOccur:(AVAudioPlayer *)player error:(NSError *)error
+{
+    /**
+     *  音频播放错误原因
+     */
+    NSLog(@"音频播放错误原因 = %@",error);
+}
+@end

@@ -1,0 +1,260 @@
+//
+//  HSPProfileView.m
+//  HaoLin
+//
+//  Created by PING on 14-9-20.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "HSPProfileView.h"
+
+@interface HSPProfileView ()
+
+@property (nonatomic, strong) HSPAccount *account;
+@property (nonatomic, strong) HSPUserInfo *userInfo;
+@property (nonatomic, strong) JZDCustomAlertView *alert;
+
+// 数据列表
+@property (nonatomic, strong) NSMutableArray *dataList;
+
+@end
+
+
+@implementation HSPProfileView
+
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        // Initialization code
+    }
+    return self;
+}
+
+- (void)awakeFromNib
+{
+    _navBgView.backgroundColor = HSPBarBgColor;
+    
+    self.adjustTableView.separatorStyle = UITableViewCellSeparatorStyleSingleLine;
+    self.adjustTableView.separatorColor = HSPBgColor;
+    self.adjustTableView.dataSource = self;
+    self.adjustTableView.delegate = self;
+     
+    self.dataList = (NSMutableArray *)[HSPProfileGroup groupsWithName:@"Profile.plist"];
+    if ([_account.user_mark isEqualToString:@"2"]) {
+        [self.dataList removeLastObject];
+    }
+    _userInfo = [[HSPUserInfo alloc] init];
+    _account = [HSPAccountTool account];
+    _alert = [JZDCustomAlertView sharedInstace];
+    
+    if (_account.user_id.length) {
+        [self setupLoginHeaderAndFooter];
+    }else{
+        if (self.adjustTableView.tableFooterView) {
+            [self.adjustTableView.tableFooterView removeFromSuperview];
+        }
+        [self setupHeaderAndFooter];
+    }
+}
+
+- (void)setupHeaderAndFooter
+{
+    // 顶部UI
+    HSPProfileTopView *topView = [[[NSBundle mainBundle] loadNibNamed:@"HSPProfileTopView" owner:self options:nil] lastObject];
+    [topView.partyBtn addTarget:self action:@selector(goToParty) forControlEvents:UIControlEventTouchUpInside];
+    [topView.petBtn addTarget:self action:@selector(goToPets) forControlEvents:UIControlEventTouchUpInside];
+    self.adjustTableView.tableHeaderView = topView;
+    
+    [topView.loginBtnClick addTarget:self action:@selector(loginClick) forControlEvents:UIControlEventTouchUpInside];
+    
+}
+
+- (void)setupLoginHeaderAndFooter
+{
+    
+    // 顶部UI
+    HSPProfileLoginTopView *topView = [[[NSBundle mainBundle] loadNibNamed:@"HSPProfileLoginTopView" owner:nil options:nil] lastObject];
+    topView.account = _account;
+    [topView.partyBtn addTarget:self action:@selector(goToParty) forControlEvents:UIControlEventTouchUpInside];
+    [topView.petsBtn addTarget:self action:@selector(goToPets) forControlEvents:UIControlEventTouchUpInside];
+    self.adjustTableView.tableHeaderView = topView;
+    [self.adjustTableView reloadData];
+    
+    // 退出按钮
+    HSPLogoutBtnView *logoutView = [[[NSBundle mainBundle] loadNibNamed:@"HSPLogoutBtnView" owner:nil options:nil] lastObject];
+    logoutView.tag = 2222;
+    [logoutView.logoutBtn addTarget:self action:@selector(logoutBtnClick) forControlEvents:UIControlEventTouchUpInside];
+    self.adjustTableView.tableFooterView.backgroundColor = [UIColor clearColor];
+    self.adjustTableView.tableFooterView = logoutView;
+    
+}
+
+- (void)goToParty
+{
+    if (!_account.user_id.length) {
+        [_alert popAlert:@"请先登录"];
+        return;
+    }
+    JZDSPartyViewController *party = [[JZDSPartyViewController alloc] initWithNibName:@"JZDSPartyViewController" bundle:nil];
+    HSPNavigationController *nav = [[HSPNavigationController alloc] initWithRootViewController:party];
+    [self.HSPProfileViewController presentViewController:nav animated:YES completion:nil];
+}
+
+- (void)goToPets
+{
+    if (!_account.user_id.length) {
+        [_alert popAlert:@"请先登录"];
+        return;
+    }
+    JZDsPetsPartyViewController *padd=[[JZDsPetsPartyViewController alloc] initWithNibName:@"JZDsPetsPartyViewController" bundle:nil];
+    HSPNavigationController *nav = [[HSPNavigationController alloc] initWithRootViewController:padd];
+    [self.HSPProfileViewController presentViewController:nav animated:YES completion:nil];
+}
+
+- (void)logoutBtnClick
+{
+    // 清除用户信息
+    HSPAccount *account = [HSPAccountTool account];
+    [ZYPObjectManger shareInstance].state = 1;
+    [HSPAccountTool clearAccount:account];
+    
+    // 发送通知，商家界面
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"logout" object:nil userInfo:nil];
+    [self awakeFromNib];
+    [_alert popAlert:@"退出成功"];
+    
+    HSPLoginViewController *login = [[HSPLoginViewController alloc] initWithNibName:@"HSPLoginViewController" bundle:nil];
+    [self.HSPProfileViewController presentViewController:login animated:YES completion:nil];
+    
+    NSMutableDictionary *params = [NSMutableDictionary dictionary];
+    params[@"user_id"] = account.user_id;
+    params[@"tokenid"] = account.userTokenid;
+    HSPHttpRequest *request = [HSPHttpRequest Instace];
+    NSOperationQueue *queue = [[NSOperationQueue alloc] init];
+    [queue addOperationWithBlock:^{
+        [request connectionREquesturl:HSPLogoutUrl withPostDatas:params withDelegate:nil withBackBlock:^(id backDictionary) {
+            if ([backDictionary isKindOfClass:[NSError class]]) {
+                return;
+            }
+            if ([[backDictionary objectForKey:@"code"] isEqualToString:@"0"]) {
+                
+            }
+        }];
+    }];
+    
+}
+
+- (void)loginClick
+{
+    HSPLoginViewController *loginVC = [[HSPLoginViewController alloc] initWithNibName:@"HSPLoginViewController" bundle:nil];
+    [self.HSPProfileViewController presentViewController:loginVC animated:YES completion:nil];
+}
+
+- (void)back
+{
+//    [self dismissViewControllerAnimated:YES completion:nil];
+}
+#pragma mark - Table view data source
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+{
+    return self.dataList.count;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return 40;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
+{
+    return 10;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section
+{
+    if (section == self.dataList.count - 1) {
+        return 10;
+    }else{
+        return 0.1;
+    }
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    NSArray *items = [self.dataList[section] items];
+    return items.count;
+}
+
+- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
+{
+    HSPProfileGroup *group = self.dataList[section];
+    return group.header;
+}
+
+- (NSString *)tableView:(UITableView *)tableView titleForFooterInSection:(NSInteger)section
+{
+    return [self.dataList[section] footer];
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    static NSString *ID = @"ProfileCell";
+    HSPProfileCell *cell = [tableView dequeueReusableCellWithIdentifier:ID];
+    if (!cell) {
+        cell = [[HSPProfileCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:ID];
+    }
+    
+    // 取出indexPath(section,row)对应设置条目
+    HSPProfileGroup *group = self.dataList[indexPath.section];
+    HSPProfileItem *item = group.items[indexPath.row];
+    
+    cell.item = item;
+    cell.selectedBackgroundView = nil;
+//    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    return cell;
+}
+
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    
+    HSPProfileGroup *group = self.dataList[indexPath.section];
+    HSPProfileItem *item = group.items[indexPath.row];
+    
+    if (indexPath.section == 3 && indexPath.row == 0) {
+        Class class = NSClassFromString(item.destClassName);
+        UIViewController *vc = [[class alloc] init];
+        HSPNavigationController *nav = [[HSPNavigationController alloc] initWithRootViewController:vc];
+        [self.HSPProfileViewController presentViewController:nav animated:YES completion:nil];
+        return;
+    }
+    
+    if (_account.user_id.length) {
+        
+//        YYLog(@"index=%d==%d",indexPath.section, indexPath.row);
+        if (indexPath.section == 4 && indexPath.row == 0) {
+            ZYPRegWriteInformationVC *reg = [[ZYPRegWriteInformationVC alloc] initWithNibName:@"ZYPRegWriteInformationVC" bundle:nil];
+            reg.user_id = _account.user_id;
+            [self.HSPProfileViewController presentViewController:reg animated:YES completion:nil];
+        }
+        // 检查是否PUSH新的视图控制器
+        if (item.destClassName) {
+            Class class = NSClassFromString(item.destClassName);
+            UIViewController *vc = [[class alloc] init];
+            HSPNavigationController *nav = [[HSPNavigationController alloc] initWithRootViewController:vc];
+            [self.HSPProfileViewController presentViewController:nav animated:YES completion:nil];
+        }
+    }else{
+        [_alert popAlert:@"请先登录"];
+    }
+}
+
+- (void)dealloc
+{
+    LogFunc
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+@end

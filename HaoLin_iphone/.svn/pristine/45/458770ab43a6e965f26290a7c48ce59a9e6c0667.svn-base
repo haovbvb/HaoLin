@@ -1,0 +1,197 @@
+//
+//  HSPOrderAllCell.m
+//  HaoLin
+//
+//  Created by PING on 14-9-9.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "HSPOrderAllCell.h"
+
+#define HSPPadding 10
+#define HSPTitleFont 16
+#define HSPGreenBgBtnColor HSPColor(12, 175, 83)
+
+
+
+@interface HSPOrderAllCell ()
+
+
+@end
+
+@implementation HSPOrderAllCell
+
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
+{
+    self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
+    if (self) {
+        
+        self.contentView.backgroundColor = HSPColor(248, 248, 248);
+        
+        UIView *topView = [[UIView alloc] init];
+        [self addSubview:topView];
+        self.topView = topView;
+        
+        UIView *goodsView = [[UIView alloc] init];
+        [self addSubview:goodsView];
+        self.goodsView = goodsView;
+        
+        UIView *totalView = [[UIView alloc] init];
+        [self addSubview:totalView];
+        self.totalView = totalView;
+        
+        UIView *bottomView = [[UIView alloc] init];
+        [self addSubview:bottomView];
+        self.bottomView = bottomView;
+        
+        
+    }
+    return self;
+}
+
+
+- (void)setOrder:(HSPOrder *)order
+{
+    _order = order;
+    
+    for (HSPOrderCreatedTimeView *v in self.topView.subviews) {
+        [v removeFromSuperview];
+    }
+    
+    HSPOrderCreatedTimeView *createdTimeView = [[[NSBundle mainBundle] loadNibNamed:@"HSPOrderCreatedTimeView" owner:nil options:nil] lastObject];
+    createdTimeView.createdTimeLabel.text = [order orderTime:order.createtime dateFromat:nil];
+    
+    [self.topView addSubview:createdTimeView];
+    self.topView.frame = CGRectMake(0, 10, HSPScreenWidth, 44);
+    
+    // 商品
+    if (order.goodsM.count) {
+        for (int i = 0; i<order.goodsM.count; i++) {
+            HSPOrderGoodsView *goodsView = [[[NSBundle mainBundle] loadNibNamed:@"HSPOrderGoodsView" owner:nil options:nil] lastObject];
+            goodsView.tag=100+i;
+            HSPGoods *goods = order.goodsM[i];
+            goodsView.goodsNameLabel.text = goods.goods_name;
+            goodsView.goodsCountLabel.text = goods.goods_num;
+            goodsView.goodsPriceLabel.text = [NSString stringWithFormat:@"¥%@",goods.goods_price];
+            
+            CGFloat goodsViewX = HSPPadding - 10;
+            CGFloat goodsViewY = CGRectGetMaxY(self.topView.frame) + (i * 25) - 50;
+            goodsView.frame = CGRectMake(goodsViewX, goodsViewY, 300, 25);
+            [self.goodsView addSubview:goodsView];
+            
+            self.goodsView.frame = CGRectMake(0, 50, HSPScreenWidth, (i+1)*27);
+        }
+    }
+    
+    int s = [order.status intValue];
+    if ([order.order_type isEqualToString:@"1"]) {
+        
+        for (HSPServiceCountView *v in self.totalView.subviews) {
+            [v removeFromSuperview];
+        }
+        
+        // 总计
+        CGFloat totalX = 0;
+        CGFloat totalY = CGRectGetMaxY(self.goodsView.frame);
+        CGFloat totalW = HSPScreenWidth;
+        CGFloat totalH = 80;
+        self.totalView.frame = CGRectMake(totalX, totalY, totalW, totalH);
+        HSPOrderCountView *countView = [[[NSBundle mainBundle] loadNibNamed:@"HSPOrderCountView" owner:nil options:nil] lastObject];
+        countView.servicePrice.text = [NSString stringWithFormat:@"¥%@",order.server_price];
+        countView.totalPrice.text = [NSString stringWithFormat:@"¥%@",order.real_price];
+        _voiceBtn = countView.voiceBtn;
+        [self.totalView addSubview:countView];
+        
+        // 状态 订单状态（0：订单取消，1.已确认，2.未支付，3.已支付，4.已发货，5.已完成，6.已评价, 7,）
+        CGFloat bottomX = 0;
+        CGFloat bottomY = CGRectGetMaxY(self.totalView.frame);
+        CGFloat bottomW = HSPScreenWidth;
+        CGFloat bottomH = 40;
+        self.bottomView.frame = CGRectMake(bottomX, bottomY, bottomW, bottomH);
+        
+        
+        switch (s) {
+            case 0:
+                [self setButtonWithStatus:@"订单取消" setTitle:@"订单关闭" setTitleColor:HSPFontColor setBgColor:[UIColor lightGrayColor]];
+                break;
+            case 1:
+                [self setButtonWithStatus:@"已确认" setTitle:@"确认订单" setTitleColor:HSPFontColor setBgColor:HSPBarBgColor];
+                break;
+            case 2:
+                [self setButtonWithStatus:@"未支付" setTitle:@"支付" setTitleColor:HSPFontColor setBgColor:HSPBarBgColor];
+                break;
+            case 3:
+                [self setButtonWithStatus:@"已支付" setTitle:@"我要评价" setTitleColor:HSPFontColor setBgColor:HSPGreenBgBtnColor];
+                break;
+            case 4:
+                [self setButtonWithStatus:@"已发货" setTitle:@"确认收货" setTitleColor:HSPFontColor setBgColor:HSPBarBgColor];
+                break;
+            case 5:
+                [self setButtonWithStatus:@"已完成" setTitle:@"我要评价" setTitleColor:HSPFontColor setBgColor:HSPGreenBgBtnColor];
+                break;
+            case 6:
+                [self setButtonWithStatus:@"已评价" setTitle:@"已评价" setTitleColor:HSPFontColor setBgColor:[UIColor lightGrayColor]];
+                break;
+                
+            default:
+                break;
+        }
+        
+    }else{
+        
+        for (HSPOrderCountView *v in self.totalView.subviews) {
+            [v removeFromSuperview];
+        }
+        
+        // 总计
+        CGFloat totalX = 0;
+        CGFloat totalY = CGRectGetMaxY(self.goodsView.frame);
+        CGFloat totalW = HSPScreenWidth;
+        CGFloat totalH = 80;
+        self.totalView.frame = CGRectMake(totalX, totalY, totalW, totalH);
+        HSPServiceCountView *countView = [[[NSBundle mainBundle] loadNibNamed:@"HSPServiceCountView" owner:nil options:nil] lastObject];
+        countView.tag = 2000;
+        countView.servicePrice.text = [NSString stringWithFormat:@"¥%@",order.server_price];
+        countView.totalPrice.text = [NSString stringWithFormat:@"¥%@",order.real_price];
+        _voiceBtn = countView.voiceBtn;
+        [self.totalView addSubview:countView];
+        
+        switch (s) {
+            case 7:
+                [countView.actionBtn setTitle:@"结束后付款" forState:UIControlStateNormal];
+                [countView.actionBtn setTitleColor:HSPFontColor forState:UIControlStateNormal];
+                [countView.actionBtn setBackgroundColor:HSPBarBgColor];
+                break;
+            case 8:
+                [countView.actionBtn setTitle:@"我要评价" forState:UIControlStateNormal];
+                [countView.actionBtn setTitleColor:HSPFontColor forState:UIControlStateNormal];
+                [countView.actionBtn setBackgroundColor:HSPGreenBgBtnColor];
+                break;
+                
+            default:
+                break;
+        }
+    }
+}
+
+/**
+ *  设置按钮状态
+ *
+ */
+- (void)setButtonWithStatus:(NSString *)text setTitle:(NSString *)title setTitleColor:(UIColor *)titleColor setBgColor:(UIColor *)bgColor
+{
+    HSPOrderStatusView *statusView = [[[NSBundle mainBundle] loadNibNamed:@"HSPOrderStatusView" owner:nil options:nil] lastObject];
+    statusView.statusLabel.text = text;
+    statusView.statusLabel.textColor = bgColor;
+    [statusView.statusBtn setTitle:title forState:UIControlStateNormal];
+    [statusView.statusBtn setTitleColor:titleColor forState:UIControlStateNormal];
+    [statusView.statusBtn setBackgroundColor:bgColor];
+    [self.bottomView addSubview:statusView];
+    _confirmBtn = statusView.statusBtn;
+    
+}
+
+
+
+
+@end

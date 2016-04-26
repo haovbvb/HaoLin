@@ -1,0 +1,136 @@
+//
+//  ZYPOverViewController.m
+//  HaoLin
+//
+//  Created by mac on 14-8-29.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "ZYPOverViewController.h"
+
+@interface ZYPOverViewController ()
+
+@end
+
+@implementation ZYPOverViewController
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+    }
+    return self;
+}
+- (IBAction)back:(id)sender
+{
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    self.tableView.alpha = 0;
+    UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(40, 100, 240, 200)];
+    label.text = @"信息资料审核成功,可以到商户中心添加商品啦!";
+    label.textAlignment = NSTextAlignmentCenter;
+    label.textColor = [UIColor blackColor];
+    label.layer.borderColor = [UIColor lightGrayColor].CGColor;
+    label.layer.borderWidth= 1;
+    label.layer.cornerRadius = 5;
+    label.numberOfLines = 0;
+    [self.view addSubview:label];
+}
+//  label自适应高度
+- (CGFloat)heightOfLabelFromString:(NSString *)text
+{
+    NSDictionary *attribute = [NSDictionary dictionaryWithObjectsAndKeys:[UIFont systemFontOfSize:15],NSFontAttributeName, nil];
+    CGSize size1 = [text boundingRectWithSize:CGSizeMake(280, 0) options:  NSStringDrawingTruncatesLastVisibleLine | NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading  attributes:attribute context:nil].size;
+    return size1.height;
+}
+
+#pragma mark - tableView 代理方法
+-(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView{
+    return 1;
+}
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return self.sourceArray.count;
+}
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    static NSString *indentifier = @"indentifier";
+    ZYPOverCell *cell = [tableView dequeueReusableCellWithIdentifier:indentifier];
+    if (cell == nil) {
+        cell = [[[NSBundle mainBundle] loadNibNamed:@"ZYPOverCell" owner:self options:nil] lastObject];
+    }
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    cell.nameLabel.text = [self.sourceArray objectAtIndex:indexPath.row];
+    return cell;
+}
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return 64;
+}
+- (UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section
+{
+    UIView *customView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 200)];
+    //  添加分类按钮
+    UIButton *addBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+    addBtn.frame = CGRectMake(80, 20, 160, 40);
+    addBtn.titleLabel.textColor = [UIColor whiteColor];
+    addBtn.backgroundColor = [UIColor orangeColor];
+    addBtn.titleLabel.font = [UIFont systemFontOfSize:20];
+    addBtn.titleLabel.textAlignment = NSTextAlignmentCenter;
+    [addBtn setTitle:@"+" forState:UIControlStateNormal];
+    [addBtn addTarget:self action:@selector(addSource:) forControlEvents:UIControlEventTouchUpInside];
+    [customView addSubview:addBtn];
+    //  添加商品按钮
+    UIButton *addGoodsBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+    addGoodsBtn.frame = CGRectMake(80, 80, 160, 40);
+    addGoodsBtn.titleLabel.textColor = [UIColor whiteColor];
+    addGoodsBtn.backgroundColor = [UIColor orangeColor];
+    addGoodsBtn.titleLabel.font = [UIFont systemFontOfSize:20];
+    addGoodsBtn.titleLabel.textAlignment = NSTextAlignmentCenter;
+    [addGoodsBtn setTitle:@"马上添加商品" forState:UIControlStateNormal];
+    [addGoodsBtn addTarget:self action:@selector(addGoods:) forControlEvents:UIControlEventTouchUpInside];
+    [customView addSubview:addGoodsBtn];
+    //  完成按钮
+    UIButton *overBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+    overBtn.frame = CGRectMake(80, 140, 160, 40);
+    overBtn.titleLabel.textColor = [UIColor whiteColor];
+    overBtn.backgroundColor = [UIColor orangeColor];
+    overBtn.titleLabel.font = [UIFont systemFontOfSize:20];
+    overBtn.titleLabel.textAlignment = NSTextAlignmentCenter;
+    [overBtn setTitle:@"完成" forState:UIControlStateNormal];
+    [overBtn addTarget:self action:@selector(over:) forControlEvents:UIControlEventTouchUpInside];
+    [customView addSubview:overBtn];
+    return customView;
+}
+- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section
+{
+    return 200;
+}
+//  添加分类
+- (void)addSource:(UIButton *)btn
+{
+}
+//  马上添加商品
+- (void)addGoods:(UIButton *)btn
+{
+    
+}
+- (void)over:(UIButton *)btn
+{
+    
+}
+//  完成提交信息
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+@end

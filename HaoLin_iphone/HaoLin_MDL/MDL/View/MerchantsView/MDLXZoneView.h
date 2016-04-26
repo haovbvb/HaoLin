@@ -1,0 +1,63 @@
+//
+//  MDLXZoneView.h
+//  HaoLin
+//
+//  Created by apple on 14-8-20.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+@protocol LBviewDelegate <NSObject>
+
+-(void)contenttext:(NSMutableArray *)ary;
+
+@end
+
+
+@interface MDLXZoneView : UIView<UITableViewDataSource,UITableViewDelegate,UISearchBarDelegate,UISearchDisplayDelegate>
+
+{
+    NSMutableArray *felerarry;
+    BOOL NICK;
+    BOOL NOK;
+    BOOL COOL;
+    int  number;
+}
+/*
+  * UIButton       *lestitm    :左边返回按
+  * UILabel        *FanweiLable:导航栏标题
+  * UITableView    *JYtableview:主列表
+  * UISearchBar    *searchbar  :搜索框
+  * UIButton       *fanweibtn  :范围按钮
+  * UIButton       *completebtn:完成按钮
+  * NSMutableArray *tablearry  :主列表数据
+  * NSMutableArray *subviewarry:经营范围数组
+  * NSString       *searctext  :搜索内容
+ *
+*/
+@property (nonatomic,assign) id<LBviewDelegate>delegate;
+
+@property (weak , nonatomic)  IBOutlet UIButton     *lestitm;
+@property (weak , nonatomic)  IBOutlet UILabel      *FanweiLable;
+@property (weak , nonatomic)  IBOutlet UISearchBar  *searchbar;
+@property (weak , nonatomic)  IBOutlet UIButton     *fanweibtn;
+@property (unsafe_unretained, nonatomic) IBOutlet UIView *Nvbview;
+@property (weak , nonatomic)  IBOutlet UIButton     *fenleilestbtn;
+@property (weak , nonatomic)  IBOutlet UIView       *fenleiview;
+@property (weak , nonatomic)  IBOutlet UILabel      *quanbuLable;
+@property (weak , nonatomic)  IBOutlet UIButton     *chazhaobtn;
+@property (weak , nonatomic)  IBOutlet UIButton     *completebtn;
+@property (weak , nonatomic)  IBOutlet UIImageView  *image;
+@property (nonatomic ,strong)       id              target;
+@property (nonatomic ,strong)  UITableView           *subtableview;
+@property (nonatomic ,strong)  UITableView           *JYtableview;
+@property (nonatomic ,strong)  NSMutableArray        *tablearry;
+@property (nonatomic ,strong)  NSMutableArray        *subviewarry;
+@property (nonatomic ,strong)  NSString              *searctext;
+@property (nonatomic ,strong)  UIImageView           *iamgeView;
+@property (nonatomic ,strong)  UILabel               *qbLable ;
+@property (nonatomic ,strong)  MDLWuPinTableViewCell *wupincell;
+@property (nonatomic ,strong)  UIViewController      *MDLJingyingViewController;
+
+
+@end

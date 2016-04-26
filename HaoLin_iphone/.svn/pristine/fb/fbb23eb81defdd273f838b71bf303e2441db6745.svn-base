@@ -1,0 +1,152 @@
+//
+//  JZDImageDownLoad.m
+//  HaoLin
+//
+//  Created by 姜泽东 on 14-8-13.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "JZDImageDownLoad.h"
+
+@implementation JZDImageDownLoad
+
+-(void)setImageFromUrl:(NSMutableArray *)array{
+    __block UIImage *avatarImage=nil;
+    __weak NSArray *a=array;
+    __weak id dg=_delegate;
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH,0),^{
+        for(NSString *s in a){
+            NSURL *url=[NSURL URLWithString:s];
+            NSData *responseData=[NSData dataWithContentsOfURL:url];
+            avatarImage=[UIImage imageWithData:responseData];
+            if(avatarImage){
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if ([dg respondsToSelector:@selector(imageFinsihDownLoad:)]) {
+                        [dg imageFinsihDownLoad:avatarImage];
+                    }
+                });
+            }else{
+                
+            }
+        }
+    });
+}
+
+-(void)setImageFromUrl:(NSString *)urlString completion:(void(^)(void))completion{
+    __block UIImage *avatarImage=nil;
+    __weak id dg=_delegate;
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH,0),^{
+        NSURL *url=[NSURL URLWithString:urlString];
+        NSData *responseData=[NSData dataWithContentsOfURL:url];
+        avatarImage=[UIImage imageWithData:responseData];
+        if(avatarImage){
+//            [self saveImage:avatarImage withUrl:urlString];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if ([dg respondsToSelector:@selector(imageFinsihDownLoad:)]) {
+                    [dg imageFinsihDownLoad:avatarImage];
+                }
+            });
+        }else{
+            
+        }
+    });
+}
+
+-(void)saveImage:(UIImage *)image withUrl:(NSString *)urlString
+{
+    image=[self fixOrientation:image];
+    NSFileManager *file=[NSFileManager defaultManager];
+    NSString *filePath = [[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0] stringByAppendingPathComponent:urlString];
+    if (![file fileExistsAtPath:filePath]) {
+        [file createFileAtPath:filePath contents:nil attributes:nil];
+    }
+    FILE *f = fopen([filePath UTF8String], [@"ab+" UTF8String]);
+    if(f!= NULL){
+        fseek(f, 0, SEEK_END);
+    }
+    NSData *data= UIImagePNGRepresentation(image);
+    NSInteger readSize = [data length];
+    fwrite((const void *)[data bytes], readSize, 1, f);
+    fclose(f);
+}
+
+-(void)removeLocalImage
+{
+    NSFileManager *file=[NSFileManager defaultManager];
+    NSString *filePath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    if([file fileExistsAtPath:filePath]){
+        [file removeItemAtPath:filePath error:nil];
+    }
+}
+
+- (UIImage *)fixOrientation:(UIImage *)aImage {
+    if (aImage.imageOrientation == UIImageOrientationUp)
+        return aImage;
+    CGAffineTransform transform = CGAffineTransformIdentity;
+    
+    switch (aImage.imageOrientation) {
+        case UIImageOrientationDown:
+        case UIImageOrientationDownMirrored:
+            transform = CGAffineTransformTranslate(transform, aImage.size.width, aImage.size.height);
+            transform = CGAffineTransformRotate(transform, M_PI);
+            break;
+            
+        case UIImageOrientationLeft:
+        case UIImageOrientationLeftMirrored:
+            transform = CGAffineTransformTranslate(transform, aImage.size.width, 0);
+            transform = CGAffineTransformRotate(transform, M_PI_2);
+            break;
+            
+        case UIImageOrientationRight:
+        case UIImageOrientationRightMirrored:
+            transform = CGAffineTransformTranslate(transform, 0, aImage.size.height);
+            transform = CGAffineTransformRotate(transform, -M_PI_2);
+            break;
+        default:
+            break;
+    }
+    
+    switch (aImage.imageOrientation) {
+        case UIImageOrientationUpMirrored:
+        case UIImageOrientationDownMirrored:
+            transform = CGAffineTransformTranslate(transform, aImage.size.width, 0);
+            transform = CGAffineTransformScale(transform, -1, 1);
+            break;
+            
+        case UIImageOrientationLeftMirrored:
+        case UIImageOrientationRightMirrored:
+            transform = CGAffineTransformTranslate(transform, aImage.size.height, 0);
+            transform = CGAffineTransformScale(transform, -1, 1);
+            break;
+        default:
+            break;
+    }
+    // Now we draw the underlying CGImage into a new context, applying the transform
+    // calculated above.
+    CGContextRef ctx = CGBitmapContextCreate(NULL, aImage.size.width, aImage.size.height,
+                                             CGImageGetBitsPerComponent(aImage.CGImage), 0,
+                                             CGImageGetColorSpace(aImage.CGImage),
+                                             CGImageGetBitmapInfo(aImage.CGImage));
+    CGContextConcatCTM(ctx, transform);
+    switch (aImage.imageOrientation) {
+        case UIImageOrientationLeft:
+        case UIImageOrientationLeftMirrored:
+        case UIImageOrientationRight:
+        case UIImageOrientationRightMirrored:
+            // Grr...
+            CGContextDrawImage(ctx, CGRectMake(0,0,aImage.size.height,aImage.size.width), aImage.CGImage);
+            break;
+            
+        default:
+            CGContextDrawImage(ctx, CGRectMake(0,0,aImage.size.width,aImage.size.height), aImage.CGImage);
+            break;
+    }
+    // And now we just create a new UIImage from the drawing context
+    CGImageRef cgimg = CGBitmapContextCreateImage(ctx);
+    UIImage *img = [UIImage imageWithCGImage:cgimg];
+    CGContextRelease(ctx);
+    CGImageRelease(cgimg);
+    return img;
+}
+
+@end

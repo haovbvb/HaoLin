@@ -1,0 +1,17 @@
+//
+//  ZYPorderTopView.h
+//  HaoLin
+//
+//  Created by mac on 14-8-23.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+@class ZYPBusinrssOrderViewController;
+@interface ZYPorderTopView : UIView
+@property (nonatomic,strong)UIViewController *ZYPBusinrssOrderViewController;
+@property (weak, nonatomic) IBOutlet UILabel *shefView;
+@property (nonatomic, strong)ZYPBusinrssOrderViewController *orderVC;
+@property (weak, nonatomic) IBOutlet UIButton *backBtn;
+
+@end

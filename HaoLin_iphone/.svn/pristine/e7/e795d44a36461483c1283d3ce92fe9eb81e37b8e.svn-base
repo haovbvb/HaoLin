@@ -1,0 +1,68 @@
+//
+//  MDLWuPinleiXingViewController.m
+//  HAOLINAPP
+//
+//  Created by apple on 14-8-13.
+//  Copyright (c) 2014年 com.haolinshidai. All rights reserved.
+//
+
+#import "MDLWuPinleiXingViewController.h"
+#import "MDLWuPinViewController.h"
+
+@interface MDLWuPinleiXingViewController ()
+
+@end
+
+@implementation MDLWuPinleiXingViewController
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+
+    }
+    return self;
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    
+    MDLXZtwoView *xztwoview =[[[NSBundle mainBundle]loadNibNamed:@"MDLXZtwoView" owner:self options:nil]lastObject];
+    [self.view addSubview:xztwoview];
+    
+    [[NSNotificationCenter defaultCenter]  addObserver:self selector:@selector (popjingying) name:@"popjingyingvc" object:nil];
+    //push到物品选择最终页
+    [[NSNotificationCenter defaultCenter]  addObserver:self selector:@selector (pushwupinvc) name:@"pushwupin" object:nil];
+    
+}
+//返回前控制器
+-(void)popjingying
+{
+    [self.navigationController popViewControllerAnimated:YES];
+}
+//跳到下一控制器
+-(void)pushwupinvc
+{
+    MDLWuPinViewController *wupinvc=[[MDLWuPinViewController alloc]init];
+    [self.navigationController pushViewController:wupinvc animated:YES];
+}
+
+
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+#pragma mark - Navigation
+/*
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
+{
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

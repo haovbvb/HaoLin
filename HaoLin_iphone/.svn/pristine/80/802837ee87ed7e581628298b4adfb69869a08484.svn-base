@@ -1,0 +1,41 @@
+//
+//  JZDPublishViewController.h
+//  HaoLin
+//
+//  Created by 姜泽东 on 14-8-12.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+#import "JZDCheckButton.h"
+@interface JZDPublishViewController : UIViewController
+@property (nonatomic,assign) BOOL partyOrPets;
+@property (weak, nonatomic) IBOutlet UIScrollView *publishBottomScrollView;
+@property (strong, nonatomic) IBOutlet UIView *publishBottomView;
+
+@property (weak, nonatomic) IBOutlet UITextField *partyTheme;
+@property (weak, nonatomic) IBOutlet UITextField *partyTime;
+@property (weak, nonatomic) IBOutlet UITextField *partyAddress;
+@property (weak, nonatomic) IBOutlet UITextField *partyNumOfPeople;
+@property (weak, nonatomic) IBOutlet UITextView *partyDescribe;
+@property (weak, nonatomic) IBOutlet UITextView *partyRequest;
+@property (weak, nonatomic) IBOutlet JZDCheckButton *saidButton;
+@property (strong, nonatomic) IBOutlet UIView *dateBottomView;
+@property (weak, nonatomic) IBOutlet UIDatePicker *pickerView;
+- (IBAction)today:(UIButton *)sender;
+- (IBAction)complete:(UIButton *)sender;
+- (IBAction)pickerScroll:(UIDatePicker *)sender;
+- (IBAction)uploadImageOne:(UIButton *)sender;
+
+@property (weak, nonatomic) IBOutlet UIButton *uploadOne;
+- (IBAction)publishParty:(UIButton *)sender;
+- (IBAction)tapResignFirshResponder:(UITapGestureRecognizer *)sender;
+@property (strong, nonatomic) IBOutlet UITapGestureRecognizer *myTapGesture;
+- (IBAction)recordDownBtnTouchDown:(id)sender;
+- (IBAction)recordDownBtnTouckUpInside:(id)sender;
+- (IBAction)recordDownBtnTouchUpOutside:(id)sender;
+@property (strong, nonatomic) IBOutlet UIView *pickerBottomView;
+@property (weak, nonatomic) IBOutlet UIPickerView *pickerNumOfPeople;
+@property (nonatomic,copy) NSString *typeString;
+- (IBAction)listenVoice:(UIButton *)sender;
+@end

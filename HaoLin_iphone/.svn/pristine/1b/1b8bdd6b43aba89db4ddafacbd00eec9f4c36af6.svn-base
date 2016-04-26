@@ -1,0 +1,66 @@
+//
+//  MDLMapViewController.m
+//  HaoLin
+//
+//  Created by apple on 14-8-14.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "MDLMapViewController.h"
+
+@interface MDLMapViewController ()
+
+@end
+
+@implementation MDLMapViewController
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        
+    }
+    return self;
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    //返回抢单界面
+    [[NSNotificationCenter defaultCenter]  addObserver:self selector:@selector (listitmAction) name:@"popQDjiemian" object:nil];
+    
+    [self buzhi];
+    
+}
+-(void)buzhi
+{
+    MDLQDMapView *mapview=[[[NSBundle mainBundle]loadNibNamed:@"MDLQDMapView" owner:self options:nil]lastObject];
+    mapview.backgroundColor=BGColor;
+    
+    [self.view addSubview:mapview];
+}
+
+-(void)listitmAction
+{
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
+{
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

@@ -1,0 +1,340 @@
+//
+//  ZYPEntityOrderView.m
+//  HaoLin
+//
+//  Created by mac on 14-9-20.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import "ZYPEntityOrderView.h"
+
+
+@interface ZYPEntityOrderView ()
+{
+    UIButton *btn;// 刷新btn
+}
+@end
+@implementation ZYPEntityOrderView
+
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        // Initialization code
+    }
+    return self;
+}
+- (void)refreshTable:(UIButton *)btn1
+{
+    btn.hidden = YES;
+    self.tableView.hidden = NO;
+    [self refreshes];
+}
+- (void)awakeFromNib
+{
+    if (IS_IPHONE_5) {
+        self.frame = CGRectMake(0, 0, 320, 568);
+        if ([[ZYPObjectManger shareInstance].barTitle isEqualToString:@"1"])
+        {
+            self.tableView.frame = CGRectMake(0, 102, 320, 466);
+        }else if ([[ZYPObjectManger shareInstance].barTitle isEqualToString:@"pet"])
+        {
+            self.tableView.frame = CGRectMake(0, 102, 320, 417);
+        }
+    }else
+    {
+        self.frame = CGRectMake(0, 0, 320, 480);
+        if ([[ZYPObjectManger shareInstance].barTitle isEqualToString:@"1"])
+        {
+            self.tableView.frame = CGRectMake(0, 102, 320, 378);
+        }else if ([[ZYPObjectManger shareInstance].barTitle isEqualToString:@"pet"])
+        {
+            self.tableView.frame = CGRectMake(0, 102, 320, 329);
+        }
+    }
+    
+    btn = [UIButton buttonWithType:UIButtonTypeCustom];
+    btn.frame = CGRectMake(110, 200, 100, 100);
+    [btn setBackgroundImage:[UIImage imageNamed:@"MDLrefresh"] forState:UIControlStateNormal];
+    [btn addTarget:self action:@selector(refreshTable:) forControlEvents:UIControlEventTouchUpInside];
+    [self addSubview:btn];
+    btn.hidden = YES;
+    
+    
+    
+    
+    
+    self.tableView.dataSource = self;
+    self.tableView.delegate = self;
+    [self load];
+}
+
+//  获取全部订单
+- (void)allOrder
+{
+    
+    self.state = allOrder;
+    [self refreshes];
+}
+//  待发货
+- (void)waitToDeliverGood1
+{
+    self.state = waitToDeliverGood;
+    [self refreshes];
+}
+//  待收款
+- (void)waitToGetMoney1
+{
+    self.state =  waitToGetMoney;
+    [self refreshes];
+}
+//  准备发货
+- (void)readyToDelivery1
+{
+    self.state = readyToDelivery;
+    [self refreshes];
+}
+//  获取数据源
+- (void)getSource1
+{
+    if (self.state == allOrder) {
+        [self getUrl:nil];
+    }else if (self.state == waitToDeliverGood)
+    {
+        [self getUrl:@"4"];
+    }else if (self.state == waitToGetMoney)
+    {
+        [self getUrl:@"3"];
+    }else if (self.state == readyToDelivery)
+    {
+        [self getUrl:@"5"];
+    }
+}
+//  请求数据
+- (void)getUrl:(NSString *)s
+{
+    
+    __weak ZYPEntityOrderView *orderVC = self;
+    ZYPNetWorkGetSourceManger *manger = [[ZYPNetWorkGetSourceManger alloc] init];
+    HSPAccount *count = [HSPAccountTool account];
+    NSString *urlString;
+    if (self.state == allOrder)
+    {
+        urlString = [NSString stringWithFormat:@"%@user_id=%@&tokenid=%@&page=%@&order_type=%@",bushinessOrder,count.user_id,count.userTokenid,[NSString stringWithFormat:@"%d",page],count.range_type];
+    }else{
+        urlString = [NSString stringWithFormat:@"%@user_id=%@&tokenid=%@&page=%@&order_type=%@&status=%@",bushinessOrder,count.user_id,count.userTokenid,[NSString stringWithFormat:@"%d",page],count.range_type,[NSString stringWithFormat:@"%@",s]];
+    }
+    
+    if (page == 1)
+    {
+        [self.sourceArray removeAllObjects];
+    }
+    [manger connectWithUrlString:urlString completion:^(id responedObject) {
+        if ([responedObject isKindOfClass:[NSDictionary class]]) {
+            NSDictionary *dic = responedObject;
+            if ([[dic objectForKey:@"code"] isEqualToString:@"0"]) {
+                NSArray *array = [dic objectForKey:@"data"];
+                for (NSDictionary *dic1 in array) {
+                    ZYPorderObject *orderObject = [[ZYPorderObject alloc] initWithOrderDictionary:dic1];
+                    [orderVC.sourceArray addObject:orderObject];
+                }
+                [orderVC.tableView headerEndRefreshing];
+                [orderVC.tableView footerEndRefreshing];
+                orderVC.tableView.hidden = NO;
+                [orderVC.tableView reloadData];
+                [orderVC alertWithMessage:[dic objectForKey:@"message"]];
+            }else
+            {
+                [orderVC.tableView headerEndRefreshing];
+                [orderVC.tableView footerEndRefreshing];
+                orderVC.tableView.hidden = NO;
+                btn.hidden = YES;
+                [orderVC alertWithMessage:[dic objectForKey:@"message"]];
+            }
+        }else
+        {
+            [orderVC.tableView headerEndRefreshing];
+            [orderVC.tableView footerEndRefreshing];
+            [orderVC alertWithMessage:@"加载失败,请检查您的网络连接"];
+            btn.hidden = YES;
+            [orderVC.tableView reloadData];
+        }
+    }];
+}
+
+- (void)alertWithMessage:(NSString *)mesage
+{
+    
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:mesage message:nil delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+    [alert show];
+}
+- (void)load
+{
+    self.sourceArray = [[NSMutableArray alloc] initWithCapacity:0];
+    page = 1;
+    self.state = allOrder;
+    if (IS_IPHONE_5) {
+        self.frame = CGRectMake(0, 0, 320, 568);
+    }else
+    {
+        self.frame = CGRectMake(0, 0, 320, 480);
+    }
+    //  顶部视图
+    [self refreshes];
+}
+-(void)refreshes
+{
+    [self.tableView addHeaderWithTarget:self action:@selector(headerRereshing)];
+    //自动刷新(一进入程序就下拉刷新).
+    [self.tableView headerBeginRefreshing];
+    // 2.上拉加载更多(进入刷新状态就会调用self的footerRereshing)
+    [self.tableView addFooterWithTarget:self action:@selector(footerRereshing)];
+}
+//下拉刷新
+-(void)headerRereshing
+{
+    page = 1;
+    [self performSelector:@selector(getSource1) withObject:nil afterDelay:2];
+}
+//上拉刷新
+-(void)footerRereshing
+{
+    page++;
+    [self performSelector:@selector(getSource1) withObject:nil afterDelay:2];
+}
+
+#pragma mark - tableView代理方法
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+{
+    return self.sourceArray.count;
+ }
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    if (self.sourceArray.count == 0) {
+        return 0;
+    }
+    return 1;
+}
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    NSLog(@"%@",self.sourceArray);
+    ZYPorderObject *object1 = [self.sourceArray objectAtIndex:indexPath.section];
+    NSArray *array =(NSArray *)object1.goodsinfo;
+    return 46 + array.count *30 + 120;
+}
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
+{
+    if (section == 0) {
+        return 5;
+    }else
+    {
+        return 5;
+    }
+}
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    static NSString *indentifier = @"indentifier";
+    ZYPOrderTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:indentifier];
+    if (cell == nil) {
+        cell = [[[NSBundle mainBundle] loadNibNamed:@"ZYPOrderTableViewCell" owner:self options:nil] lastObject];
+    }
+    
+    //  真实数据
+    ZYPorderObject *object = [self.sourceArray objectAtIndex:indexPath.section];
+    cell.orderTimeLabel.text = [self timeTranslate:object.createtime];
+    cell.nameLLabel.text = object.cat_name;
+    cell.categoryNameLabel.image = [UIImage imageNamed:[NSString stringWithFormat:@"MQLKindId_%@@2x.png",object.cat_id]];
+    NSArray *array = (NSArray *)object.goodsinfo;
+    for (int i = 0; i < array.count; i++)
+    {
+        ZYPAddView *addV = [[ZYPAddView alloc] initWithFrame:CGRectMake(0, 41 + i*30 , 320, 30)];
+        NSDictionary *dic = [array objectAtIndex:i];
+        ZYPOrderReleatedObject *relatedObject = [[ZYPOrderReleatedObject alloc] initWithReleatedOrderDictionary:dic];
+        addV.goodsAmount.text = [NSString stringWithFormat:@"%@",relatedObject.goods_num];
+        addV.goodslabel.text = relatedObject.goods_name;
+        addV.goodsPrice.text = [NSString stringWithFormat:@"￥%.1f",[relatedObject.goods_price floatValue]];
+        [cell.contentView addSubview:addV];
+    }
+    
+    ZYPNext1View *nextView = [[[NSBundle mainBundle] loadNibNamed:@"ZYPNext1View" owner:self options:nil] lastObject];
+    nextView.orderView = self;
+    nextView.orderID = object.order_id;
+    nextView.frame = CGRectMake(0, 41 + array.count * 30, 320, 120);
+    if ([object.order_desc length] > 0) {
+        nextView.soundBtn.enabled = NO;
+    }else
+    {
+        nextView.soundBtn.enabled = YES;
+        nextView.urlString = object.order_audio;
+    }
+    
+    
+    
+    /**
+     *  改变状态
+     */
+    if ( [object.status isEqualToString:@"2"])
+    {
+        nextView.stateLabel.text = @"待发货";
+        nextView.stateBtn.titleLabel.textColor = [UIColor whiteColor];
+        nextView.stateBtn.backgroundColor = [UIColor orangeColor];
+        [nextView.stateBtn setTitle: @"确认发货" forState:UIControlStateNormal];
+        nextView.stateBtn.enabled = YES;
+    }else if ([object.status isEqualToString:@"4"])
+    {
+        nextView.stateLabel.text = @"已发货";
+        nextView.stateBtn.titleLabel.textColor = [UIColor whiteColor];
+        nextView.stateBtn.backgroundColor = [UIColor greenColor];
+        [nextView.stateBtn setTitle: @"已发货" forState:UIControlStateNormal];
+        nextView.stateBtn.enabled = NO;
+        
+    }else if ([object.status isEqualToString:@"5"])
+    {
+        nextView.stateLabel.text = @"已收货";
+        nextView.stateBtn.titleLabel.textColor = [UIColor whiteColor];
+        nextView.stateBtn.titleLabel.textColor = [UIColor whiteColor];
+        nextView.stateBtn.backgroundColor = [UIColor grayColor];
+        nextView.stateBtn.enabled = NO;
+        [nextView.stateBtn setTitle: @"已收货" forState:UIControlStateNormal];
+    }
+    
+    /**
+     *  总的价格
+     */
+//    CGFloat realPrice = [object.real_price floatValue];
+//    CGFloat servPrice = [object.server_price floatValue];
+    nextView.totalMoneyL.text = [NSString stringWithFormat:@"￥%@",object.should_price];
+    nextView.peiSongFeiL.text = [NSString stringWithFormat:@"￥%@",object.server_price];
+    [cell.contentView addSubview:nextView];
+       return cell;
+}
+//  点击跳入详情界面
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    ZYPorderObject *object1 = [self.sourceArray objectAtIndex:indexPath.section];
+    ZYPOrderDetailVC *detailVC = [[ZYPOrderDetailVC alloc] initWithNibName:@"ZYPOrderDetailVC" bundle:nil];
+    detailVC.orderObject = object1;
+    /**
+     *  需要判断那个界面是跟视图controller
+     */
+    if ([[ZYPObjectManger shareInstance].barTitle isEqualToString:@"pet"])
+    {
+        [self.petVC.navigationController pushViewController:detailVC animated:YES];
+    }else if([[ZYPObjectManger shareInstance].barTitle isEqualToString:@"1"])
+    {
+        [self.businessOrderVC.navigationController pushViewController:detailVC animated:YES];
+    }
+}
+#pragma mark -时间戳时间转化
+- (NSString *)timeTranslate:(NSString *)time
+{
+    //  将时间戳转化为时间
+    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+    [formatter setDateStyle:NSDateFormatterMediumStyle];
+    [formatter setDateFormat:@"MM/dd hh:mm"];
+    NSDate *date1 = [NSDate dateWithTimeIntervalSince1970:[time intValue]];
+    NSString *dateString = [formatter stringFromDate:date1];
+    return dateString;
+}
+
+@end

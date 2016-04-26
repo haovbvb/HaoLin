@@ -1,0 +1,45 @@
+//
+//  MDLXZoneView.h
+//  HaoLin
+//
+//  Created by apple on 14-8-20.
+//  Copyright (c) 2014年 hlsd. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface MDLXZoneView : UIView<UITableViewDataSource,UITableViewDelegate,UISearchBarDelegate,UISearchDisplayDelegate>
+
+{
+    NSMutableArray *felerarry;
+    BOOL NICK;
+    BOOL NOK;
+    BOOL COOL;
+    int  number;
+}
+@property (nonatomic,assign)  int count;
+@property (nonatomic,retain)  NSString          *catid;
+@property (weak , nonatomic)  IBOutlet UIButton *lestitm;       //左边返回按钮
+@property (weak , nonatomic)  IBOutlet UILabel  *FanweiLable;   //导航栏title
+@property (nonatomic,retain)  UITableView       *JYtableview;   //主列表
+@property (nonatomic,retain)  UIViewController  *MDLJingyingViewController;
+
+@property (nonatomic,retain)  id target;
+
+@property (weak , nonatomic)  IBOutlet UISearchBar  *searchbar;       //搜索框
+@property (weak , nonatomic)  IBOutlet UIButton     *fenleilestbtn;   //分类
+@property (nonatomic,retain)  NSMutableArray        *tablearry;    //主列表数据
+@property (weak , nonatomic)  IBOutlet UIView       *fenleiview;
+@property (retain,nonatomic)  UITableView           *subtableview;
+@property (nonatomic,retain)  NSMutableArray        *subviewarry;    //经营范围数组
+@property (nonatomic,retain) NSString              *searctext;       //搜索内容
+@property (weak, nonatomic)  IBOutlet UIButton     *fanweibtn;       //范围
+
+@property (nonatomic ,retain) UIImageView          *iamgeView;
+@property (weak, nonatomic)  IBOutlet UIButton     *chazhaobtn;
+@property (nonatomic,retain) UILabel               *qbLable ;
+@property (nonatomic ,retain)MDLWuPinTableViewCell *wupincell;
+@property (weak, nonatomic)  IBOutlet UIButton      *completebtn;     //完成按钮
+
+
+@end
